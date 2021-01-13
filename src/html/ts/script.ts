@@ -1,3 +1,9 @@
+import { PianoRoll } from "./module/PianoRoll";
+
+window.onload = () => {
+    const pianoRoll = PianoRoll.generate(50, 25);
+    console.log(`roll: ${pianoRoll}`);
+}
 
 const pianoroll = document.getElementsByClassName("pianoroll")[0] as HTMLElement;
 const row = 50;

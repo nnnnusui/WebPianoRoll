@@ -10,7 +10,8 @@ html, body {
     width: 100%;
 }
 .pianoroll,
-.pianoroll > .background {
+.pianoroll > .background,
+.pianoroll > .note-container {
     height: 100%;
     width: 100%;
 }
@@ -20,8 +21,11 @@ html, body {
     --cell-border-color: #333;
     --empty-cell-color: #444;
     --highlight-cell-color: #666;
+    overflow: s;
 }
-.pianoroll > .background {
+.pianoroll > .background,
+.pianoroll > .note-container {
+    position: absolute;
     display: grid;
     grid-template-rows: repeat(var(--row), auto);
     grid-template-columns: repeat(var(--column), auto);
@@ -33,6 +37,17 @@ html, body {
 }
 .pianoroll > .background > div:hover {
     background-color: var(--highlight-cell-color);
+}
+
+.pianoroll > .note-container {
+    pointer-events: none;
+}
+.pianoroll > .note-container > div {
+    pointer-events: auto;
+    background-color: #f78d2a;
+}
+.pianoroll > .note-container > div:hover {
+    background-color: #f7cb2a;
 }
 
 /* keyboard memo */

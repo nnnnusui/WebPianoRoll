@@ -12,8 +12,8 @@ html, body {
 .pianoroll,
 .pianoroll > .background,
 .pianoroll > .note-container {
-    height: 100%;
-    width: 100%;
+    height: 110%;
+    width: 110%;
 }
 .pianoroll {
     --column: 0;
@@ -21,7 +21,7 @@ html, body {
     --cell-border-color: #333;
     --empty-cell-color: #444;
     --highlight-cell-color: #666;
-    overflow: s;
+    overflow: scroll;
 }
 .pianoroll > .background,
 .pianoroll > .note-container {

@@ -12,12 +12,14 @@ html, body {
 .pianoroll,
 .pianoroll > .background,
 .pianoroll > .note-container {
-    height: 110%;
-    width: 110%;
+    height: calc(100% + 10% * var(--vertical-magnification));
+    width: calc(100% + 10% * var(--horizontal-magnification));
 }
 .pianoroll {
-    --column: 0;
     --row: 0;
+    --column: 0;
+    --vertical-magnification: 0;
+    --horizontal-magnification: 0;
     --cell-border-color: #333;
     --empty-cell-color: #444;
     --highlight-cell-color: #666;

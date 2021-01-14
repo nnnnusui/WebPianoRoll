@@ -26,30 +26,20 @@ html, body {
     overflow: scroll;
 }
 .pianoroll > .background,
-.pianoroll > .note-container {
+.pianoroll > .background > .octave {
     position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+.pianoroll > .background > .octave > .line {
+    height: 100%;
+    width: 100%;
     display: grid;
-    grid-template-rows: repeat(var(--row), auto);
-    grid-template-columns: repeat(var(--column), auto);
-}
-.pianoroll > .background > div {
     background-color: var(--empty-cell-color);
-    border: solid var(--cell-border-color);
-    border-width: 1px 1px 0 0;
 }
-.pianoroll > .background > div:hover {
+.pianoroll > .background > .octave > .line:hover {
     background-color: var(--highlight-cell-color);
-}
-
-.pianoroll > .note-container {
-    pointer-events: none;
-}
-.pianoroll > .note-container > div {
-    pointer-events: auto;
-    background-color: #f78d2a;
-}
-.pianoroll > .note-container > div:hover {
-    background-color: #f7cb2a;
 }
 
 /* keyboard memo */

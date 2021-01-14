@@ -1,4 +1,4 @@
-import { CssProperty } from "./CssProperty";
+import { CssProperty } from "./CssProperty.js";
 
 export class PianoRoll {
     static generate(row_init: number, column_init: number): PianoRoll {

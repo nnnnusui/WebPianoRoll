@@ -1,8 +1,8 @@
-import { PianoRoll } from "./module/PianoRoll";
+import { PianoRoll } from "./module/PianoRoll.js";
 
 window.onload = () => {
     const pianoRoll = PianoRoll.generate(50, 25);
-    console.log(`roll: ${pianoRoll}`);
+    console.log(`roll: ${pianoRoll.element}`);
 }
 
 const pianoroll = document.getElementsByClassName("pianoroll")[0] as HTMLElement;

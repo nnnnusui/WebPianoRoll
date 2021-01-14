@@ -1,14 +1,29 @@
 import { CssProperty } from "./CssProperty.js";
+import { Background } from "./pianoroll/Background.js";
 
 export class PianoRoll {
-    static generate(row_init: number, column_init: number): PianoRoll {
+    static class_name: string = "pianoroll";
+    static generateTo(parent: HTMLElement, row_size: number, column_size: number): PianoRoll {
         const element = document.createElement('article') as HTMLElement;
-        element.setAttribute("class", "pianoroll");
-        const row = new CssProperty(element, "--row", row_init);
-        const column = new CssProperty(element, "--column", column_init);
-        const vertical_magnification = new CssProperty(element, "--vertical-magnification", 0);
-        const horizontal_magnification = new CssProperty(element, "--horizontal-magnification", 0);
-        return new PianoRoll(element, row, column, vertical_magnification, horizontal_magnification);
+        parent.appendChild(element);
+        element.setAttribute("class", this.class_name);
+        element.style.setProperty("--row", `${row_size}`);
+        element.style.setProperty("--column", `${column_size}`);
+
+        const piano_roll = new PianoRoll(element);
+        piano_roll.row = row_size;
+        piano_roll.column = column_size;
+        const background = Background.generateTo(element, piano_roll);
+        element.appendChild(background.element);
+        return piano_roll;
+    }
+    static fromParent(parent: HTMLElement): PianoRoll {
+        const element = parent.getElementsByClassName(this.class_name)[0] as HTMLElement;
+        return this.fromElement(element);
+    }
+    static fromElement(element: HTMLElement): PianoRoll {
+        const background = Background.fromParent(element);
+        return new PianoRoll(element);
     }
     readonly element: HTMLElement;
     private readonly _row: CssProperty<number>;
@@ -20,15 +35,23 @@ export class PianoRoll {
     private readonly _horizontal_magnification: CssProperty<number>;
     set horizontal_magnification(value: number) { this._horizontal_magnification.set(value); }
 
-    constructor(
-            element: HTMLElement, row: CssProperty<number>, column: CssProperty<number>
-            , vertical_magnification: CssProperty<number>
-            , horizontal_magnification: CssProperty<number>
-        ) {
+    // readonly background: Background;
+
+    private constructor(element: HTMLElement) {
         this.element = element;
+
         this._row = CssProperty.fromComputed(element, "--row", CssProperty.toNumber);
-        this._column = column;
-        this._vertical_magnification = vertical_magnification;
-        this._horizontal_magnification = horizontal_magnification;
+        this._column = CssProperty.fromComputed(element, "--column", CssProperty.toNumber);
+        this._vertical_magnification = CssProperty.fromComputed(element, "--vertical-magnification", CssProperty.toNumber);
+        this._horizontal_magnification = CssProperty.fromComputed(element, "--horizontal-magnification", CssProperty.toNumber);
+    }
+    put_note(index: number) {
+        const rowIndex = Math.floor(index / this.column) + 1;
+        const columnIndex = index % this.column + 1;
+        console.log(`row: ${rowIndex}, column: ${columnIndex}`);
+    //     const note = note_template.cloneNode() as HTMLElement;
+    //     note.style.setProperty("grid-row", `${rowIndex}`);
+    //     note.style.setProperty("grid-column", `${columnIndex}`);
+    //     note_container.appendChild(note);
     }
 }

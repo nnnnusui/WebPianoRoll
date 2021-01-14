@@ -16,8 +16,8 @@ html, body {
     width: calc(100% + 10% * var(--horizontal-magnification));
 }
 .pianoroll {
-    --row: 0;
-    --column: 0;
+    --row: 50;
+    --column: 25;
     --vertical-magnification: 0;
     --horizontal-magnification: 0;
     --cell-border-color: #333;

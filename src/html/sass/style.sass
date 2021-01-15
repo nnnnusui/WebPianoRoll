@@ -3,9 +3,7 @@
     padding: 0
     list-style-type: none
 
-html, body,
-.pianoroll,
-.pianoroll *
+html, body
     height: 100%
     width: 100%
 
@@ -14,42 +12,62 @@ html, body,
     --empty-cell-color: #333
     --highlight-cell-color: #444
     --note-color: #f78d2a
-    --highlight-note-color: #f7cb2a
+    --highlight-note-color: #fda95b
     --border-size: 1px
+    --header-height: 2%
+    height: 100%
+    width: 100%
+
+    %border
+        border-color: var(--cell-border-color)
+        border-style: solid
+        border-width: 0 0 0 0
+    %border-horizontal
+        @extend %border
+        border-left-width: var(--border-size)
+    %border-vertical
+        @extend %border
+        border-top-width: var(--border-size)
+
+    %container-horizontal
+        display: flex
+        flex-direction: row
+    %container-vertical
+        display: flex
+        flex-direction: column
+    %view-horizontal
+        width: 100%
+        @extend %border-horizontal
+    %view-vertical
+        height: 100%
+        @extend %border-vertical
+
     >.timeline-header
-        height: 0
-    >.contents
-        >.note-container
-            display: flex
-            position: absolute
-            flex-direction: row
-            >.time-index-cell
-                display: flex
-                flex-direction: column
-                border-color: var(--cell-border-color)
-                border-style: solid
-                border-width: 0 0 0 var(--border-size)
-                &:last-child
-                    border-bottom-right: var(--border-size)
-                >.octave
-                    display: flex
-                    flex-direction: column
-                    .cell
-                        background-color: var(--empty-cell-color)
-                        border-color: var(--cell-border-color)
-                        border-style: solid
-                        border-width: var(--border-size) 0 0 0
-                        &:last-child
-                            border-bottom-width: var(--border-size)
-                        &:hover
-                            background-color: var(--highlight-cell-color)
-                    .puted
-                        pointer-events: none
-                        background-color: var(--note-color)
-                        border-color: var(--cell-border-color)
-                        border-style: solid
-                        border-width: var(--border-size) 0 0 0
-                        &:last-child
-                            border-bottom-width: var(--border-size)
-                        &:hover
-                            background-color: var(--highlight-note-color)
+        height: var(--header-height)
+    >.contents,
+    >.contents>.note-container
+        height: calc(100% - var(--header-height))
+    .bar
+        @extend %view-horizontal
+        @extend %container-horizontal
+        >.time-index-cell
+            @extend %view-horizontal
+            @extend %container-vertical
+            >.octave
+                @extend %view-vertical
+                @extend %container-vertical
+    
+    .note-container
+        width: 100%
+        position: absolute
+        @extend %container-horizontal
+        .cell
+            @extend %view-vertical
+            background-color: var(--empty-cell-color)
+            &:hover
+                background-color: var(--highlight-cell-color)
+        .puted
+            pointer-events: auto
+            background-color: var(--note-color)
+            &:hover
+                background-color: var(--highlight-note-color)

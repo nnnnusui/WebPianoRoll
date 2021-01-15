@@ -43,7 +43,13 @@ html, body
         @extend %border-vertical
 
     >.timeline-header
+        width: 100%
         height: var(--header-height)
+        >.bar-header
+            @extend %container-horizontal
+            @extend %view-horizontal
+            >.cell
+                @extend %view-horizontal
     >.contents,
     >.contents>.note-container
         height: calc(100% - var(--header-height))

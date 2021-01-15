@@ -13,6 +13,15 @@ class Elm {
     header() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "timeline-header");
+        element.appendChild(this.bar_header());
+        return element;
+    }
+    bar_header() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "bar-header");
+        [...Array(this.length).keys()]
+            .map(_ => this.cell())
+            .forEach(it => element.appendChild(it));
         return element;
     }
     contents() {
@@ -33,7 +42,7 @@ class Elm {
     bar() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "bar");
-        [...Array(4).keys()]
+        [...Array(this.length).keys()]
             .map(_ => this.time_index_cell())
             .forEach(it => element.appendChild(it));
         return element;
@@ -65,7 +74,6 @@ class Elm {
         const left_click = 0;
         const right_click = 2;
         const target = event.target as HTMLElement;
-        console.log(event.button)
         switch(event.button) {
             case left_click: target.classList.add("puted");break;
             case right_click: target.classList.remove("puted");break;

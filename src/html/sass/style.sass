@@ -1,2 +1,37 @@
 *
-    background-color: #000
+    margin: 0
+    padding: 0
+    list-style-type: none
+
+html, body,
+.pianoroll,
+.pianoroll *
+    height: 100%
+    width: 100%
+
+.pianoroll
+    --cell-border-color: #666
+    --empty-cell-color: #333
+    --highlight-cell-color: #444
+    >.timeline-header
+        height: 0
+    >.contents
+        >.background,
+        >.background > .octave
+            display: flex
+            flex-direction: column
+            justify-content: space-evenly
+        >.background
+            position: absolute
+            >.octave>.line
+                    display: grid
+                    background-color: var(--empty-cell-color)
+                    border-color: var(--cell-border-color)
+                    border-style: solid
+                    border-width: 1px 0 0 0
+                    &:last-child
+                        border-bottom-width: 1px
+                    &:hover
+                        background-color: var(--highlight-cell-color)
+
+    

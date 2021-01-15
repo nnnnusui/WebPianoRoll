@@ -13,25 +13,49 @@ html, body,
     --cell-border-color: #666
     --empty-cell-color: #333
     --highlight-cell-color: #444
+    --note-color: #f78d2a
+    --highlight-note-color: #f7cb2a
+    --border-size: 1px
     >.timeline-header
         height: 0
     >.contents
         >.background,
-        >.background > .octave
+        >.note-containers>.note-container
+            display: flex
+            position: absolute
+            flex-direction: row
+        .time-index-cell
             display: flex
             flex-direction: column
-            justify-content: space-evenly
-        >.background
-            position: absolute
-            >.octave>.line
-                    display: grid
-                    background-color: var(--empty-cell-color)
-                    border-color: var(--cell-border-color)
-                    border-style: solid
-                    border-width: 1px 0 0 0
-                    &:last-child
-                        border-bottom-width: 1px
-                    &:hover
-                        background-color: var(--highlight-cell-color)
+            border-color: var(--cell-border-color)
+            border-style: solid
+            border-width: 0 0 0 var(--border-size)
+            &:last-child
+                border-bottom-right: var(--border-size)
+            >.octave
+                display: flex
+                flex-direction: column
+        >.background .cell
+            background-color: var(--empty-cell-color)
+            border-color: var(--cell-border-color)
+            border-style: solid
+            border-width: var(--border-size) 0 0 0
+            &:last-child
+                border-bottom-width: var(--border-size)
+            &:hover
+                background-color: var(--highlight-cell-color)
+
+        .note-containers
+            pointer-events: none
+        .note-containers .cell
+            pointer-events: auto
+            background-color: var(--note-color)
+            border-color: var(--cell-border-color)
+            border-style: solid
+            border-width: var(--border-size) 0 0 0
+            &:last-child
+                border-bottom-width: var(--border-size)
+            &:hover
+                background-color: var(--highlight-note-color)
 
     

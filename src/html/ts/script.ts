@@ -25,11 +25,19 @@ class Elm {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "note-container");
         [...Array(this.length).keys()]
-            .map(_ => this.time_index_cell())
+            .map(_ => this.bar())
             .forEach(it => element.appendChild(it));
         return element;
     }
 
+    bar() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "bar");
+        [...Array(4).keys()]
+            .map(_ => this.time_index_cell())
+            .forEach(it => element.appendChild(it));
+        return element;
+    }
     time_index_cell() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "time-index-cell");
@@ -49,12 +57,21 @@ class Elm {
     cell(): HTMLElement {
         const element = document.createElement('div') as HTMLElement;
         element.classList.add("cell");
-        element.onclick = event => {
-            const target = event.target as HTMLElement;
-            target.classList.add("puted");
-        }
+        element.oncontextmenu = _ => false;
+        element.onmousedown = this.cell_onclick.bind(this);
         return element;
+    }
+    private cell_onclick(event: MouseEvent) {
+        const left_click = 0;
+        const right_click = 2;
+        const target = event.target as HTMLElement;
+        console.log(event.button)
+        switch(event.button) {
+            case left_click: target.classList.add("puted");break;
+            case right_click: target.classList.remove("puted");break;
+        }
+        return false;
     }
 }
 
-document.body.appendChild(new Elm(12).pianoroll())
+document.body.appendChild(new Elm(4).pianoroll())

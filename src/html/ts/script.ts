@@ -18,21 +18,6 @@ class Elm {
     contents() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "contents");
-        element.appendChild(this.background());
-        element.appendChild(this.note_containers())
-        return element;
-    }
-    background() {
-        const element = document.createElement('div') as HTMLElement;
-        element.setAttribute("class", "background");
-        [...Array(this.length).keys()]
-            .map(_ => this.time_index_cell(true))
-            .forEach(it => element.appendChild(it));
-        return element;
-    }
-    note_containers() {
-        const element = document.createElement('div') as HTMLElement;
-        element.setAttribute("class", "note-containers");
         element.appendChild(this.note_container());
         return element;
     }
@@ -40,31 +25,34 @@ class Elm {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "note-container");
         [...Array(this.length).keys()]
-            .map(_ => this.time_index_cell(false))
+            .map(_ => this.time_index_cell())
             .forEach(it => element.appendChild(it));
         return element;
     }
 
-    time_index_cell(cell_generate: boolean) {
+    time_index_cell() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "time-index-cell");
         [...Array(this.octave_size).keys()]
-            .map(_ => this.octave(cell_generate))
+            .map(_ => this.octave())
             .forEach(it => element.appendChild(it));
         return element;
     }
-    octave(cell_generate: boolean) {
+    octave() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "octave");
-        if(cell_generate)
-            [...Array(12).keys()]
-                .map(_ => this.cell())
-                .forEach(it => element.appendChild(it));
+        [...Array(12).keys()]
+            .map(_ => this.cell())
+            .forEach(it => element.appendChild(it));
         return element;
     }
     cell(): HTMLElement {
         const element = document.createElement('div') as HTMLElement;
-        element.setAttribute("class", "cell");
+        element.classList.add("cell");
+        element.onclick = event => {
+            const target = event.target as HTMLElement;
+            target.classList.add("puted");
+        }
         return element;
     }
 }

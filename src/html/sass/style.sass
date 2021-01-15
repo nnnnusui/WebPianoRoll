@@ -19,43 +19,37 @@ html, body,
     >.timeline-header
         height: 0
     >.contents
-        >.background,
-        >.note-containers>.note-container
+        >.note-container
             display: flex
             position: absolute
             flex-direction: row
-        .time-index-cell
-            display: flex
-            flex-direction: column
-            border-color: var(--cell-border-color)
-            border-style: solid
-            border-width: 0 0 0 var(--border-size)
-            &:last-child
-                border-bottom-right: var(--border-size)
-            >.octave
+            >.time-index-cell
                 display: flex
                 flex-direction: column
-        >.background .cell
-            background-color: var(--empty-cell-color)
-            border-color: var(--cell-border-color)
-            border-style: solid
-            border-width: var(--border-size) 0 0 0
-            &:last-child
-                border-bottom-width: var(--border-size)
-            &:hover
-                background-color: var(--highlight-cell-color)
-
-        .note-containers
-            pointer-events: none
-        .note-containers .cell
-            pointer-events: auto
-            background-color: var(--note-color)
-            border-color: var(--cell-border-color)
-            border-style: solid
-            border-width: var(--border-size) 0 0 0
-            &:last-child
-                border-bottom-width: var(--border-size)
-            &:hover
-                background-color: var(--highlight-note-color)
-
-    
+                border-color: var(--cell-border-color)
+                border-style: solid
+                border-width: 0 0 0 var(--border-size)
+                &:last-child
+                    border-bottom-right: var(--border-size)
+                >.octave
+                    display: flex
+                    flex-direction: column
+                    .cell
+                        background-color: var(--empty-cell-color)
+                        border-color: var(--cell-border-color)
+                        border-style: solid
+                        border-width: var(--border-size) 0 0 0
+                        &:last-child
+                            border-bottom-width: var(--border-size)
+                        &:hover
+                            background-color: var(--highlight-cell-color)
+                    .puted
+                        pointer-events: none
+                        background-color: var(--note-color)
+                        border-color: var(--cell-border-color)
+                        border-style: solid
+                        border-width: var(--border-size) 0 0 0
+                        &:last-child
+                            border-bottom-width: var(--border-size)
+                        &:hover
+                            background-color: var(--highlight-note-color)

@@ -1,19 +1,120 @@
 
-class Elm {
-    readonly element: HTMLElement
+class Contents {
+    background: Background
+    constructor(private piano_roll: PianoRoll) {
+        this.background = new Background(this.piano_roll)
+    }
+    element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "contents");
+        element.appendChild(this.background.element());
+        // element.appendChild(this.note_container());
+        return element;
+    }
+}
+class Background {
+    bars: Bar[]
+    constructor(private piano_roll: PianoRoll) {
+        this.bars = 
+            [...Array(this.piano_roll.length).keys()]
+                .map(_ => new Bar(this.piano_roll));
+    }
+    element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "background");
+        this.bars
+            .map(it => it.element())
+            .forEach(it => element.appendChild(it));
+        return element;
+    }
+}
+class Bar {
+    time_index_cells: TimeIndexCell[]
+    constructor(private piano_roll: PianoRoll) {
+        this.time_index_cells = 
+            [...Array(4).keys()]
+                .map(_ => new TimeIndexCell(this.piano_roll));
+    }
+    element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "bar");
+        this.time_index_cells
+            .map(it => it.element())
+            .forEach(it => element.appendChild(it));
+        return element;
+    }
+}
+class TimeIndexCell {
+    octaves: Octave[]
+    constructor(private piano_roll: PianoRoll) {
+        this.octaves =
+            [...Array(3).keys()]
+                .map(_ => new Octave(this.piano_roll));
+    }
+    element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "time-index-cell");
+        this.octaves
+            .map(it => it.element())
+            .forEach(it => element.appendChild(it));
+        return element;
+    }
+}
+class Octave {
+    cells: Cell[]
+    constructor(private piano_roll: PianoRoll) {
+        this.cells = 
+            [...Array(12).keys()]
+                .map(_ => new Cell(this.piano_roll));
+    }
+    element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "octave");
+        this.cells
+            .map(it => it.element())
+            .forEach(it => element.appendChild(it));
+        return element;
+    }
+}
+class Cell {
+    constructor(private piano_roll: PianoRoll) {}
+    element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.classList.add("cell");
+        element.oncontextmenu = _ => false;
+        element.onmousedown = this.onclick.bind(this);
+        return element;
+    }
+    private onclick(event: MouseEvent) {
+        const left_click = 0;
+        const right_click = 2;
+        const target = event.target as HTMLElement;
+        switch(event.button) {
+            case left_click: this.piano_roll.put_note(this); break;
+            case right_click: target.classList.remove("puted");break;
+        }
+        return false;
+    }
+}
+class PianoRoll {
+    public beat: number = 4
+    public contents: Contents
     constructor(public length: number, public octave_size: number = 3) {
-        this.element = this.pianoroll()
+        this.contents = new Contents(this)
     }
 
-    put_note(source: HTMLElement) {
-        console.log(source)
+    put_note(from: Cell) {
+        this.contents
+            .background
+            .bars
+        console.log(from)
     }
 
-    pianoroll() {
+    element() {
         const element = document.createElement('article') as HTMLElement;
         element.setAttribute("class", "pianoroll");
         element.appendChild(this.header());
-        element.appendChild(this.contents());
+        element.appendChild(this.contents.element());
         return element;
     }
     header() {
@@ -33,13 +134,6 @@ class Elm {
         return element;
     }
     
-    contents() {
-        const element = document.createElement('div') as HTMLElement;
-        element.setAttribute("class", "contents");
-        element.appendChild(this.background());
-        // element.appendChild(this.note_container());
-        return element;
-    }
     background() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "background");
@@ -57,47 +151,48 @@ class Elm {
         return element;
     }
 
-    bar(row: number) {
+    bar() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "bar");
         [...Array(this.length).keys()]
-            .map(index => this.time_index_cell(row * (index + 1)))
+            .map(index => this.time_index_cell())
             .forEach(it => element.appendChild(it));
         return element;
     }
-    time_index_cell(row: number) {
+    time_index_cell() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "time-index-cell");
         [...Array(this.octave_size).keys()]
-            .map(index => this.octave(row, index))
+            .map(index => this.octave())
             .forEach(it => element.appendChild(it));
         return element;
     }
-    octave(row: number, column: number) {
+    octave() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "octave");
         [...Array(12).keys()]
-            .map(index => this.cell(row, column * (index + 1)))
+            .map(index => this.cell())
             .forEach(it => element.appendChild(it));
         return element;
     }
-    cell(row: number, column: number): HTMLElement {
+    cell(): HTMLElement {
         const element = document.createElement('div') as HTMLElement;
         element.classList.add("cell");
         element.oncontextmenu = _ => false;
-        element.onmousedown = this.cell_onclick.bind(this);
+        element.onmousedown = this.onclick.bind(this);
         return element;
     }
-    private cell_onclick(event: MouseEvent) {
+    private onclick(event: MouseEvent) {
         const left_click = 0;
         const right_click = 2;
         const target = event.target as HTMLElement;
         switch(event.button) {
-            case left_click: this.put_note(target); break;//target.classList.add("puted");break;
+            // case left_click: this.parent.put_note(this.time_index, this.pitch_index); break;//target.classList.add("puted");break;
             case right_click: target.classList.remove("puted");break;
         }
         return false;
     }
 }
 
-document.body.appendChild(new Elm(4).element)
+
+document.body.appendChild(new PianoRoll(4).element())

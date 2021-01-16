@@ -20,6 +20,10 @@ export class PianoRoll {
     draw() {
         this.element = this.to_element();
     }
+    add_octave() {
+        this.octave_size += 1;
+        this.draw()
+    }
     add_bar() {
         this.length += 1;
         this.draw();
@@ -62,7 +66,7 @@ export class PianoRoll {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "bar-header");
         element.onclick = event => {
-            this.add_bar();
+            this.add_octave();
         }
         // [...Array(4).keys()]
         //     .map(_ => this.cell())
@@ -81,7 +85,10 @@ export class PianoRoll {
     time_index_cell(time_index: number, bar_index: number) {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "time-index-cell");
-        element.appendChild(this.octave(0, time_index, bar_index));
+        const octave_count = this.octave_size * 2 + 1;
+        [...Array(octave_count).keys()]
+            .map(index => this.octave_size - index)
+            .forEach(index => element.appendChild(this.octave(index, time_index, bar_index)));
         return element;
     }
     octave(octave_index: number, time_index: number, bar_index: number) {

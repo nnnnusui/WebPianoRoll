@@ -13,6 +13,7 @@ html, body
     --highlight-cell-color: #444
     --note-color: #f78d2a
     --highlight-note-color: #fda95b
+    --timeline-color: var(--highlight-cell-color)
     --border-size: 1px
     --header-height: 2%
     height: 100%
@@ -22,6 +23,7 @@ html, body
         border-color: var(--cell-border-color)
         border-style: solid
         border-width: 0 0 0 0
+        box-sizing: border-box
     %border-horizontal
         @extend %border
         border-left-width: var(--border-size)
@@ -37,22 +39,27 @@ html, body
         flex-direction: column
     %view-horizontal
         width: 100%
-        @extend %border-horizontal
+        // @extend %border-horizontal
     %view-vertical
         height: 100%
-        @extend %border-vertical
+        // @extend %border-vertical
 
     >.timeline-header
-        width: 100%
+        @extend %container-horizontal
         height: var(--header-height)
         >.bar-header
-            @extend %container-horizontal
             @extend %view-horizontal
+            @extend %container-horizontal
             >.cell
                 @extend %view-horizontal
-    >.contents,
-    >.contents>.note-container
+                background-color: var(--timeline-color)
+
+    >.contents
         height: calc(100% - var(--header-height))
+        .background,
+        .note-container
+            height: inherit
+    
     .bar
         @extend %view-horizontal
         @extend %container-horizontal
@@ -63,13 +70,21 @@ html, body
                 @extend %view-vertical
                 @extend %container-vertical
     
+    .background
+        position: absolute
+        width: 100%
+        @extend %container-horizontal
+        .cell
+            @extend %view-vertical
+            background-color: var(--empty-cell-color)
+            &:hover
+                background-color: var(--highlight-cell-color)
     .note-container
         width: 100%
         position: absolute
         @extend %container-horizontal
         .cell
             @extend %view-vertical
-            background-color: var(--empty-cell-color)
             &:hover
                 background-color: var(--highlight-cell-color)
         .puted

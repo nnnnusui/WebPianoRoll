@@ -1,5 +1,10 @@
 class PianoRoll {
-    constructor(public length: number, public octave_size: number = 3) {}
+    bars: Bar[]
+    constructor(public length: number, public octave_size: number = 3) {
+        this.bars =
+            [...Array(this.length).keys()]
+                .map(_ => new Bar())
+    }
 
     element() {
         const element = document.createElement('article') as HTMLElement;
@@ -11,16 +16,8 @@ class PianoRoll {
     header() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "timeline-header");
-        [...Array(this.length).keys()]
-            .map(_ => this.bar_header())
-            .forEach(it => element.appendChild(it));
-        return element;
-    }
-    bar_header() {
-        const element = document.createElement('div') as HTMLElement;
-        element.setAttribute("class", "bar-header");
-        [...Array(this.length).keys()]
-            .map(_ => this.cell())
+        this.bars
+            .map(it => it.header_element())
             .forEach(it => element.appendChild(it));
         return element;
     }
@@ -28,23 +25,35 @@ class PianoRoll {
     note_container() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "note-container");
-        [...Array(this.length).keys()]
-            .map(_ => this.bar())
+        this.bars
+            .map(it => it.content_element(this.octave_size))
             .forEach(it => element.appendChild(it));
         return element;
     }
-    bar() {
+}
+class Bar {
+    constructor() {}
+    
+    header_element() {
+        const element = document.createElement('div') as HTMLElement;
+        element.setAttribute("class", "bar-header");
+        [...Array(4).keys()]
+            .map(_ => this.cell())
+            .forEach(it => element.appendChild(it));
+        return element;
+    }
+    content_element(octave_size: number) {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "bar");
-        [...Array(this.length).keys()]
-            .map(index => this.time_index_cell())
+        [...Array(4).keys()]
+            .map(index => this.time_index_cell(octave_size))
             .forEach(it => element.appendChild(it));
         return element;
     }
-    time_index_cell() {
+    time_index_cell(octave_size: number) {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "time-index-cell");
-        [...Array(this.octave_size).keys()]
+        [...Array(octave_size).keys()]
             .map(index => this.octave())
             .forEach(it => element.appendChild(it));
         return element;

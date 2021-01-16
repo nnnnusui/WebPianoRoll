@@ -1,3 +1,4 @@
 import { PianoRoll } from "./module/PianoRoll.js";
 
-document.body.appendChild(new PianoRoll(4).element())
+const piano_roll = new PianoRoll(1)
+piano_roll.draw()

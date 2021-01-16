@@ -7,21 +7,20 @@ export class PianoRoll {
         document.body.appendChild(value);
         this._element = value;
     }
-    bars: Bar[]
-    constructor(public length: number, public octave_size: number = 0) {
-        this.bars =
-            [...Array(this.length).keys()]
-                .map(_ => new Bar());
-    }
+    constructor(
+        public length: number
+        , public octave_size: number = 0
+    ) {}
 
     draw() {
-        this.element = this.to_element()
+        this.element = this.to_element();
     }
     add_bar() {
-        this.bars.push(new Bar())
-        this.draw()
+        this.length += 1;
+        this.draw();
     }
     add_note() {
+
     }
 
     to_element() {
@@ -111,4 +110,15 @@ export class PianoRoll {
         }
         return element;
     }
+}
+
+class Note {
+    constructor(
+        public bar: number
+        , public offset: number
+        , public octave: number
+        , public cell: number
+        , public length: number = 1
+    ) {}
+
 }

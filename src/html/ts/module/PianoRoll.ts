@@ -7,10 +7,15 @@ export class PianoRoll {
         document.body.appendChild(value);
         this._element = value;
     }
+    bars: Bar[]
+    notes: Note[] = Array()
     constructor(
         public length: number
         , public octave_size: number = 0
-    ) {}
+    ) {
+        this.bars = [...Array(length).keys()]
+            .map(_ => new Bar())
+    }
 
     draw() {
         this.element = this.to_element();
@@ -19,8 +24,15 @@ export class PianoRoll {
         this.length += 1;
         this.draw();
     }
-    add_note() {
-
+    add_note(note: Note) {
+        this.notes.push(note);
+        this.draw()
+    }
+    remove_note(note: Note) {
+        this.notes =
+            this.notes
+                .filter(it => !it.same_pos(note))
+        this.draw()
     }
 
     to_element() {
@@ -42,8 +54,8 @@ export class PianoRoll {
     note_container() {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "note-container");
-        this.bars
-            .map(it => this.bar(it))
+        [...Array(this.length).keys()]
+            .map(index => this.bar(index))
             .forEach(it => element.appendChild(it));
         return element;
     }
@@ -60,53 +72,54 @@ export class PianoRoll {
         return element;
     }
 
-    bar(bar: Bar) {
+    bar(bar_index: number) {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "bar");
-        bar.lines
-            .map(_ => this.time_index_cell())
+        [...Array(1).keys()]
+            .map(index => this.time_index_cell(index, bar_index))
             .forEach(it => element.appendChild(it));
         return element;
     }
-    time_index_cell() {
+    time_index_cell(time_index: number, bar_index: number) {
         const element = document.createElement('div') as HTMLElement;
         element.setAttribute("class", "time-index-cell");
-        [...Array(this.octave_size).keys()]
-            .reverse()
-            .map(index => octave_length - index)
-            .map(index => this.octave())
-            .forEach(it => element.appendChild(it));
+        element.appendChild(this.octave(0, time_index, bar_index));
         return element;
     }
-    octave() {
+    octave(octave_index: number, time_index: number, bar_index: number) {
         const element = document.createElement('div') as HTMLElement;
-        element.setAttribute("class", "octave");
+        element.classList.add("octave");
         [...Array(12).keys()]
-            .map(index => this.cell())
+            .reverse()
+            .map(index => this.cell(index, octave_index, time_index, bar_index))
             .forEach(it => element.appendChild(it));
         return element;
     }
-    cell(): HTMLElement {
+    cell(cell_index: number, octave_index: number, time_index: number, bar_index: number): HTMLElement {
         const element = document.createElement('div') as HTMLElement;
         element.classList.add("cell");
-        element.appendChild(this.background());
+        const note = new Note(bar_index, time_index, octave_index, cell_index)
+        element.appendChild(this.background(note));
+        this.notes
+            .filter(it => it.same_pos(note))
+            .forEach(_ => element.appendChild(this.note(note)))
         return element;
     }
-    background(): HTMLElement {
+    background(note: Note): HTMLElement {
         const element = document.createElement('div') as HTMLElement;
         element.classList.add("background");
         element.onclick = event => {
             const target = event.target as HTMLElement;
-            target.parentElement?.appendChild(this.note());
+            this.add_note(note)
         }
         return element;
     }
-    note(): HTMLElement {
+    note(note: Note): HTMLElement {
         const element = document.createElement('div') as HTMLElement;
         element.classList.add("note");
         element.onclick = event => {
             const target = event.target as HTMLElement;
-            target.remove();
+            this.remove_note(note)
         }
         return element;
     }
@@ -115,10 +128,15 @@ export class PianoRoll {
 class Note {
     constructor(
         public bar: number
-        , public offset: number
+        , public time: number
         , public octave: number
-        , public cell: number
+        , public pitch: number
         , public length: number = 1
     ) {}
-
+    same_pos(note: Note) {
+        return this.bar == note.bar
+            && this.time == note.time
+            && this.octave == note.octave
+            && this.pitch == note.pitch;
+    }
 }

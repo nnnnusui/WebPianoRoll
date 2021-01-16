@@ -29,9 +29,7 @@ export class PianoRoll {
         this.draw()
     }
     remove_note(note: Note) {
-        this.notes =
-            this.notes
-                .filter(it => !it.same_pos(note))
+        this.notes = this.notes.filter(it => !it.same_pos(note))
         this.draw()
     }
 
@@ -128,14 +126,14 @@ export class PianoRoll {
 class Note {
     constructor(
         public bar: number
-        , public time: number
+        , public start: number
         , public octave: number
         , public pitch: number
         , public length: number = 1
     ) {}
     same_pos(note: Note) {
         return this.bar == note.bar
-            && this.time == note.time
+            && this.start == note.start
             && this.octave == note.octave
             && this.pitch == note.pitch;
     }

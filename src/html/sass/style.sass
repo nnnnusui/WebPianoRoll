@@ -54,11 +54,8 @@ html, body
                 @extend %view-horizontal
                 background-color: var(--timeline-color)
 
-    >.contents
+    >.note-container
         height: calc(100% - var(--header-height))
-        .background,
-        .note-container
-            height: inherit
     
     .bar
         @extend %view-horizontal
@@ -70,25 +67,23 @@ html, body
                 @extend %view-vertical
                 @extend %container-vertical
     
-    .background
-        position: absolute
-        width: 100%
-        @extend %container-horizontal
-        .cell
-            @extend %view-vertical
-            background-color: var(--empty-cell-color)
-            &:hover
-                background-color: var(--highlight-cell-color)
     .note-container
         width: 100%
         position: absolute
         @extend %container-horizontal
         .cell
+            position: relative
             @extend %view-vertical
-            &:hover
-                background-color: var(--highlight-cell-color)
-        .puted
-            pointer-events: auto
-            background-color: var(--note-color)
-            &:hover
-                background-color: var(--highlight-note-color)
+            .background,
+            .note
+                position: absolute
+                height: 100%
+                width: 100%
+            .background
+                background-color: var(--empty-cell-color)
+                &:hover
+                    background-color: var(--highlight-cell-color)
+            .note
+                background-color: var(--note-color)
+                &:hover
+                    background-color: var(--highlight-note-color)

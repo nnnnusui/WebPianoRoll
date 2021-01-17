@@ -1,3 +1,5 @@
+import { PianoRoll } from "./PianoRoll";
+
 export class Note {
     constructor(
         public bar: number
@@ -11,5 +13,15 @@ export class Note {
             && this.start == note.start
             && this.octave == note.octave
             && this.pitch == note.pitch;
+    }
+
+    element(piano_roll: PianoRoll) {
+        const element = document.createElement('div') as HTMLElement;
+        element.classList.add("note");
+        element.onclick = event => {
+            const target = event.target as HTMLElement;
+            piano_roll.remove_note(this)
+        }
+        return element;
     }
 }

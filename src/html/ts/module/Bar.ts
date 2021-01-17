@@ -54,7 +54,8 @@ export class Bar {
         element.appendChild(this.background(note));
         this.piano_roll.notes
             .filter(it => it.same_pos(note))
-            .forEach(_ => element.appendChild(this.note(note)))
+            .map(it => it.element(this.piano_roll))
+            .forEach(it => element.appendChild(it))
         return element;
     }
     background(note: Note): HTMLElement {
@@ -63,15 +64,6 @@ export class Bar {
         element.onclick = event => {
             const target = event.target as HTMLElement;
             this.piano_roll.add_note(note)
-        }
-        return element;
-    }
-    note(note: Note): HTMLElement {
-        const element = document.createElement('div') as HTMLElement;
-        element.classList.add("note");
-        element.onclick = event => {
-            const target = event.target as HTMLElement;
-            this.piano_roll.remove_note(note)
         }
         return element;
     }

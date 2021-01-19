@@ -8,9 +8,8 @@ type Inputs = {
 const Bar: React.FC<Props> = ({ maxOffset, ...props }) => {
   const times = [...Array(maxOffset)]
     .map((_, index) => index)
-    .reverse()
     .map((index) => <Time key={index} offset={index} {...props} />);
-  return <div className="bar flex">{times}</div>;
+  return <div className="bar flex h-full w-full ">{times}</div>;
 };
 
 export default Bar;

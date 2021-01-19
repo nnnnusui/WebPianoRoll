@@ -10,7 +10,7 @@ const Octave: React.FC<Props> = ({ ...props }) => {
     .map((_, index) => index)
     .reverse()
     .map((index) => <Cell key={index} pitch={index} {...props} />);
-  return <div className="octave">{cells}</div>;
+  return <div className="octave h-full w-full flex flex-col">{cells}</div>;
 };
 
 export default Octave;

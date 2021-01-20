@@ -1,10 +1,11 @@
 import React from "react";
-import Cell from "./Cell";
+import Cell, { CellNeeds } from "./Cell";
 
 type Props = {
   offset: number;
   octave: number;
-};
+} & Needs;
+type Needs = CellNeeds;
 const Octave: React.FC<Props> = ({ ...props }) => {
   const cells = [...Array(12)]
     .map((_, index) => index)
@@ -14,3 +15,4 @@ const Octave: React.FC<Props> = ({ ...props }) => {
 };
 
 export default Octave;
+export type { Needs as OctaveNeeds };

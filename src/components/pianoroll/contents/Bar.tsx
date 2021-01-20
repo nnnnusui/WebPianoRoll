@@ -1,10 +1,11 @@
 import React from "react";
-import Time, { TimeInputs } from "./Time";
+import Time, { TimeInputs, TimeNeeds } from "./Time";
 
-type Props = Inputs;
+type Props = Inputs & Needs;
 type Inputs = {
   maxOffset: number;
 } & TimeInputs;
+type Needs = TimeNeeds;
 const Bar: React.FC<Props> = ({ maxOffset, ...props }) => {
   const times = [...Array(maxOffset)]
     .map((_, index) => index)

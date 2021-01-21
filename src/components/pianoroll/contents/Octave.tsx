@@ -11,7 +11,14 @@ type Needs = CellNeeds;
 const Octave: React.FC<Props> = ({ initNotes, ...props }) => {
   const cells = range0to(12)
     .reverse()
-    .map((index) => <Cell key={index} pitch={index} hasNoteInit={initNotes.some(it=> it.pitch == index)} {...props} />);
+    .map((index) => (
+      <Cell
+        key={index}
+        pitch={index}
+        hasNoteInit={initNotes.some((it) => it.pitch == index)}
+        {...props}
+      />
+    ));
   return <div className="octave h-full w-full flex flex-col">{cells}</div>;
 };
 

@@ -4,12 +4,12 @@ import { range0to } from "../../range";
 
 type Props = {
   initNotes: Array<{ offset: number; octave: number; pitch: number }>;
-} & Inputs & Needs;
+} & Inputs &
+  Needs;
 type Inputs = {
   maxOffset: number;
 } & TimeInputs;
 type Needs = TimeNeeds;
-type X = { offset: number; octave: number; pitch: number }
 const Bar: React.FC<Props> = ({ initNotes, maxOffset, ...props }) => {
   const times = range0to(maxOffset).map((index) => (
     <Time

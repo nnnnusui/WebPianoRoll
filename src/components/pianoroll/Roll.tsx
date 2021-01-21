@@ -1,39 +1,53 @@
 import React, { useEffect, useState, ReactElement } from "react";
-import Bar from "./contents/Bar";
 import typedFetch from "../typedFetch";
+import Bar from "./contents/Bar";
 
 type RollRest = {
   division: number;
 };
-type Note = {
+type NoteRest = {
   offset: number;
   octave: number;
   pitch: number;
 };
 const rollUrl = "http://localhost:8080/rest/1/rolls/1";
-const onCellClick = (offset: number, octave: number, pitch: number) => {
-  const note: Note = { offset, octave, pitch };
-  typedFetch<Note>(`${rollUrl}/notes`, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(note),
-  }).then((it) => console.log(it));
-};
+const notesUrl = `${rollUrl}/notes`;
+
 const Roll = (): ReactElement => {
+  const [count, _] = useState(0);
   const [division, setState] = useState(0);
+  const [notes, setNotes] = useState<Array<NoteRest>>([]);
   useEffect(() => {
     typedFetch<RollRest>(rollUrl).then((result) => setState(result.division));
-  });
+    typedFetch<{values: Array<NoteRest>}>(notesUrl).then((result) => setNotes(result.values));
+  }, [count]);
+  const onCellClick = (
+    beforeState: boolean,
+    offset: number,
+    octave: number,
+    pitch: number
+  ) => {
+    if (beforeState) return beforeState;
+    const postNote: NoteRest = { offset, octave, pitch };
+    setNotes(notes.concat(postNote));
+    typedFetch<NoteRest>(notesUrl, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(postNote),
+    });
+  };
+  const props = {
+    initNotes: notes,
+    maxOffset: division,
+    minOctave: -1,
+    maxOctave: 1,
+    event: onCellClick,
+  };
   return (
-    <Bar
-      maxOffset={division}
-      minOctave={-1}
-      maxOctave={1}
-      event={onCellClick}
-    ></Bar>
+    <Bar {...props}></Bar>
   );
 };
 

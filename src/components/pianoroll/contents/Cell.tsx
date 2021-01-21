@@ -1,21 +1,35 @@
-import React from "react";
+import React, { useState, ReactNode, useEffect } from "react";
+import Note from "./Note";
 
 type Props = {
+  hasNoteInit: boolean
+} &Needs & Values;
+type Needs = {
+  event: (
+    beforeState: boolean,
+    offset: number,
+    octave: number,
+    pitch: number
+  ) => void;
+};
+type Values = {
   offset: number;
   octave: number;
   pitch: number;
-} & Needs;
-type Needs = {
-  event: (offset: number, octave: number, pitch: number) => void;
 };
-const Cell: React.FC<Props> = ({ offset, octave, pitch, event }) => (
-  <div className="relative cell h-full w-full">
-    <div
-      className="absolute h-full w-full flex-col-reverse bg-gray-600"
-      onClick={() => event(offset, octave, pitch)}
-    ></div>
-  </div>
-);
+const Cell: React.FC<Props> = ({ hasNoteInit, offset, octave, pitch, event }) => {
+  const [hasNote, setState] = useState(false);
+  useEffect(() => setState(hasNoteInit))
+  const onClick = () => event(hasNote, offset, octave, pitch);
+  const notes = (): ReactNode => {
+    if (hasNoteInit) return <Note></Note>;
+  };
+  return (
+    <div className="cell relative h-full w-full bg-gray-600" onClick={onClick}>
+      {notes()}
+    </div>
+  );
+};
 
 export default Cell;
 export type { Needs as CellNeeds };

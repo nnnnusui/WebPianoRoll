@@ -1,19 +1,21 @@
 import React from "react";
 import Octave, { OctaveNeeds } from "./Octave";
 import range from "../../range";
+import { CellValues } from "./Cell";
+import Diff from "../../Diff";
 
 type Props = {
-  initNotes: Array<{ octave: number; pitch: number }>;
-  offset: number;
-} & Inputs &
-  Needs;
+} & Values & Inputs & Needs;
+type Values = {
+  offset: number
+}
 type Inputs = {
   minOctave: number;
   maxOctave: number;
 };
 type Needs = OctaveNeeds;
+
 const Time: React.FC<Props> = ({
-  initNotes,
   minOctave,
   maxOctave,
   ...props
@@ -24,16 +26,12 @@ const Time: React.FC<Props> = ({
       <Octave
         key={octave}
         octave={octave}
-        initNotes={initNotes
-          .filter((it) => it.octave == octave)
-          .map((it) => {
-            return { pitch: it.pitch };
-          })}
         {...props}
       />
     ));
   return <div className="time h-full w-full flex flex-col">{octaves}</div>;
 };
 export default Time;
+export type { Values as TimeValues };
 export type { Inputs as TimeInputs };
 export type { Needs as TimeNeeds };

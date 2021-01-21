@@ -1,21 +1,23 @@
 import React from "react";
-import Cell, { CellNeeds } from "./Cell";
+import Cell, { CellNeeds, CellValues } from "./Cell";
 import { range0to } from "../../range";
+import Diff from "../../Diff";
 
 type Props = {
-  initNotes: Array<{ pitch: number }>;
+} & Values & Needs;
+type Values = {
   offset: number;
   octave: number;
-} & Needs;
+}
 type Needs = CellNeeds;
-const Octave: React.FC<Props> = ({ initNotes, ...props }) => {
+
+const Octave: React.FC<Props> = ({ ...props }) => {
   const cells = range0to(12)
     .reverse()
     .map((index) => (
       <Cell
         key={index}
         pitch={index}
-        hasNoteInit={initNotes.some((it) => it.pitch == index)}
         {...props}
       />
     ));

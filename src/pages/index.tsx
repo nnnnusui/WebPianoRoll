@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NextPage } from "next";
-import Roll from "../components/pianoroll/Roll";
+import PianoRoll from "../components/pianoroll/PianoRoll";
 
 const Home: NextPage = () => {
   const [url, setUrl] = useState("");
@@ -12,7 +12,7 @@ const Home: NextPage = () => {
       { passive: false }
     );
   }, []);
-  return <Roll urlRoot={url} />;
+  return <PianoRoll urlRoot={url} />;
 };
 
 export default Home;

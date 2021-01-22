@@ -15,7 +15,7 @@ type NoteRest = {
 type Prop = {
   urlRoot: string;
 };
-const Roll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
+const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   const rollUrl = `${urlRoot}/rest/1/rolls/1`;
   const notesUrl = `${rollUrl}/notes`;
   const initSelection: Range<Pos> = (() => {
@@ -160,4 +160,4 @@ const Cell: React.FC<CellProps> = ({
   );
 };
 
-export default Roll;
+export default PianoRoll;

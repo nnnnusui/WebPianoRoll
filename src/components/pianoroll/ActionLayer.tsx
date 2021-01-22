@@ -1,7 +1,7 @@
 import React from "react";
 import { useGridContext } from "./GridContext";
 import { range0to } from "../range";
-import Cell from "./Cell";
+import ActionCell from "./ActionCell";
 
 const ActionLayer: React.FC = () => {
   const [{ width, height }] = useGridContext();
@@ -16,7 +16,7 @@ const ActionLayer: React.FC = () => {
           x: Math.floor(index / height),
           y: index % height,
         };
-        return <Cell key={index} {...{ pos }} />;
+        return <ActionCell key={index} {...{ pos }} />;
       })}
     </div>
   );

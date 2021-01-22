@@ -2,40 +2,21 @@ import React, { useEffect, useState, ReactElement } from "react";
 import { range0to } from "../range";
 import typedFetch from "../typedFetch";
 import SelectBox from "./SelectBox";
-
-type RollRest = {
-  division: number;
-};
-type NoteRest = {
-  offset: number;
-  octave: number;
-  pitch: number;
-};
+import Roll from "./Roll";
 
 type Prop = {
   urlRoot: string;
 };
 const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
-  const rollUrl = `${urlRoot}/rest/1/rolls/1`;
-  const notesUrl = `${rollUrl}/notes`;
   const initSelection: Range<Pos> = (() => {
     const pos = { x: -1, y: -1 };
     return { from: pos, to: pos };
   })();
 
-  const [division, setState] = useState(24);
-  const [notes, setNotes] = useState<Array<NoteRest>>([]);
-  useEffect(() => {
-    typedFetch<RollRest>(rollUrl).then((result) => setState(result.division));
-    typedFetch<{ values: Array<NoteRest> }>(notesUrl).then((result) =>
-      setNotes(result.values)
-    );
-  }, []);
-  const [debugLog, setDebug] = useState(rollUrl);
-  const [selectMode, setSelectMode] = useState(false);
+  const [debugLog, setDebug] = useState("debugLog");
   const [selection, setselection] = useState<Range<Pos>>(initSelection);
   const [touched, setTouched] = useState<Array<Pos>>([]);
-  const offset = division;
+  const offset = 24;
   const minOctave = -1;
   const maxOctave = 1;
   const octave = maxOctave + 1 - minOctave;
@@ -53,7 +34,6 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
       if (isStart) {
         setTouched(touched.concat(pos));
       } else {
-        setDebug(rollUrl);
         setTouched(touched.filter((it) => it.x != pos.x && it.y != pos.y));
       }
 
@@ -80,17 +60,6 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     };
     return <Cell key={index} {...{ pos, ...cellActions }} />;
   });
-  const noteElements = notes.map((it, index) => {
-    const pos = {
-      x: it.offset,
-      y: it.octave * pitch + it.pitch,
-    };
-    const style = {
-      gridColumnStart: pos.x + 1,
-      gridRowStart: pos.y + 1,
-    };
-    return <div key={index} className="bg-yellow-500" style={style}></div>;
-  });
   const style = {
     gridTemplateRows: `repeat(${height}, 1fr)`,
     gridTemplateColumns: `repeat(${width}, 1fr)`,
@@ -109,12 +78,7 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
       <div className="absolute h-full w-full grid grid-flow-col" style={style}>
         {cells}
       </div>
-      <div
-        className="pointer-events-none absolute h-full w-full grid grid-flow-col"
-        style={style}
-      >
-        {noteElements}
-      </div>
+      <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
       <div
         className="pointer-events-none absolute h-full w-full grid grid-flow-col"
         style={style}

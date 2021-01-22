@@ -12,6 +12,7 @@ const Home: NextPage = () => {
       { passive: false }
     );
   }, []);
+  if (url == "") return <></>;
   return <PianoRoll urlRoot={url} />;
 };
 

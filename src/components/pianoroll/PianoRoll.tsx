@@ -15,7 +15,6 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   })();
 
   const [debugLog, setDebug] = useState("");
-  setDebug("debugLog");
   const [selection, setselection] = useState<Range<Pos>>(initSelection);
   const [touched, setTouched] = useState<Array<Pos>>([]);
   const offset = 24;
@@ -64,7 +63,6 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     <div className="relative h-full">
       <h1>{debugLog}</h1>
       <GridProvider>
-        {" "}
         <SelectionProvider>
           <div
             className="absolute h-full w-full grid grid-flow-col"
@@ -74,7 +72,7 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
           </div>
           <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
           <SelectLayer></SelectLayer>
-        </SelectionProvider>{" "}
+        </SelectionProvider>
       </GridProvider>
     </div>
   );

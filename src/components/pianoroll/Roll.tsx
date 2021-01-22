@@ -18,7 +18,7 @@ type Props = {
 };
 const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
   const pitch = 12;
-  const { size, setSize } = useGridContext();
+  const [grid, setGrid] = useGridContext();
   const [notes, setNotes] = useState<Array<NoteRest>>([]);
   const rollUrl = `${urlRoot}${rollId}`;
   useEffect(() => {
@@ -30,15 +30,15 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       const octave = maxOctave + 1 - minOctave;
       const height = octave * pitch;
       const width = offset;
-      setSize({ width, height });
+      setGrid({ width, height });
     });
     typedFetch<{ values: Array<NoteRest> }>(notesUrl).then((result) =>
       setNotes(result.values)
     );
-  }, [rollUrl, setSize]);
+  }, [rollUrl, setGrid]);
   const style = {
-    gridTemplateColumns: `repeat(${size.width}, 1fr)`,
-    gridTemplateRows: `repeat(${size.height}, 1fr)`,
+    gridTemplateColumns: `repeat(${grid.width}, 1fr)`,
+    gridTemplateRows: `repeat(${grid.height}, 1fr)`,
   };
   return (
     <div

@@ -4,9 +4,7 @@ import { range0to } from "../range";
 import Cell from "./Cell";
 
 const ActionLayer: React.FC = () => {
-  const {
-    size: { width, height },
-  } = useGridContext();
+  const [{ width, height }] = useGridContext();
   const style = {
     gridTemplateColumns: `repeat(${width}, 1fr)`,
     gridTemplateRows: `repeat(${height}, 1fr)`,

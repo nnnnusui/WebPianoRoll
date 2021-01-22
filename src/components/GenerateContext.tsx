@@ -1,20 +1,22 @@
 import React, { useState, createContext, useContext } from "react";
 
-type UseState<T> = [T, React.Dispatch<React.SetStateAction<T>>];
+type ContextProps<T> = [T, (state: T) => void];
 function GenerateContext<T>(
   initState: T
 ): {
   Provider: React.FC;
-  UseContext: () => UseState<T>;
+  UseContext: () => ContextProps<T>;
 } {
-  const state = useState(initState);
-  const Context = createContext(state);
-  const Provider: React.FC = ({ children }) => (
-    <Context.Provider value={state}>{children}</Context.Provider>
-  );
+  const init: ContextProps<T> = [initState, () => {}];
+  const Context = createContext(init);
+  const Provider: React.FC = ({ children }) => {
+    const [state, setState] = useState(initState);
+    return (
+      <Context.Provider value={[state, setState]}>{children}</Context.Provider>
+    );
+  };
   const UseContext = () => useContext(Context);
   return { Provider, UseContext };
 }
 
 export default GenerateContext;
-export type { UseState };

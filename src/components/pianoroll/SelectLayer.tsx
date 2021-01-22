@@ -3,9 +3,7 @@ import SelectBox from "./SelectBox";
 import { useGridContext } from "./GridContext";
 
 const SelectLayer: React.FC = () => {
-  const {
-    size: { width, height },
-  } = useGridContext();
+  const [{ width, height }] = useGridContext();
   const style = {
     gridTemplateColumns: `repeat(${width}, 1fr)`,
     gridTemplateRows: `repeat(${height}, 1fr)`,

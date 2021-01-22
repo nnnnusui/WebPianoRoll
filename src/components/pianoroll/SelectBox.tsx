@@ -2,9 +2,7 @@ import React from "react";
 import { useSelectionContext } from "./SelectionContext";
 
 const SelectBox: React.FC = () => {
-  const {
-    selection: { from, to },
-  } = useSelectionContext();
+  const [{ from, to }] = useSelectionContext();
   const max = {
     x: Math.max(from.x, to.x),
     y: Math.max(from.y, to.y),

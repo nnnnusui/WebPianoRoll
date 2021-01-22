@@ -1,8 +1,10 @@
-import React, { useEffect, useState, ReactElement } from "react";
+import React, { useEffect, useState, ReactElement, createContext } from "react";
 import { range0to } from "../range";
 import typedFetch from "../typedFetch";
 import SelectBox from "./SelectBox";
 import Roll from "./Roll";
+import SelectLayer from "./SelectLayer";
+import { GridProvider, useGridContext } from "./GridContext";
 
 type Prop = {
   urlRoot: string;
@@ -75,16 +77,16 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   return (
     <div className="relative h-full">
       <h1>{debugLog}</h1>
-      <div className="absolute h-full w-full grid grid-flow-col" style={style}>
-        {cells}
-      </div>
-      <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
-      <div
-        className="pointer-events-none absolute h-full w-full grid grid-flow-col"
-        style={style}
-      >
-        <SelectBox {...{ min, max }}></SelectBox>
-      </div>
+      <GridProvider>
+        <div
+          className="absolute h-full w-full grid grid-flow-col"
+          style={style}
+        >
+          {cells}
+        </div>
+        <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
+        <SelectLayer></SelectLayer>
+      </GridProvider>
     </div>
   );
 };

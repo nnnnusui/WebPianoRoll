@@ -1,10 +1,18 @@
 import React from "react";
+import { useSelectionContext } from "./SelectionContext";
 
-type Props = {
-  min: { x: number; y: number };
-  max: { x: number; y: number };
-};
-const SelectBox: React.FC<Props> = ({ min, max }) => {
+const SelectBox: React.FC = () => {
+  const {
+    selection: { from, to },
+  } = useSelectionContext();
+  const max = {
+    x: Math.max(from.x, to.x),
+    y: Math.max(from.y, to.y),
+  };
+  const min = {
+    x: Math.min(from.x, to.x),
+    y: Math.min(from.y, to.y),
+  };
   const style = {
     gridColumnStart: min.x + 1,
     gridColumnEnd: max.x + 2,

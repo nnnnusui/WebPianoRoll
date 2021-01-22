@@ -1,10 +1,9 @@
-import React, { useEffect, useState, ReactElement, createContext } from "react";
+import React, { useState, ReactElement } from "react";
 import { range0to } from "../range";
-import typedFetch from "../typedFetch";
-import SelectBox from "./SelectBox";
 import Roll from "./Roll";
 import SelectLayer from "./SelectLayer";
-import { GridProvider, useGridContext } from "./GridContext";
+import { GridProvider } from "./GridContext";
+import { SelectionProvider, useSelectionContext } from "./SelectionContext";
 
 type Prop = {
   urlRoot: string;
@@ -15,7 +14,8 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     return { from: pos, to: pos };
   })();
 
-  const [debugLog, setDebug] = useState("debugLog");
+  const [debugLog, setDebug] = useState("");
+  setDebug("debugLog");
   const [selection, setselection] = useState<Range<Pos>>(initSelection);
   const [touched, setTouched] = useState<Array<Pos>>([]);
   const offset = 24;
@@ -26,12 +26,6 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   const height = octave * pitch;
   const width = offset;
   const cellActions: CellActions = {
-    selectStart: (selection) => {
-      setselection(selection);
-    },
-    selectMove: (to) => {
-      setselection({ from: selection.from, to });
-    },
     onTouch: (pos, isStart) => {
       if (isStart) {
         setTouched(touched.concat(pos));
@@ -66,26 +60,21 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     gridTemplateRows: `repeat(${height}, 1fr)`,
     gridTemplateColumns: `repeat(${width}, 1fr)`,
   };
-  const max = {
-    x: Math.max(selection.from.x, selection.to.x),
-    y: Math.max(selection.from.y, selection.to.y),
-  };
-  const min = {
-    x: Math.min(selection.from.x, selection.to.x),
-    y: Math.min(selection.from.y, selection.to.y),
-  };
   return (
     <div className="relative h-full">
       <h1>{debugLog}</h1>
       <GridProvider>
-        <div
-          className="absolute h-full w-full grid grid-flow-col"
-          style={style}
-        >
-          {cells}
-        </div>
-        <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
-        <SelectLayer></SelectLayer>
+        {" "}
+        <SelectionProvider>
+          <div
+            className="absolute h-full w-full grid grid-flow-col"
+            style={style}
+          >
+            {cells}
+          </div>
+          <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
+          <SelectLayer></SelectLayer>
+        </SelectionProvider>{" "}
       </GridProvider>
     </div>
   );
@@ -104,21 +93,15 @@ type CellProps = {
   pos: Pos;
 } & CellActions;
 type CellActions = {
-  selectStart: (selection: Range<Pos>) => void;
-  selectMove: (to: Pos) => void;
   onTouch: (from: Pos, start: boolean) => void;
 };
-const Cell: React.FC<CellProps> = ({
-  pos,
-  selectStart,
-  selectMove,
-  onTouch,
-}) => {
+const Cell: React.FC<CellProps> = ({ pos, onTouch }) => {
+  const { selection, setSelection } = useSelectionContext();
   return (
     <div
       className={`cell relative h-full w-full ${"bg-gray-600 rounded-sm"}`}
-      onMouseDown={() => selectStart({ from: pos, to: pos })}
-      onDragEnter={() => selectMove(pos)}
+      onMouseDown={() => setSelection({ from: pos, to: pos })}
+      onDragEnter={() => setSelection({ from: selection.from, to: pos })}
       onTouchStart={() => onTouch(pos, true)}
       onTouchEnd={() => onTouch(pos, false)}
       draggable="true"

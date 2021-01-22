@@ -35,7 +35,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     typedFetch<{ values: Array<NoteRest> }>(notesUrl).then((result) =>
       setNotes(result.values)
     );
-  }, [rollUrl]);
+  }, [rollUrl, setSize]);
   const style = {
     gridTemplateColumns: `repeat(${size.width}, 1fr)`,
     gridTemplateRows: `repeat(${size.height}, 1fr)`,

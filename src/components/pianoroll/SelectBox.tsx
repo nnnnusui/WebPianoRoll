@@ -23,7 +23,7 @@ const SelectBox: React.FC = () => {
           gridColumnStart: startFix + Math.min(from.x, to.x),
           gridColumnEnd: endFix + Math.max(from.x, to.x),
           gridRowStart: startFix + Math.min(from.y, to.y),
-          gridRowEnd: endFix + Math.min(from.y, to.y),
+          gridRowEnd: endFix + Math.max(from.y, to.y),
         };
       case SelectionMode.none:
         return {

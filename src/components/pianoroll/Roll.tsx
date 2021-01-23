@@ -17,7 +17,7 @@ type Props = {
   rollId: number;
 };
 const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
-  const [grid, setGrid] = [Grid.state(), Grid.dispatch()];
+  const [grid, setGrid] = [Grid.State(), Grid.Dispatch()];
   const [notes, setNotes] = useState<Array<NoteRest>>([]);
   const [roll, setRollInfo] = useState({
     maxOffset: 0,

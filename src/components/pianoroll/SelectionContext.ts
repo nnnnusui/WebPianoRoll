@@ -5,7 +5,7 @@ const SelectionMode = {
   line: "line",
   range: "range",
 } as const;
-type SelectionMode = typeof SelectionMode[keyof typeof SelectionMode]
+type SelectionMode = typeof SelectionMode[keyof typeof SelectionMode];
 
 type SelectionInfo = {
   from: { x: number; y: number };
@@ -19,6 +19,6 @@ const initialState: SelectionInfo = {
   mode: SelectionMode.none,
 };
 
-const { Provider, UseContext } = GenerateContext(initialState);
-export { Provider as SelectionProvider, UseContext as useSelectionContext };
-export { SelectionMode }
+const Selection = GenerateContext(initialState);
+export default Selection;
+export { SelectionMode };

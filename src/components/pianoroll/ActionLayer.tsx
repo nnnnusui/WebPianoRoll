@@ -1,10 +1,10 @@
 import React from "react";
-import { useGridContext } from "./GridContext";
 import { range0to } from "../range";
 import ActionCell from "./ActionCell";
+import Grid from "./GridContext";
 
 const ActionLayer: React.FC = () => {
-  const [{ width, height }] = useGridContext();
+  const [{ width, height }] = [Grid.state()];
   const style = {
     gridTemplateColumns: `repeat(${width}, 1fr)`,
     gridTemplateRows: `repeat(${height}, 1fr)`,

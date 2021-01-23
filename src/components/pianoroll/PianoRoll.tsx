@@ -1,9 +1,9 @@
 import React, { ReactElement } from "react";
 import Roll from "./Roll";
 import SelectLayer from "./SelectLayer";
-import { GridProvider } from "./GridContext";
-import { SelectionProvider } from "./SelectionContext";
 import ActionLayer from "./ActionLayer";
+import Selection from "./SelectionContext";
+import Grid from "./GridContext";
 
 type Prop = {
   urlRoot: string;
@@ -11,13 +11,13 @@ type Prop = {
 const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   return (
     <div className="relative h-full">
-      <GridProvider>
-        <SelectionProvider>
+      <Grid.Provider>
+        <Selection.Provider>
           <ActionLayer></ActionLayer>
           <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
           <SelectLayer></SelectLayer>
-        </SelectionProvider>
-      </GridProvider>
+        </Selection.Provider>
+      </Grid.Provider>
     </div>
   );
 };

@@ -6,5 +6,5 @@ type GridInfo = {
 };
 const initialState: GridInfo = { width: 0, height: 0 };
 
-const { Provider, UseContext } = GenerateContext(initialState);
-export { Provider as GridProvider, UseContext as useGridContext };
+const Grid = GenerateContext(initialState);
+export default Grid;

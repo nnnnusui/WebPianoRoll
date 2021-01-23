@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import typedFetch from "../typedFetch";
+import Grid from "./GridContext";
 import Note from "./Note";
-import { useGridContext } from "./GridContext";
 
 type RollRest = {
   division: number;
@@ -17,7 +17,7 @@ type Props = {
   rollId: number;
 };
 const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
-  const [grid, setGrid] = useGridContext();
+  const [grid, setGrid] = [Grid.state(), Grid.dispatch()];
   const [notes, setNotes] = useState<Array<NoteRest>>([]);
   const [roll, setRollInfo] = useState({
     maxOffset: 0,
@@ -30,7 +30,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     const notesUrl = `${rollUrl}/notes`;
     typedFetch<RollRest>(rollUrl).then((result) => {
       const maxPitch = 12;
-      const maxOffset = 5;
+      const maxOffset = result.division;
       const minOctave = 0;
       const maxOctave = 0;
       const octave = maxOctave + 1 - minOctave;

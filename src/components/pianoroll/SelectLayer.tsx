@@ -1,9 +1,9 @@
 import React from "react";
+import Grid from "./GridContext";
 import SelectBox from "./SelectBox";
-import { useGridContext } from "./GridContext";
 
 const SelectLayer: React.FC = () => {
-  const [{ width, height }] = useGridContext();
+  const [{ width, height }] = [Grid.state()];
   const style = {
     gridTemplateColumns: `repeat(${width}, 1fr)`,
     gridTemplateRows: `repeat(${height}, 1fr)`,

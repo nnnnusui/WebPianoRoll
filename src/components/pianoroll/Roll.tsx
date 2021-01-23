@@ -53,6 +53,10 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     to: Selection.Contexts.to.State(),
     mode: Selection.Contexts.mode.State(),
   };
+  useEffect(() => {
+    if (selection.mode == SelectionMode.none)
+      put_note(selection.from, selection.to);
+  }, [selection.mode]);
   const put_note = (
     from: { x: number; y: number },
     to: { x: number; y: number }
@@ -66,10 +70,6 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     };
     setNotes((prev) => [...prev, note]);
   };
-  useEffect(() => {
-    if (selection.mode == SelectionMode.none)
-      put_note(selection.from, selection.to);
-  });
 
   const style = {
     gridTemplateColumns: `repeat(${grid.width}, 1fr)`,

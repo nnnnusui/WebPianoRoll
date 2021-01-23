@@ -5,7 +5,7 @@ type Props = {
   pos: { x: number; y: number };
 };
 const ActionCell: React.FC<Props> = ({ pos }) => {
-  console.log("render")
+  console.log("rerender: ActionCell")
   const selection = {
     setFrom: Selection.Contexts.from.Dispatch(),
     setTo: Selection.Contexts.to.Dispatch(),
@@ -38,6 +38,7 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
   return (
     <div
       className={`relative h-full w-full ${"bg-gray-600 rounded-sm"}`}
+  onContextMenu={(event) =>{ if(!event.altKey) event.preventDefault()}}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}

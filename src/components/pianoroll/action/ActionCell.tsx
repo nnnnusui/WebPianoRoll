@@ -1,10 +1,11 @@
-import React from "react";
-import Selection, { SelectionMode } from "./SelectionContext";
+import React, { useState } from "react";
+import Selection, { SelectionMode } from "../contexts/SelectionContext";
 
 type Props = {
   pos: { x: number; y: number };
 };
 const ActionCell: React.FC<Props> = ({ pos }) => {
+  console.log("render")
   const selection = {
     setFrom: Selection.Contexts.from.Dispatch(),
     setTo: Selection.Contexts.to.Dispatch(),
@@ -28,7 +29,11 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    selection.setMode(SelectionMode.none);
+    switch (event.button) {
+      case 0:
+        selection.setMode(SelectionMode.none)
+        break;
+    }
   };
   return (
     <div

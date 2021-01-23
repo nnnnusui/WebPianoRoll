@@ -1,4 +1,4 @@
-import GenerateContext from "../GenerateContext";
+import GenerateContext from "../../GenerateContext";
 
 type GridInfo = {
   width: number;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import typedFetch from "../typedFetch";
-import Grid from "./GridContext";
+import Grid from "./contexts/GridContext";
 import Note from "./Note";
 
 type RollRest = {
@@ -56,7 +56,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       octave: Math.floor(fixedY / roll.maxPitch),
       pitch: fixedY % roll.maxPitch,
     };
-    console.log(note);
+    setNotes(prev=> [...prev, note])
   };
 
   const style = {

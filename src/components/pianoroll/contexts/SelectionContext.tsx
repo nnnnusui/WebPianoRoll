@@ -1,5 +1,5 @@
 import React from "react";
-import GenerateContext from "../GenerateContext";
+import GenerateContext from "../../GenerateContext";
 
 const SelectionMode = {
   none: "none",

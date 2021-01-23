@@ -1,6 +1,6 @@
 import React from "react";
-import Grid from "./GridContext";
-import SelectBox from "./SelectBox";
+import Grid from "../contexts/GridContext";
+import SelectBox from "../action/SelectBox";
 
 const SelectLayer: React.FC = () => {
   const [{ width, height }] = [Grid.State()];

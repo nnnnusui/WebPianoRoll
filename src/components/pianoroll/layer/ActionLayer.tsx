@@ -1,7 +1,7 @@
 import React from "react";
-import { range0to } from "../range";
-import ActionCell from "./ActionCell";
-import Grid from "./GridContext";
+import { range0to } from "../../range";
+import ActionCell from "../action/ActionCell";
+import Grid from "../contexts/GridContext";
 
 const ActionLayer: React.FC = () => {
   const [{ width, height }] = [Grid.State()];

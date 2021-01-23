@@ -1,9 +1,9 @@
 import React, { ReactElement } from "react";
 import Roll from "./Roll";
-import SelectLayer from "./SelectLayer";
-import ActionLayer from "./ActionLayer";
-import Selection from "./SelectionContext";
-import Grid from "./GridContext";
+import SelectLayer from "./layer/SelectLayer";
+import ActionLayer from "./layer/ActionLayer";
+import Selection from "./contexts/SelectionContext";
+import Grid from "./contexts/GridContext";
 
 type Prop = {
   urlRoot: string;

@@ -19,7 +19,7 @@ type Props = {
   rollId: number;
 };
 const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
-  console.log("rerender: Roll")
+  console.log("rerender: Roll");
   const [grid, setGrid] = [Grid.State(), Grid.Dispatch()];
   const [notes, setNotes] = useState<Array<NoteRest>>([]);
   const [roll, setRollInfo] = useState({
@@ -52,11 +52,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     from: Selection.Contexts.from.State(),
     to: Selection.Contexts.to.State(),
     mode: Selection.Contexts.mode.State(),
-  }
-  useEffect(()=> {
-    if (selection.mode == SelectionMode.none)
-      put_note(selection.from, selection.to)
-  }, [selection.mode])
+  };
   const put_note = (
     from: { x: number; y: number },
     to: { x: number; y: number }
@@ -66,10 +62,14 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       offset: Math.min(from.x, to.x),
       octave: Math.floor(y / roll.maxPitch),
       pitch: y % roll.maxPitch,
-      length: Math.abs(from.x - to.x) + 1
+      length: Math.abs(from.x - to.x) + 1,
     };
-    setNotes(prev=> [...prev, note])
+    setNotes((prev) => [...prev, note]);
   };
+  useEffect(() => {
+    if (selection.mode == SelectionMode.none)
+      put_note(selection.from, selection.to);
+  });
 
   const style = {
     gridTemplateColumns: `repeat(${grid.width}, 1fr)`,
@@ -85,8 +85,8 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
           x: it.offset,
           y: it.octave * roll.maxPitch + it.pitch,
         };
-        const length = it.length
-        return <Note key={index} {...{pos, length }}></Note>;
+        const length = it.length;
+        return <Note key={index} {...{ pos, length }}></Note>;
       })}
     </div>
   );

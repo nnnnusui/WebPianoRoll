@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import Selection, { SelectionMode } from "../contexts/SelectionContext";
 
 type Props = {
   pos: { x: number; y: number };
 };
 const ActionCell: React.FC<Props> = ({ pos }) => {
-  console.log("rerender: ActionCell")
+  console.log("rerender: ActionCell");
   const selection = {
     setFrom: Selection.Contexts.from.Dispatch(),
     setTo: Selection.Contexts.to.Dispatch(),
@@ -31,14 +31,16 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
     event.preventDefault();
     switch (event.button) {
       case 0:
-        selection.setMode(SelectionMode.none)
+        selection.setMode(SelectionMode.none);
         break;
     }
   };
   return (
     <div
       className={`relative h-full w-full ${"bg-gray-600 rounded-sm"}`}
-  onContextMenu={(event) =>{ if(!event.altKey) event.preventDefault()}}
+      onContextMenu={(event) => {
+        if (!event.altKey) event.preventDefault();
+      }}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}

@@ -5,28 +5,30 @@ type Props = {
   pos: { x: number; y: number };
 };
 const ActionCell: React.FC<Props> = ({ pos }) => {
-  const [{ from, mode }, setSelection] = [
-    Selection.state(),
-    Selection.dispatch(),
-  ];
+  const selection = {
+    setFrom: Selection.Contexts.from.Dispatch(),
+    setTo: Selection.Contexts.to.Dispatch(),
+    setMode: Selection.Contexts.mode.Dispatch(),
+  };
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
+    selection.setFrom(pos);
     switch (event.button) {
       case 0:
-        setSelection({ from: pos, to: pos, mode: SelectionMode.line });
+        selection.setMode(SelectionMode.line);
         break;
       case 2:
-        setSelection({ from: pos, to: pos, mode: SelectionMode.range });
+        selection.setMode(SelectionMode.range);
         break;
     }
   };
   const onMouseMove = (event: React.MouseEvent) => {
     event.preventDefault();
-    if (mode != SelectionMode.none) setSelection({ from: from, to: pos, mode });
+    selection.setTo(pos);
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    setSelection({ from: from, to: pos, mode: SelectionMode.none });
+    selection.setMode(SelectionMode.none);
   };
   return (
     <div

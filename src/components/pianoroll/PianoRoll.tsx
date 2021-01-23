@@ -12,11 +12,11 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   return (
     <div className="relative h-full">
       <Grid.Provider>
-        <Selection.Provider>
+        <Selection.Providers>
           <ActionLayer></ActionLayer>
           <Roll urlRoot={`${urlRoot}/rest/1/rolls/`} rollId={1}></Roll>
           <SelectLayer></SelectLayer>
-        </Selection.Provider>
+        </Selection.Providers>
       </Grid.Provider>
     </div>
   );

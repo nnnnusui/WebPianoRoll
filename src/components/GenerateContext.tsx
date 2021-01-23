@@ -5,8 +5,8 @@ function GenerateContext<T>(
   initState: T
 ): {
   Provider: React.FC;
-  state: () => T;
-  dispatch: () => Dispatch<T>;
+  State: () => T;
+  Dispatch: () => Dispatch<T>;
 } {
   const stateContext = createContext(initState);
   const dispatchContext: React.Context<Dispatch<T>> = createContext(
@@ -24,8 +24,8 @@ function GenerateContext<T>(
   };
   return {
     Provider,
-    state: () => useContext(stateContext),
-    dispatch: () => useContext(dispatchContext),
+    State: () => useContext(stateContext),
+    Dispatch: () => useContext(dispatchContext),
   };
 }
 

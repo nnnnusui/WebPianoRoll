@@ -17,25 +17,48 @@ type Props = {
   rollId: number;
 };
 const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
-  const pitch = 12;
   const [grid, setGrid] = useGridContext();
   const [notes, setNotes] = useState<Array<NoteRest>>([]);
+  const [roll, setRollInfo] = useState({
+    maxOffset: 0,
+    minOctave: 0,
+    maxOctave: 0,
+    maxPitch: 12,
+  });
   const rollUrl = `${urlRoot}${rollId}`;
   useEffect(() => {
     const notesUrl = `${rollUrl}/notes`;
     typedFetch<RollRest>(rollUrl).then((result) => {
-      const offset = result.division;
-      const minOctave = -1;
-      const maxOctave = 1;
+      const maxPitch = 12;
+      const maxOffset = 5;
+      const minOctave = 0;
+      const maxOctave = 0;
       const octave = maxOctave + 1 - minOctave;
-      const height = octave * pitch;
-      const width = offset;
+      const height = octave * maxPitch;
+      const width = maxOffset;
       setGrid({ width, height });
+      setRollInfo({ maxOffset, minOctave, maxOctave, maxPitch });
     });
     typedFetch<{ values: Array<NoteRest> }>(notesUrl).then((result) =>
       setNotes(result.values)
     );
   }, [rollUrl, setGrid]);
+
+  const put_note = (
+    from: { x: number; y: number },
+    to: { x: number; y: number }
+  ) => {
+    const length = to.x + 1 - from.x;
+    if (length < 1) return;
+    const fixedY = grid.height - from.y;
+    const note: NoteRest = {
+      offset: from.x,
+      octave: Math.floor(fixedY / roll.maxPitch),
+      pitch: fixedY % roll.maxPitch,
+    };
+    console.log(note);
+  };
+
   const style = {
     gridTemplateColumns: `repeat(${grid.width}, 1fr)`,
     gridTemplateRows: `repeat(${grid.height}, 1fr)`,
@@ -48,7 +71,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       {notes.map((it, index) => {
         const pos = {
           x: it.offset,
-          y: it.octave * pitch + it.pitch,
+          y: it.octave * roll.maxPitch + it.pitch,
         };
         return <Note key={index} {...{ pos }}></Note>;
       })}

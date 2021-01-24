@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer } from "react";
 import typedFetch from "../typedFetch";
 import Grid from "./contexts/GridContext";
-import PutNote, { PutNoteMode } from "./contexts/PutNoteContext";
+import PutNote from "./contexts/PutNoteContext";
 import Note, { NoteNeeds } from "./Note";
 
 type RollRest = {
@@ -31,7 +31,7 @@ type NoteAction =
   | {
       type: "update";
       index: number;
-      value: NoteNeeds;
+      getValue: (prev: NoteNeeds) => NoteNeeds;
     }
   | {
       type: "remove";
@@ -49,7 +49,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
           return [...state, action.value];
         case "update":
           return state.map((it, index) =>
-            index == action.index ? action.value : it
+            index == action.index ? action.getValue(it) : it
           );
         case "remove":
           return state.filter((_, index) => index != action.index);
@@ -81,22 +81,45 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       );
     });
   }, [rollUrl, setGrid]);
+
   const putNote = {
     from: PutNote.Contexts.from.State(),
     to: PutNote.Contexts.to.State(),
-    mode: PutNote.Contexts.mode.State(),
+    event: PutNote.Contexts.event.State(),
+    apply: PutNote.Contexts.apply.State(),
+    setApply: PutNote.Contexts.apply.Dispatch(),
   };
   useEffect(() => {
-    if (putNote.mode != PutNoteMode.fire) return;
-    const from = putNote.from;
-    const to = putNote.to;
-    const pos = {
-      x: Math.min(from.x, to.x),
-      y: from.y,
-    };
-    const length = Math.abs(from.x - to.x) + 1;
-    setNotes({ type: "add", value: { pos, length } });
-  }, [putNote.mode]);
+    if (!putNote.apply) return;
+    putNote.setApply(false);
+
+    const event = putNote.event;
+    switch (event.type) {
+      case "none": {
+        break;
+      }
+      case "fromNote": {
+        // update
+        setNotes({
+          type: "update",
+          index: event.index,
+          getValue: (prev) => ({ ...prev, pos: putNote.to }),
+        });
+        break;
+      }
+      case "fromActionCell": {
+        // add
+        const from = putNote.from;
+        const to = putNote.to;
+        const pos = {
+          x: Math.min(from.x, to.x),
+          y: from.y,
+        };
+        const length = Math.abs(from.x - to.x) + 1;
+        setNotes({ type: "add", value: { pos, length } });
+      }
+    }
+  }, [putNote.apply]);
 
   const style = {
     gridTemplateColumns: `repeat(${grid.width}, 1fr)`,

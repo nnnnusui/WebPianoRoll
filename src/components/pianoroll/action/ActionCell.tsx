@@ -1,5 +1,5 @@
 import React from "react";
-import PutNote, { PutNoteMode } from "../contexts/PutNoteContext";
+import PutNote from "../contexts/PutNoteContext";
 
 type Props = {
   pos: { x: number; y: number };
@@ -9,11 +9,12 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
-    setMode: PutNote.Contexts.mode.Dispatch(),
+    setEvent: PutNote.Contexts.event.Dispatch(),
+    setApply: PutNote.Contexts.apply.Dispatch(),
   };
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setMode(PutNoteMode.read)
+    putNote.setEvent({ type: "fromActionCell" });
     putNote.setFrom(pos);
   };
   const onMouseMove = (event: React.MouseEvent) => {
@@ -22,11 +23,11 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
     putNote.setTo(pos);
-    putNote.setMode(PutNoteMode.fire)
+    putNote.setApply(true);
   };
   return (
     <div
-      className={`relative h-full w-full ${"bg-gray-600 rounded-sm"}`}
+      className="relative h-full w-full bg-gray-600 rounded-sm"
       onContextMenu={suplessRightClickMenu}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}

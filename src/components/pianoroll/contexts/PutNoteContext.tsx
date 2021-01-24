@@ -1,23 +1,31 @@
 import React from "react";
 import GenerateContext from "../../GenerateContext";
 
-const PutNoteMode = {
-    read: "read",
-    fire: "fire",
-} as const
-type PutNoteMode = typeof PutNoteMode[keyof typeof PutNoteMode]
+type PutNoteEvent =
+  | {
+      type: "none";
+    }
+  | {
+      type: "fromActionCell";
+    }
+  | {
+      type: "fromNote";
+      index: number;
+    };
 const Contexts = {
   from: GenerateContext({ x: 0, y: 0 }),
   to: GenerateContext({ x: 0, y: 0 }),
-  mode: GenerateContext<PutNoteMode>(PutNoteMode.read),
+  apply: GenerateContext<boolean>(false),
+  event: GenerateContext<PutNoteEvent>({ type: "none" }),
 };
 const Providers: React.FC = ({ children }) => (
   <Contexts.from.Provider>
     <Contexts.to.Provider>
-        <Contexts.mode.Provider>{children}</Contexts.mode.Provider>
+      <Contexts.event.Provider>
+        <Contexts.apply.Provider>{children}</Contexts.apply.Provider>
+      </Contexts.event.Provider>
     </Contexts.to.Provider>
   </Contexts.from.Provider>
 );
 const PutNote = { Contexts, Providers };
 export default PutNote;
-export {PutNoteMode}

@@ -106,21 +106,29 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
         }
         break;
       case "ActionCell": {
+        const toPos = {
+          x: Math.floor(to.index / grid.height),
+          y: to.index % grid.height,
+        };
         switch (from.type) {
           case "Note":
             // update
             setNotes({
               type: "update",
               index: from.index,
-              getValue: (prev) => ({ ...prev, pos: to.pos }),
+              getValue: (prev) => ({ ...prev, pos: toPos }),
             });
             break;
           case "ActionCell": {
-            const pos = {
-              x: Math.min(from.pos.x, to.pos.x),
-              y: from.pos.y,
+            const fromPos = {
+              x: Math.floor(from.index / grid.height),
+              y: from.index % grid.height,
             };
-            const length = Math.abs(from.pos.x - to.pos.x) + 1;
+            const pos = {
+              x: Math.min(fromPos.x, toPos.x),
+              y: fromPos.y,
+            };
+            const length = Math.abs(fromPos.x - toPos.x) + 1;
             setNotes({ type: "add", value: { pos, length } });
             break;
           }

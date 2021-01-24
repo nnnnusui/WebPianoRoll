@@ -1,18 +1,10 @@
 import React from "react";
 import GenerateContext from "../../GenerateContext";
 
-type Source =
-  | {
-      type: "ActionCell";
-      pos: {
-        x: number;
-        y: number;
-      };
-    }
-  | {
-      type: "Note";
-      index: number;
-    };
+type Source = {
+  type: "Note" | "ActionCell";
+  index: number;
+};
 const Contexts = {
   from: GenerateContext({} as Source),
   to: GenerateContext({} as Source),

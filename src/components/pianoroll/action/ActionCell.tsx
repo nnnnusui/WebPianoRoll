@@ -1,10 +1,13 @@
 import React from "react";
 import PutNote from "../contexts/PutNoteContext";
+import getCellFromPoint from "../getCellFromPoint";
 
 type Props = {
-  pos: { x: number; y: number };
+  index: number;
 };
-const ActionCell: React.FC<Props> = ({ pos }) => {
+
+const selfType = "ActionCell";
+const ActionCell: React.FC<Props> = ({ index }) => {
   // console.log("rerender: ActionCell");
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
@@ -13,24 +16,32 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
   };
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setFrom({ type: "ActionCell", pos });
-  };
-  const onMouseMove = (event: React.MouseEvent) => {
-    event.preventDefault();
+    putNote.setFrom({ type: selfType, index });
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setTo({ type: "ActionCell", pos });
+    putNote.setTo({ type: selfType, index });
+    putNote.setApply(true);
+  };
+  const onTouchEnd = (event: React.TouchEvent) => {
+    event.preventDefault();
+    const to = getCellFromPoint(
+      event.changedTouches[0].clientX,
+      event.changedTouches[0].clientY
+    );
+    if (to == undefined) return;
+    putNote.setFrom({ type: selfType, index });
+    putNote.setTo(to);
     putNote.setApply(true);
   };
   return (
     <div
-      className="relative h-full w-full bg-gray-600 rounded-sm"
+      {...{ type: "ActionCell", index }}
+      className="action-cell relative h-full w-full bg-gray-600 rounded-sm"
       onContextMenu={suplessRightClickMenu}
       onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
-      draggable="true"
+      onTouchEnd={onTouchEnd}
     ></div>
   );
 };

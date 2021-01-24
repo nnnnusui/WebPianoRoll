@@ -9,20 +9,18 @@ const ActionCell: React.FC<Props> = ({ pos }) => {
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
-    setEvent: PutNote.Contexts.event.Dispatch(),
     setApply: PutNote.Contexts.apply.Dispatch(),
   };
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setEvent({ type: "fromActionCell" });
-    putNote.setFrom(pos);
+    putNote.setFrom({ type: "ActionCell", pos });
   };
   const onMouseMove = (event: React.MouseEvent) => {
     event.preventDefault();
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setTo(pos);
+    putNote.setTo({ type: "ActionCell", pos });
     putNote.setApply(true);
   };
   return (

@@ -1,30 +1,28 @@
-import React, { useState } from "react";
+import React from "react";
 import PutNote from "./contexts/PutNoteContext";
-import { NoteAction } from "./Roll";
 
 type Props = {
   index: number;
-  setNotes: React.Dispatch<NoteAction>;
 } & Needs;
 type Needs = {
   pos: { x: number; y: number };
   length: number;
 };
-const Note: React.FC<Props> = ({ index, pos, length, setNotes }) => {
+const Note: React.FC<Props> = ({ index, pos, length }) => {
   const putNote = {
-    from: PutNote.Contexts.from.State(),
-    to: PutNote.Contexts.to.State(),
-    setEvent: PutNote.Contexts.event.Dispatch(),
+    setFrom: PutNote.Contexts.from.Dispatch(),
+    setTo: PutNote.Contexts.to.Dispatch(),
     setApply: PutNote.Contexts.apply.Dispatch(),
   };
-  const [fromSelf, setFromSelf] = useState(false);
 
   const onMouseDown = (event: React.MouseEvent) => {
-    setFromSelf(true);
-    putNote.setEvent({ type: "fromNote", index });
+    event.preventDefault();
+    putNote.setFrom({ type: "Note", index });
   };
   const onMouseUp = (event: React.MouseEvent) => {
-    if (fromSelf) setNotes({ type: "remove", index });
+    event.preventDefault();
+    putNote.setTo({ type: "Note", index });
+    putNote.setApply(true);
   };
 
   const style = {

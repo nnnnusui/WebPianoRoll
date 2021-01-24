@@ -1,29 +1,27 @@
 import React from "react";
 import GenerateContext from "../../GenerateContext";
 
-type PutNoteEvent =
+type Source =
   | {
-      type: "none";
+      type: "ActionCell";
+      pos: {
+        x: number;
+        y: number;
+      };
     }
   | {
-      type: "fromActionCell";
-    }
-  | {
-      type: "fromNote";
+      type: "Note";
       index: number;
     };
 const Contexts = {
-  from: GenerateContext({ x: 0, y: 0 }),
-  to: GenerateContext({ x: 0, y: 0 }),
+  from: GenerateContext({} as Source),
+  to: GenerateContext({} as Source),
   apply: GenerateContext<boolean>(false),
-  event: GenerateContext<PutNoteEvent>({ type: "none" }),
 };
 const Providers: React.FC = ({ children }) => (
   <Contexts.from.Provider>
     <Contexts.to.Provider>
-      <Contexts.event.Provider>
-        <Contexts.apply.Provider>{children}</Contexts.apply.Provider>
-      </Contexts.event.Provider>
+      <Contexts.apply.Provider>{children}</Contexts.apply.Provider>
     </Contexts.to.Provider>
   </Contexts.from.Provider>
 );

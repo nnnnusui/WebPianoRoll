@@ -85,38 +85,46 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
   const putNote = {
     from: PutNote.Contexts.from.State(),
     to: PutNote.Contexts.to.State(),
-    event: PutNote.Contexts.event.State(),
     apply: PutNote.Contexts.apply.State(),
     setApply: PutNote.Contexts.apply.Dispatch(),
   };
   useEffect(() => {
     if (!putNote.apply) return;
     putNote.setApply(false);
+    const from = putNote.from;
+    const to = putNote.to;
 
-    const event = putNote.event;
-    switch (event.type) {
-      case "none": {
+    switch (to.type) {
+      case "Note":
+        switch (from.type) {
+          case "Note":
+            if (from.index == to.index)
+              setNotes({ type: "remove", index: to.index });
+            break;
+          case "ActionCell":
+            break;
+        }
         break;
-      }
-      case "fromNote": {
-        // update
-        setNotes({
-          type: "update",
-          index: event.index,
-          getValue: (prev) => ({ ...prev, pos: putNote.to }),
-        });
-        break;
-      }
-      case "fromActionCell": {
-        // add
-        const from = putNote.from;
-        const to = putNote.to;
-        const pos = {
-          x: Math.min(from.x, to.x),
-          y: from.y,
-        };
-        const length = Math.abs(from.x - to.x) + 1;
-        setNotes({ type: "add", value: { pos, length } });
+      case "ActionCell": {
+        switch (from.type) {
+          case "Note":
+            // update
+            setNotes({
+              type: "update",
+              index: from.index,
+              getValue: (prev) => ({ ...prev, pos: to.pos }),
+            });
+            break;
+          case "ActionCell": {
+            const pos = {
+              x: Math.min(from.pos.x, to.pos.x),
+              y: from.pos.y,
+            };
+            const length = Math.abs(from.pos.x - to.pos.x) + 1;
+            setNotes({ type: "add", value: { pos, length } });
+            break;
+          }
+        }
       }
     }
   }, [putNote.apply]);
@@ -131,7 +139,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       style={style}
     >
       {notes.map((it, index) => {
-        return <Note key={index} {...{ index, ...it, setNotes }}></Note>;
+        return <Note key={index} {...{ index, ...it }}></Note>;
       })}
     </div>
   );

@@ -6,8 +6,8 @@ const getCellFromPoint = (clientX: number, clientY: number) => {
   const type: Type | undefined = types.find(
     (it) => it == element.getAttribute("type")
   );
-  const index = Number(element.getAttribute("index"));
-  if (isNaN(index) || type == undefined) return;
-  return { type, index };
+  const gridIndex = Number(element.getAttribute("gridindex"));
+  if (isNaN(gridIndex) || type == undefined) return;
+  return { type, gridIndex };
 };
 export default getCellFromPoint;

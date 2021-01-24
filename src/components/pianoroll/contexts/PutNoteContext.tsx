@@ -3,7 +3,7 @@ import GenerateContext from "../../GenerateContext";
 
 type Source = {
   type: "Note" | "ActionCell";
-  index: number;
+  gridIndex: number;
 };
 const Contexts = {
   from: GenerateContext({} as Source),

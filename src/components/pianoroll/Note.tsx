@@ -3,14 +3,14 @@ import PutNote from "./contexts/PutNoteContext";
 import getCellFromPoint from "./getCellFromPoint";
 
 type Props = {
-  index: number;
 } & Needs;
 type Needs = {
+  gridIndex: number;
   pos: { x: number; y: number };
   length: number;
 };
 const selfType = "Note";
-const Note: React.FC<Props> = ({ index, pos, length }) => {
+const Note: React.FC<Props> = ({ gridIndex, pos, length }) => {
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
@@ -19,11 +19,11 @@ const Note: React.FC<Props> = ({ index, pos, length }) => {
 
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setFrom({ type: selfType, index });
+    putNote.setFrom({ type: selfType, gridIndex });
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setTo({ type: selfType, index });
+    putNote.setTo({ type: selfType, gridIndex });
     putNote.setApply(true);
   };
   const onTouchEnd = (event: React.TouchEvent) => {
@@ -33,7 +33,7 @@ const Note: React.FC<Props> = ({ index, pos, length }) => {
       event.changedTouches[0].clientY
     );
     if (to == undefined) return;
-    putNote.setFrom({ type: selfType, index });
+    putNote.setFrom({ type: selfType, gridIndex });
     putNote.setTo(to);
     putNote.setApply(true);
   };
@@ -45,7 +45,7 @@ const Note: React.FC<Props> = ({ index, pos, length }) => {
   };
   return (
     <div
-      {...{ type: selfType, index }}
+      {...{ type: selfType, gridindex: gridIndex }}
       className="pointer-events-auto bg-yellow-500 rounded-lg"
       style={style}
       onMouseDown={onMouseDown}

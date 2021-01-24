@@ -3,11 +3,11 @@ import PutNote from "../contexts/PutNoteContext";
 import getCellFromPoint from "../getCellFromPoint";
 
 type Props = {
-  index: number;
+  gridIndex: number;
 };
 
 const selfType = "ActionCell";
-const ActionCell: React.FC<Props> = ({ index }) => {
+const ActionCell: React.FC<Props> = ({ gridIndex }) => {
   // console.log("rerender: ActionCell");
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
@@ -16,11 +16,11 @@ const ActionCell: React.FC<Props> = ({ index }) => {
   };
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setFrom({ type: selfType, index });
+    putNote.setFrom({ type: selfType, gridIndex });
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    putNote.setTo({ type: selfType, index });
+    putNote.setTo({ type: selfType, gridIndex });
     putNote.setApply(true);
   };
   const onTouchEnd = (event: React.TouchEvent) => {
@@ -30,13 +30,13 @@ const ActionCell: React.FC<Props> = ({ index }) => {
       event.changedTouches[0].clientY
     );
     if (to == undefined) return;
-    putNote.setFrom({ type: selfType, index });
+    putNote.setFrom({ type: selfType, gridIndex });
     putNote.setTo(to);
     putNote.setApply(true);
   };
   return (
     <div
-      {...{ type: selfType, index }}
+      {...{ type: selfType, gridindex: gridIndex }}
       className="action-cell relative h-full w-full bg-gray-600 rounded-sm"
       onContextMenu={suplessRightClickMenu}
       onMouseDown={onMouseDown}

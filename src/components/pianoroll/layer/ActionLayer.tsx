@@ -12,7 +12,7 @@ const ActionLayer: React.FC = () => {
   return (
     <div className="absolute h-full w-full grid grid-flow-col" style={style}>
       {range0to(height * width).map((index) => {
-        return <ActionCell key={index} {...{ index }} />;
+        return <ActionCell key={index} {...{ gridIndex: index }} />;
       })}
     </div>
   );

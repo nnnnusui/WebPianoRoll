@@ -1,23 +1,16 @@
 import React, { useEffect, useReducer } from "react";
-import typedFetch from "../typedFetch";
 import Grid from "./contexts/GridContext";
 import PutNote from "./contexts/PutNoteContext";
 import Note, { NoteNeeds } from "./Note";
-import Notes, { getKeysFromPos } from "./rest/Notes";
-
-type RollRest = {
-  division: number;
-};
-type NoteRest = {
-  offset: number;
-  octave: number;
-  pitch: number;
-  length: number;
-};
+import Notes from "./rest/Notes";
 
 type Props = {
-  urlRoot: string;
+  url: string;
   rollId: number;
+  maxOffset: number;
+  minOctave: number;
+  maxOctave: number;
+  maxPitch: number;
 };
 
 type NoteAction =
@@ -31,25 +24,28 @@ type NoteAction =
     }
   | {
       type: "update";
-      gridIndex: number;
+      beforeGridIndex: number;
       getValue: (prev: NoteNeeds) => NoteNeeds;
     }
   | {
       type: "remove";
       gridIndex: number;
     };
-const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
-  console.log("rerender: Roll");
-  const maxPitch = 12;
-  const rollUrl = `${urlRoot}${rollId}`;
-  const noteRest = Notes(rollUrl)
-  const [grid, setGrid] = [Grid.State(), Grid.Dispatch()];
-  const getPosFromgridIndex = (gridIndex: number) => {
-    return {
-      x: Math.floor(gridIndex / grid.height),
-      y: gridIndex % grid.height,
-    };
-  }
+const Roll: React.FC<Props> = ({
+  url,
+  rollId,
+  maxOffset,
+  minOctave,
+  maxOctave,
+  maxPitch,
+}) => {
+  // console.log("rerender: Roll");
+  const [setGrid] = [Grid.Dispatch()];
+  const octaveRange = maxOctave + 1 - minOctave;
+  const height = octaveRange * maxPitch;
+  const width = maxOffset;
+  const grid = { width, height };
+  const noteRest = Notes(`${url}/${rollId}`);
   const [notes, setNotes] = useReducer(
     (state: Array<NoteNeeds>, action: NoteAction) => {
       switch (action.type) {
@@ -59,7 +55,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
           return [...state, action.value];
         case "update":
           return state.map((it) =>
-            it.gridIndex == action.gridIndex ? action.getValue(it) : it
+            it.gridIndex == action.beforeGridIndex ? action.getValue(it) : it
           );
         case "remove":
           return state.filter((it) => it.gridIndex != action.gridIndex);
@@ -68,32 +64,36 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     []
   );
   useEffect(() => {
-    typedFetch<RollRest>(rollUrl).then((result) => {
-      const maxOffset = result.division;
-      const minOctave = -1;
-      const maxOctave = 1;
-      const octave = maxOctave + 1 - minOctave;
-      const height = octave * maxPitch;
-      const width = maxOffset;
-      setGrid({ width, height });
-
-      noteRest.getAll().then((result) =>
-        setNotes({
-          type: "init",
-          value: result.values.map<NoteNeeds>((it) => {
-            const pos = { x: it.offset,
-              y: it.octave * maxPitch + it.pitch }
-            const gridIndex = pos.x * grid.height + pos.y
-            return {
-              gridIndex,
-              pos,
-              length: 1,
-            }
-          }),
-        })
-      );
-    });
-  }, [rollUrl, setGrid]);
+    setGrid({ width, height });
+    noteRest.getAll().then((result) =>
+      setNotes({
+        type: "init",
+        value: result.values.map<NoteNeeds>((it) => {
+          const pos = {
+            x: it.offset,
+            y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch),
+          };
+          console.log(pos);
+          const gridIndex = posToGridIndex(pos);
+          console.log(gridIndex);
+          console.log(grid.height);
+          return { gridIndex, length: 1 };
+        }),
+      })
+    );
+  }, [setGrid]);
+  const posToGridIndex = (pos: { x: number; y: number }) =>
+    pos.x * grid.height + pos.y;
+  const gridIndexToPos = (gridIndex: number) => ({
+    x: Math.floor(gridIndex / grid.height),
+    y: gridIndex % grid.height,
+  });
+  const getKeysFromPos = (pos: { x: number; y: number }) => {
+    const offset = pos.x;
+    const octave = maxOctave - Math.floor(pos.y / maxPitch);
+    const pitch = maxPitch - (pos.y % maxPitch);
+    return { offset, octave, pitch };
+  };
 
   const putNote = {
     from: PutNote.Contexts.from.State(),
@@ -107,50 +107,52 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
     const from = putNote.from;
     const to = putNote.to;
 
-    switch (to.type) {
-      case "Note":
-        switch (from.type) {
-          case "Note":
-            if (from.gridIndex != to.gridIndex) break;
-            const gridIndex = to.gridIndex
-            console.log(gridIndex)
-            setNotes({ type: "remove", gridIndex });
-
-            noteRest.remove(getKeysFromPos(getPosFromgridIndex(gridIndex)))
-            break;
-          case "ActionCell":
-            break;
-        }
-        break;
-      case "ActionCell": {
-        const toPos = getPosFromgridIndex(to.gridIndex)
-        switch (from.type) {
-          case "Note":
-            // update
-            setNotes({
-              type: "update",
-              gridIndex: from.gridIndex,
-              getValue: (prev) => ({ ...prev, pos: toPos }),
-            });
-            break;
+    const create = (gridIndex: number) => {
+      setNotes({ type: "add", value: { gridIndex, length: 0 } });
+      const { offset, octave, pitch } = getKeysFromPos(
+        gridIndexToPos(gridIndex)
+      );
+      return noteRest
+        .create({ offset, octave, pitch })
+        .catch(() => setNotes({ type: "remove", gridIndex: to.gridIndex }));
+    };
+    const remove = (gridIndex: number) => {
+      setNotes({ type: "remove", gridIndex });
+      return noteRest.remove(getKeysFromPos(gridIndexToPos(gridIndex)));
+    };
+    const update = (beforeGridIndex: number, afterGridIndex: number) => {
+      // setNotes({ type: "update", beforeGridIndex, getValue: prev=> ({...prev, gridIndex: afterGridIndex}) });
+      remove(beforeGridIndex).then(() => create(afterGridIndex));
+    };
+    switch (from.type) {
+      case "ActionCell":
+        switch (to.type) {
           case "ActionCell": {
-            const fromPos = getPosFromgridIndex(from.gridIndex)
+            const fromPos = gridIndexToPos(from.gridIndex);
+            const toPos = gridIndexToPos(to.gridIndex);
             const noteStartPos = {
               x: Math.min(fromPos.x, toPos.x),
               y: fromPos.y,
             };
+            const gridIndex = posToGridIndex(noteStartPos);
             const length = Math.abs(fromPos.x - toPos.x) + 1;
-            const gridIndex = noteStartPos.x * grid.height + noteStartPos.y
-            setNotes({ type: "add", value: { gridIndex, pos: noteStartPos, length } });
-
-            const {offset, octave, pitch} = getKeysFromPos(noteStartPos)
-            console.log(fromPos)
-            noteRest.create({offset, octave, pitch})
-              .catch(it=> setNotes({ type: "remove", gridIndex: to.gridIndex }))
+            create(gridIndex);
             break;
           }
+          case "Note":
+            break;
         }
-      }
+        break;
+      case "Note":
+        switch (to.type) {
+          case "ActionCell":
+            update(from.gridIndex, to.gridIndex);
+            break;
+          case "Note":
+            if (from.gridIndex == to.gridIndex) remove(to.gridIndex);
+            break;
+        }
+        break;
     }
   }, [putNote.apply]);
 
@@ -164,12 +166,12 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       style={style}
     >
       {notes.map((it, index) => {
-        return <Note key={index} {...it}></Note>;
+        return <Note key={index} {...{ ...it, gridIndexToPos }}></Note>;
       })}
     </div>
   );
 };
 
-
 export default Roll;
+export type { Props as RollProps };
 export type { NoteAction };

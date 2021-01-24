@@ -3,14 +3,14 @@ import PutNote from "./contexts/PutNoteContext";
 import getCellFromPoint from "./getCellFromPoint";
 
 type Props = {
+  gridIndexToPos: (gridIndex: number) => { x: number; y: number };
 } & Needs;
 type Needs = {
   gridIndex: number;
-  pos: { x: number; y: number };
   length: number;
 };
 const selfType = "Note";
-const Note: React.FC<Props> = ({ gridIndex, pos, length }) => {
+const Note: React.FC<Props> = ({ gridIndex, length, gridIndexToPos }) => {
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
@@ -38,6 +38,7 @@ const Note: React.FC<Props> = ({ gridIndex, pos, length }) => {
     putNote.setApply(true);
   };
 
+  const pos = gridIndexToPos(gridIndex);
   const style = {
     gridColumnStart: pos.x + 1,
     gridRowStart: pos.y + 1,

@@ -36,7 +36,7 @@ const ActionCell: React.FC<Props> = ({ index }) => {
   };
   return (
     <div
-      {...{ type: "ActionCell", index }}
+      {...{ type: selfType, index }}
       className="action-cell relative h-full w-full bg-gray-600 rounded-sm"
       onContextMenu={suplessRightClickMenu}
       onMouseDown={onMouseDown}

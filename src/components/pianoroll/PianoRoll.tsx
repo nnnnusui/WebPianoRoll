@@ -10,7 +10,7 @@ type Prop = {
 };
 const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   return (
-    <div className="relative h-full" style={{ touchAction: "none" }}>
+    <div className="relative h-full">
       <Grid.Provider>
         <PutNote.Providers>
           <ActionLayer></ActionLayer>

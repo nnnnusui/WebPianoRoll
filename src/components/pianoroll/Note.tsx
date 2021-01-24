@@ -45,7 +45,7 @@ const Note: React.FC<Props> = ({ index, pos, length }) => {
   };
   return (
     <div
-      {...{ type: "ActionCell", index }}
+      {...{ type: selfType, index }}
       className="pointer-events-auto bg-yellow-500 rounded-lg"
       style={style}
       onMouseDown={onMouseDown}

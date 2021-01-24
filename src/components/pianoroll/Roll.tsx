@@ -98,6 +98,7 @@ const Roll: React.FC<Props> = ({ urlRoot, rollId }) => {
       case "Note":
         switch (from.type) {
           case "Note":
+            console.log("notetonote")
             if (from.index == to.index)
               setNotes({ type: "remove", index: to.index });
             break;

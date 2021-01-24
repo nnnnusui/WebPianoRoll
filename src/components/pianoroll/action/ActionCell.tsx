@@ -1,52 +1,43 @@
 import React from "react";
-import Selection, { SelectionMode } from "../contexts/SelectionContext";
+import PutNote, { PutNoteMode } from "../contexts/PutNoteContext";
 
 type Props = {
   pos: { x: number; y: number };
 };
 const ActionCell: React.FC<Props> = ({ pos }) => {
-  console.log("rerender: ActionCell");
-  const selection = {
-    setFrom: Selection.Contexts.from.Dispatch(),
-    setTo: Selection.Contexts.to.Dispatch(),
-    setMode: Selection.Contexts.mode.Dispatch(),
+  // console.log("rerender: ActionCell");
+  const putNote = {
+    setFrom: PutNote.Contexts.from.Dispatch(),
+    setTo: PutNote.Contexts.to.Dispatch(),
+    setMode: PutNote.Contexts.mode.Dispatch(),
   };
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
-    selection.setFrom(pos);
-    switch (event.button) {
-      case 0:
-        selection.setMode(SelectionMode.line);
-        break;
-      case 2:
-        selection.setMode(SelectionMode.range);
-        break;
-    }
+    putNote.setMode(PutNoteMode.read)
+    putNote.setFrom(pos);
   };
   const onMouseMove = (event: React.MouseEvent) => {
     event.preventDefault();
-    selection.setTo(pos);
   };
   const onMouseUp = (event: React.MouseEvent) => {
     event.preventDefault();
-    switch (event.button) {
-      case 0:
-        selection.setMode(SelectionMode.none);
-        break;
-    }
+    putNote.setTo(pos);
+    putNote.setMode(PutNoteMode.fire)
   };
   return (
     <div
       className={`relative h-full w-full ${"bg-gray-600 rounded-sm"}`}
-      onContextMenu={(event) => {
-        if (!event.altKey) event.preventDefault();
-      }}
+      onContextMenu={suplessRightClickMenu}
       onMouseDown={onMouseDown}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       draggable="true"
     ></div>
   );
+};
+
+const suplessRightClickMenu = (event: React.MouseEvent) => {
+  if (!event.altKey) event.preventDefault();
 };
 
 export default ActionCell;

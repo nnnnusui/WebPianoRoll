@@ -5,6 +5,7 @@ import ActionLayer from "./layer/ActionLayer";
 import Grid from "./contexts/GridContext";
 import PutNote from "./contexts/PutNoteContext";
 import RollRest from "./rest/RollRest";
+import AudioPlayer from "./AudioPlayer";
 
 type Prop = {
   urlRoot: string;
@@ -27,6 +28,7 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     <div className="relative h-full">
       <Grid.Provider>
         <PutNote.Providers>
+          <AudioPlayer></AudioPlayer>
           <ActionLayer></ActionLayer>
           <Roll {...roll}></Roll>
           <SelectLayer></SelectLayer>

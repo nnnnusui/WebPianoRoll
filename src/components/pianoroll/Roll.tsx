@@ -3,6 +3,7 @@ import Grid from "./contexts/GridContext";
 import PutNote from "./contexts/PutNoteContext";
 import Note, { NoteNeeds } from "./Note";
 import Notes from "./rest/Notes";
+import { range0to } from "../range";
 
 type Props = {
   url: string;
@@ -65,22 +66,42 @@ const Roll: React.FC<Props> = ({
   );
   useEffect(() => {
     setGrid({ width, height });
-    noteRest.getAll().then((result) =>
+    noteRest.getAll().then((result) =>{
+      const reduced =
+        result.values
+            .sort((a, b)=> a.offset - b.offset)
+            .sort((a, b)=> a.pitch - b.pitch)
+            .sort((a, b) => a.octave - b.octave)
+            .map(it=> {
+              console.log(it)
+              return it
+            })
+            .map(it=> ({
+              sticky: it.sticky,
+              pos: {
+                x: it.offset,
+                y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch),
+              }
+            }))
+            .reduce((sum, it) => {
+              if(!sum.beforeSticky || sum.pos.y != it.pos.y){
+                const gridIndex = posToGridIndex(sum.pos);
+                return {store: [...sum.store, {gridIndex, length: sum.length}], pos: it.pos, length: 1, beforeSticky: it.sticky}
+              }
+              const length = sum.length + 1;
+              return {...sum, length, beforeSticky: it.sticky}
+            }, {store: [], pos: {x: -1, y: -1}, length: 0, beforeSticky: false} as {store: Array<NoteNeeds>, pos: {x: number, y: number}, length: number, beforeSticky: boolean})
+      const last = {
+        gridIndex: posToGridIndex(reduced.pos),
+        length: reduced.length
+      }
+      const values = [...reduced.store, last].slice(1)
+      values.forEach(it=> console.log(it))
       setNotes({
         type: "init",
-        value: result.values.map<NoteNeeds>((it) => {
-          const pos = {
-            x: it.offset,
-            y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch),
-          };
-          console.log(pos);
-          const gridIndex = posToGridIndex(pos);
-          console.log(gridIndex);
-          console.log(grid.height);
-          return { gridIndex, length: 1 };
-        }),
+        value: values
       })
-    );
+    });
   }, [setGrid]);
   const posToGridIndex = (pos: { x: number; y: number }) =>
     pos.x * grid.height + pos.y;
@@ -106,19 +127,26 @@ const Roll: React.FC<Props> = ({
     putNote.setApply(false);
     const from = putNote.from;
     const to = putNote.to;
+    const fromPos = gridIndexToPos(from.gridIndex);
+    const toPos = gridIndexToPos(to.gridIndex);
+    const length = Math.abs(fromPos.x - toPos.x) + 1;
 
     const create = (gridIndex: number) => {
-      setNotes({ type: "add", value: { gridIndex, length: 0 } });
-      const { offset, octave, pitch } = getKeysFromPos(
-        gridIndexToPos(gridIndex)
-      );
+      const noteGridIndexes = range0to(length)
+        .map(index=> gridIndex + index * grid.height)
+      const noteKeys = noteGridIndexes
+        .map(gridIndex=> getKeysFromPos(gridIndexToPos(gridIndex)))
+      const noteCreateRequests = noteKeys.slice(0, -1)
+        .map(noteKeys => ({...noteKeys, sticky: true}))
+        .concat([{...noteKeys.slice(-1)[0], sticky: false}])
       return noteRest
-        .create({ offset, octave, pitch })
-        .catch(() => setNotes({ type: "remove", gridIndex: to.gridIndex }));
+        .create(noteCreateRequests)
+        .then(() => setNotes({ type: "add", value: { gridIndex, length: length } }))
     };
     const remove = (gridIndex: number) => {
-      setNotes({ type: "remove", gridIndex });
-      return noteRest.remove(getKeysFromPos(gridIndexToPos(gridIndex)));
+      return noteRest
+        .remove(getKeysFromPos(gridIndexToPos(gridIndex)))
+        .then(()=> setNotes({ type: "remove", gridIndex }));
     };
     const update = (beforeGridIndex: number, afterGridIndex: number) => {
       // setNotes({ type: "update", beforeGridIndex, getValue: prev=> ({...prev, gridIndex: afterGridIndex}) });
@@ -128,14 +156,11 @@ const Roll: React.FC<Props> = ({
       case "ActionCell":
         switch (to.type) {
           case "ActionCell": {
-            const fromPos = gridIndexToPos(from.gridIndex);
-            const toPos = gridIndexToPos(to.gridIndex);
             const noteStartPos = {
               x: Math.min(fromPos.x, toPos.x),
               y: fromPos.y,
             };
             const gridIndex = posToGridIndex(noteStartPos);
-            const length = Math.abs(fromPos.x - toPos.x) + 1;
             create(gridIndex);
             break;
           }

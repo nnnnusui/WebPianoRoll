@@ -2,7 +2,7 @@ import typedFetch from "../../typedFetch";
 
 type NoteRest = NoteCreate;
 type NoteCreate = {
-  length: number;
+  sticky: boolean;
 } & NoteKeys;
 type NoteKeys = {
   offset: number;
@@ -13,15 +13,14 @@ type NoteKeys = {
 const Notes = (rootUrl: string) => {
   const url = `${rootUrl}/notes`;
   const getAll = () => typedFetch<{ values: Array<NoteRest> }>(url);
-  const create = (note: NoteKeys) => {
-    console.log(note);
+  const create = (notes: Array<NoteCreate>) => {
     return typedFetch<NoteRest>(url, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(note),
+      body: JSON.stringify(notes),
     });
   };
   const remove = (keys: NoteKeys) =>

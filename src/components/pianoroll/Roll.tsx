@@ -61,8 +61,9 @@ const Roll: React.FC<Props> = ({
           );
         case "remove":
           return state.filter((it) => {
-            action.useValue(it);
-            return it.gridIndex != action.gridIndex;
+            const find = it.gridIndex == action.gridIndex
+            if (find) action.useValue(it);
+            return !find;
           });
       }
     },
@@ -75,10 +76,6 @@ const Roll: React.FC<Props> = ({
         .sort((a, b) => a.offset - b.offset)
         .sort((a, b) => a.pitch - b.pitch)
         .sort((a, b) => a.octave - b.octave)
-        .map((it) => {
-          console.log(it);
-          return it;
-        })
         .map((it) => ({
           sticky: it.sticky,
           pos: {
@@ -117,7 +114,6 @@ const Roll: React.FC<Props> = ({
         length: reduced.length,
       };
       const values = [...reduced.store, last].slice(1);
-      values.forEach((it) => console.log(it));
       setNotes({
         type: "init",
         value: values,

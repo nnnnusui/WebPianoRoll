@@ -31,6 +31,7 @@ type NoteAction =
   | {
       type: "remove";
       gridIndex: number;
+      useValue: (it: NoteNeeds) => void;
     };
 const Roll: React.FC<Props> = ({
   url,
@@ -59,7 +60,9 @@ const Roll: React.FC<Props> = ({
             it.gridIndex == action.beforeGridIndex ? action.getValue(it) : it
           );
         case "remove":
-          return state.filter((it) => it.gridIndex != action.gridIndex);
+          return state.filter((it) => {
+            action.useValue(it)
+            return it.gridIndex != action.gridIndex});
       }
     },
     []
@@ -129,11 +132,13 @@ const Roll: React.FC<Props> = ({
     const to = putNote.to;
     const fromPos = gridIndexToPos(from.gridIndex);
     const toPos = gridIndexToPos(to.gridIndex);
-    const length = Math.abs(fromPos.x - toPos.x) + 1;
-
-    const create = (gridIndex: number) => {
-      const noteGridIndexes = range0to(length)
+    const gridIndexesFromLength = (gridIndex: number, length: number) =>
+      range0to(length)
         .map(index=> gridIndex + index * grid.height)
+
+    const length = Math.abs(fromPos.x - toPos.x) + 1;
+    const create = (gridIndex: number) => {
+      const noteGridIndexes = gridIndexesFromLength(gridIndex, length)
       const noteKeys = noteGridIndexes
         .map(gridIndex=> getKeysFromPos(gridIndexToPos(gridIndex)))
       const noteCreateRequests = noteKeys.slice(0, -1)
@@ -144,13 +149,15 @@ const Roll: React.FC<Props> = ({
         .then(() => setNotes({ type: "add", value: { gridIndex, length: length } }))
     };
     const remove = (gridIndex: number) => {
-      return noteRest
-        .remove(getKeysFromPos(gridIndexToPos(gridIndex)))
-        .then(()=> setNotes({ type: "remove", gridIndex }));
+      setNotes({ type: "remove", gridIndex, useValue: note => {
+        gridIndexesFromLength(gridIndex, note.length)
+          .map(gridIndex=> getKeysFromPos(gridIndexToPos(gridIndex)))
+          .forEach(it=> noteRest.remove(it))
+      } })
     };
     const update = (beforeGridIndex: number, afterGridIndex: number) => {
       // setNotes({ type: "update", beforeGridIndex, getValue: prev=> ({...prev, gridIndex: afterGridIndex}) });
-      remove(beforeGridIndex).then(() => create(afterGridIndex));
+      // remove(beforeGridIndex).then(() => create(afterGridIndex));
     };
     switch (from.type) {
       case "ActionCell":

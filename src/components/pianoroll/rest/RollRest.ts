@@ -1,13 +1,27 @@
 import typedFetch from "../../typedFetch";
 
-type RollRest = {
+type RollRestType = RollKeys & RollCreate
+type RollCreate = {
   division: number;
-};
+}
+type RollKeys = {
+  id: number
+}
 const RollRest = (rootUrl: string) => {
   const url = `${rootUrl}/rolls`;
   console.log(url);
-  const get = (id: number) => typedFetch<RollRest>(`${url}/${id}`);
-  return { url, get };
+  const getAll = () => typedFetch<Array<RollRestType>>(url)
+  const get = (id: number) => typedFetch<RollRestType>(`${url}/${id}`);
+  const create = (body: RollCreate) => typedFetch<RollRestType>(url, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  })
+  return { url, getAll, get, create };
 };
 
 export default RollRest;
+export type {RollRestType}

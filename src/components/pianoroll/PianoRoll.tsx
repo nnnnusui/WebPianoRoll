@@ -13,7 +13,7 @@ type Prop = {
 const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   const [roll, setRoll] = useState<RollProps>();
   useEffect(() => {
-    const { url, get } = RollRest(`${urlRoot}/rest/1`);
+    const { url, get } = RollRest(urlRoot);
     const rollId = 1;
     get(rollId).then((result) => {
       const maxPitch = 12;

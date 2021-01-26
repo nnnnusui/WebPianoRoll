@@ -80,7 +80,7 @@ const Roll: React.FC<Props> = ({
           sticky: it.sticky,
           pos: {
             x: it.offset,
-            y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch),
+            y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch - 1),
           },
         }))
         .reduce(
@@ -129,7 +129,7 @@ const Roll: React.FC<Props> = ({
   const getKeysFromPos = (pos: { x: number; y: number }) => {
     const offset = pos.x;
     const octave = maxOctave - Math.floor(pos.y / maxPitch);
-    const pitch = maxPitch - (pos.y % maxPitch);
+    const pitch = maxPitch - (pos.y % maxPitch) - 1;
     return { offset, octave, pitch };
   };
 

@@ -61,7 +61,7 @@ const Roll: React.FC<Props> = ({
           );
         case "remove":
           return state.filter((it) => {
-            const find = it.gridIndex == action.gridIndex
+            const find = it.gridIndex == action.gridIndex;
             if (find) action.useValue(it);
             return !find;
           });

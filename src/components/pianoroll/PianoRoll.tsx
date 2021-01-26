@@ -24,11 +24,12 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     });
   }, [urlRoot]);
   if (roll == undefined) return <></>;
+  
   return (
     <div className="relative h-full">
       <Grid.Provider>
         <PutNote.Providers>
-          <AudioPlayer></AudioPlayer>
+          <AudioPlayer urlRoot={roll.url}></AudioPlayer>
           <ActionLayer></ActionLayer>
           <Roll {...roll}></Roll>
           <SelectLayer></SelectLayer>

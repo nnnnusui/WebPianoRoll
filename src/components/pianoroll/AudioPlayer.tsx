@@ -1,24 +1,35 @@
-import React from "react";
-import { range0to } from "../range";
+import React, { useState, useEffect } from "react";
+import SoundRest from "./rest/SoundRest";
 
-const AudioPlayer = () => {
+type Prop = {
+  urlRoot: string;
+};
+const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
+  const [sound, setSound] = useState<Array<number>>();
+  const rest = SoundRest(`${urlRoot}/1`);
+  useEffect(() => {
+    rest.get().then((it) => setSound(it.pcm));
+  }, []);
+  if (sound == undefined) return <></>;
+
   const context = new AudioContext();
-  console.log(context);
   const source = context.createBufferSource();
-  const channel = 2;
+  const channel = 1;
   const length = 5 * context.sampleRate;
-  const dataLs = range0to(length).map((index) =>
-    Math.sin((2 * Math.PI * index * 440) / context.sampleRate)
-  );
-  const dataRs = range0to(5 * context.sampleRate).map((index) => 0);
   const buffer = context.createBuffer(channel, length, context.sampleRate);
-  buffer.getChannelData(0).set(dataLs);
-  buffer.getChannelData(1).set(dataRs);
+  buffer.getChannelData(0).set(sound);
   source.buffer = buffer;
   source.connect(context.destination);
+
   const onClick = () => {
     source.start(0);
   };
-  return <input className="w-20 h-20" type="button" onClick={onClick}></input>;
+
+  return (
+    <div>
+      <h1>{context.sampleRate}</h1>
+      <input className="w-20 h-20" type="button" onClick={onClick}></input>
+    </div>
+  );
 };
 export default AudioPlayer;

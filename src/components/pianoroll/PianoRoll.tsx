@@ -24,7 +24,7 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
     });
   }, [urlRoot]);
   if (roll == undefined) return <></>;
-  
+
   return (
     <div className="relative h-full">
       <Grid.Provider>

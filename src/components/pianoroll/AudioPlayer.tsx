@@ -5,43 +5,32 @@ type Prop = {
   urlRoot: string;
 };
 const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
-  console.log("rerender: AudioPlayer");
-  const [oscillator, setOscillator] = useState<OscillatorNode>();
-  const [audio, setAudio] = useState<{
-    context: AudioContext;
-    gainNode: GainNode;
-  }>();
+  // console.log("rerender: AudioPlayer");
+  const [audio, setAudio] = useState<AudioBufferSourceNode>();
   const [checked, setChecked] = useState(false);
-  useEffect(() => {
-    const context = new AudioContext();
-    const sampleRate = context.sampleRate;
-
-    const rest = SoundRest(`${urlRoot}/1`);
-    rest.get(sampleRate).then((sound) => {
-      const length = sound.length;
-      const channel = 1;
-      const buffer = context.createBuffer(channel, length, sampleRate);
-      buffer.getChannelData(0).set(sound.pcm);
-      const source = context.createBufferSource();
-      source.buffer = buffer;
-      source.connect(context.destination);
-      const gainNode = context.createGain();
-      gainNode.connect(context.destination);
-      gainNode.gain.value = 0.5;
-      setAudio({ context, gainNode });
-      oscillator?.stop();
-    });
-  }, []);
-  if (audio == undefined) return <></>;
+  const rest = SoundRest(`${urlRoot}/1`);
 
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
     if (checked) {
-      oscillator?.stop();
+      audio?.stop();
     } else {
-      const oscillator = audio.context.createOscillator();
-      oscillator.connect(audio.gainNode);
-      oscillator.start();
-      setOscillator(oscillator);
+      const context = new AudioContext();
+      const sampleRate = context.sampleRate;
+      rest.get(sampleRate).then((sound) => {
+        console.log(sound)
+        const length = sound.length;
+        const channel = 1;
+        const buffer = context.createBuffer(channel, length, sampleRate);
+        buffer.getChannelData(0).set(sound.pcm);
+        const source = context.createBufferSource();
+        source.buffer = buffer;
+        const gainNode = context.createGain();
+        gainNode.gain.value = 0.5;
+        source.connect(gainNode);
+        gainNode.connect(context.destination)
+        source.start();
+        setAudio(source);
+      });
     }
     setChecked(!checked);
   };

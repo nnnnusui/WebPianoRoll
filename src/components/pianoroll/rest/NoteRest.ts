@@ -1,8 +1,9 @@
 import typedFetch from "../../typedFetch";
 
-type NoteRest = NoteCreate;
+type NoteRestType = NoteCreate;
 type NoteCreate = {
   sticky: boolean;
+  childRollId: number | null;
 } & NoteKeys;
 type NoteKeys = {
   offset: number;
@@ -10,11 +11,11 @@ type NoteKeys = {
   pitch: number;
 };
 
-const Notes = (rootUrl: string) => {
+const NoteRest = (rootUrl: string) => {
   const url = `${rootUrl}/notes`;
-  const getAll = () => typedFetch<{ values: Array<NoteRest> }>(url);
+  const getAll = () => typedFetch<{ values: Array<NoteRestType> }>(url);
   const create = (notes: Array<NoteCreate>) => {
-    return typedFetch<NoteRest>(url, {
+    return typedFetch<NoteRestType>(url, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -34,4 +35,4 @@ const Notes = (rootUrl: string) => {
   return { getAll, create, remove };
 };
 
-export default Notes;
+export default NoteRest;

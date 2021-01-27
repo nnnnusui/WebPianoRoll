@@ -2,7 +2,7 @@ import React, { useEffect, useReducer } from "react";
 import Grid from "./contexts/GridContext";
 import PutNote from "./contexts/PutNoteContext";
 import Note, { NoteNeeds } from "./Note";
-import Notes from "./rest/Notes";
+import NoteRest from "./rest/NoteRest";
 import { range0to } from "../range";
 
 type Props = {
@@ -47,7 +47,7 @@ const Roll: React.FC<Props> = ({
   const height = octaveRange * maxPitch;
   const width = maxOffset;
   const grid = { width, height };
-  const noteRest = Notes(`${url}/${rollId}`);
+  const noteRest = NoteRest(`${url}/${rollId}`);
   const [notes, setNotes] = useReducer(
     (state: Array<NoteNeeds>, action: NoteAction) => {
       switch (action.type) {
@@ -78,6 +78,7 @@ const Roll: React.FC<Props> = ({
         .sort((a, b) => a.octave - b.octave)
         .map((it) => ({
           sticky: it.sticky,
+          childRollId: it.childRollId,
           pos: {
             x: it.offset,
             y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch - 1),
@@ -88,30 +89,46 @@ const Roll: React.FC<Props> = ({
             if (!sum.beforeSticky || sum.pos.y != it.pos.y) {
               const gridIndex = posToGridIndex(sum.pos);
               return {
-                store: [...sum.store, { gridIndex, length: sum.length }],
+                store: [
+                  ...sum.store,
+                  {
+                    gridIndex,
+                    length: sum.length,
+                    childRollId: it.childRollId,
+                  },
+                ],
                 pos: it.pos,
                 length: 1,
                 beforeSticky: it.sticky,
+                childRollId: it.childRollId,
               };
             }
             const length = sum.length + 1;
-            return { ...sum, length, beforeSticky: it.sticky };
+            return {
+              ...sum,
+              length,
+              beforeSticky: it.sticky,
+              childRollId: it.childRollId,
+            };
           },
           {
             store: [],
             pos: { x: -1, y: -1 },
             length: 0,
+            childRollId: null,
             beforeSticky: false,
           } as {
             store: Array<NoteNeeds>;
             pos: { x: number; y: number };
             length: number;
+            childRollId: number | null;
             beforeSticky: boolean;
           }
         );
-      const last = {
+      const last: NoteNeeds = {
         gridIndex: posToGridIndex(reduced.pos),
         length: reduced.length,
+        childRollId: reduced.childRollId,
       };
       const values = [...reduced.store, last].slice(1);
       setNotes({
@@ -147,7 +164,11 @@ const Roll: React.FC<Props> = ({
     const gridIndexesFromLength = (gridIndex: number, length: number) =>
       range0to(length).map((index) => gridIndex + index * grid.height);
 
-    const create = (beforeGridIndex: number, afterGridIndex: number) => {
+    const create = (
+      beforeGridIndex: number,
+      afterGridIndex: number,
+      childRollId: number | null = null
+    ) => {
       const fromPos = gridIndexToPos(beforeGridIndex);
       const toPos = gridIndexToPos(afterGridIndex);
       const noteStartPos = {
@@ -162,13 +183,14 @@ const Roll: React.FC<Props> = ({
       );
       const noteCreateRequests = noteKeys
         .slice(0, -1)
-        .map((noteKeys) => ({ ...noteKeys, sticky: true }))
-        .concat([{ ...noteKeys.slice(-1)[0], sticky: false }]);
-      return noteRest
-        .create(noteCreateRequests)
-        .then(() =>
-          setNotes({ type: "add", value: { gridIndex, length: length } })
-        );
+        .map((noteKeys) => ({ ...noteKeys, sticky: true, childRollId }))
+        .concat([{ ...noteKeys.slice(-1)[0], sticky: false, childRollId }]);
+      return noteRest.create(noteCreateRequests).then(() =>
+        setNotes({
+          type: "add",
+          value: { gridIndex, length: length, childRollId },
+        })
+      );
     };
     const remove = (gridIndex: number) => {
       setNotes({
@@ -194,7 +216,8 @@ const Roll: React.FC<Props> = ({
     if (from.type == "Note")
       if (to.type == "ActionCell") update(from.gridIndex, to.gridIndex);
     if (from.type == "RollList")
-      if (to.type == "ActionCell") create(to.gridIndex, to.gridIndex);
+      if (to.type == "ActionCell")
+        create(to.gridIndex, to.gridIndex, from.rollId);
   }, [putNote.apply]);
 
   const style = {

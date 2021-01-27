@@ -8,9 +8,16 @@ type Props = {
 type Needs = {
   gridIndex: number;
   length: number;
+  childRollId: number | null;
 };
 const selfType = "Note";
-const Note: React.FC<Props> = ({ gridIndex, length, gridIndexToPos }) => {
+const Note: React.FC<Props> = ({
+  gridIndex,
+  length,
+  childRollId,
+  gridIndexToPos,
+}) => {
+  // console.log(`rerender: Note _ ${rollId}`)
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
@@ -52,7 +59,9 @@ const Note: React.FC<Props> = ({ gridIndex, length, gridIndexToPos }) => {
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
-    ></div>
+    >
+      {childRollId}
+    </div>
   );
 };
 

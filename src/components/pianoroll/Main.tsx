@@ -27,7 +27,7 @@ const Main: React.FC = () => {
   return (
     <div className="h-full w-full flex justify-between">
       <PutNote.Providers>
-        <div className="h-full flex flex-col">
+        <div className="h-full w-20 flex flex-col">
           <AudioPlayer url={`${url}/rolls/${selectedRollId}`}></AudioPlayer>
           <RollList urlRoot={url} setRollId={setSelectedRollId} />
         </div>

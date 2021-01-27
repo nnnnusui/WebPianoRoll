@@ -36,7 +36,11 @@ const AudioPlayer: React.FC<Prop> = ({ url }) => {
 
   return (
     <div>
-      <input className="w-20 h-20" type="checkbox" onChange={onChange}></input>
+      <input
+        className="w-full h-20"
+        type="checkbox"
+        onChange={onChange}
+      ></input>
     </div>
   );
 };

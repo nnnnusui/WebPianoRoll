@@ -8,19 +8,29 @@ type Prop = {
 };
 const selfType = "RollList";
 const RollList: React.FC<Prop> = ({ urlRoot, setRollId }) => {
-  const [rolls, setRolls] = useState<Array<RollRestType>>();
+  console.log("rerender: RollList");
   const rest = RollRest(urlRoot);
+  const [division, setDivision] = useState<number>();
+  const [createFired, setCreateFired] = useState(true);
+  const onClick = () => {
+    if (division == undefined) return;
+    rest.create({ division }).then(() => setCreateFired(true));
+  };
+
+  const [rolls, setRolls] = useState<Array<RollRestType>>();
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
     setApply: PutNote.Contexts.apply.Dispatch(),
   };
   useEffect(() => {
+    if (!createFired) return;
+    setCreateFired(false);
     rest.getAll().then((result) => {
       setRolls(result);
       if (result.length != 0) setRollId(result[0].id);
     });
-  }, []);
+  }, [createFired]);
   if (rolls == undefined) return <></>;
 
   const list = rolls.map((roll) => {
@@ -36,14 +46,25 @@ const RollList: React.FC<Prop> = ({ urlRoot, setRollId }) => {
     };
     return (
       <li key={rollId} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
-        {rollId}
+        {`${rollId}: ${roll.division}`}
       </li>
     );
   });
 
   return (
-    <article>
-      <h1>rolls________</h1>
+    <article className="relative w-full">
+      <h1>Rolls</h1>
+      <input
+        type="number"
+        placeholder="*division"
+        onChange={(e) => setDivision(Number(e.target.value))}
+      />
+      <input
+        type="button"
+        className="w-full"
+        value="create"
+        onClick={onClick}
+      />
       <ul>{list}</ul>
     </article>
   );

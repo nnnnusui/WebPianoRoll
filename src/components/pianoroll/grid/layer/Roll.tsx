@@ -94,7 +94,7 @@ const Roll: React.FC<Props> = ({
                   {
                     gridIndex,
                     length: sum.length,
-                    childRollId: it.childRollId,
+                    childRollId: sum.childRollId,
                   },
                 ],
                 pos: it.pos,
@@ -108,7 +108,7 @@ const Roll: React.FC<Props> = ({
               ...sum,
               length,
               beforeSticky: it.sticky,
-              childRollId: it.childRollId,
+              childRollId: sum.childRollId,
             };
           },
           {

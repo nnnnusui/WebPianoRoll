@@ -17,7 +17,7 @@ const Note: React.FC<Props> = ({
   childRollId,
   gridIndexToPos,
 }) => {
-  // console.log(`rerender: Note _ ${rollId}`)
+  // console.log(`rerender: Note _ ${childRollId}`)
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),

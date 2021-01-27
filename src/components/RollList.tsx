@@ -1,27 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import RollRest, { RollRestType } from './pianoroll/rest/RollRest';
+import React, { useState, useEffect } from "react";
+import RollRest, { RollRestType } from "./pianoroll/rest/RollRest";
+import PutNote from "./pianoroll/contexts/PutNoteContext";
 
 type Prop = {
-    urlRoot: string;
-    setRollId: React.Dispatch<React.SetStateAction<number>>;
+  urlRoot: string;
+  setRollId: React.Dispatch<React.SetStateAction<number>>;
+};
+const selfType = "RollList";
+const RollList: React.FC<Prop> = ({ urlRoot, setRollId }) => {
+  const [rolls, setRolls] = useState<Array<RollRestType>>();
+  const rest = RollRest(urlRoot);
+  const putNote = {
+    setFrom: PutNote.Contexts.from.Dispatch(),
+    setTo: PutNote.Contexts.to.Dispatch(),
+    setApply: PutNote.Contexts.apply.Dispatch(),
   };
-const RollList: React.FC<Prop> = ({urlRoot, setRollId}) => {
-    const [rolls, setRolls] = useState<Array<RollRestType>>();
-    const rest = RollRest(urlRoot);
-    useEffect(()=> {
-        rest.getAll()
-            .then((result) => setRolls(result))
-    }, [])
-    if (rolls == undefined) return <></>
+  useEffect(() => {
+    rest.getAll().then((result) => {
+      setRolls(result);
+      if (result.length != 0) setRollId(result[0].id);
+    });
+  }, []);
+  if (rolls == undefined) return <></>;
 
-    return <article className="">
-        <h1>rolls________</h1>
-        <ul>
-            {
-                rolls.map((it)=> <li key={it.id} onClick={()=> setRollId(it.id)}>{it.id}</li>)
-            }
-        </ul>
+  const list = rolls.map((roll) => {
+    const rollId = roll.id;
+    const onMouseDown = (event: React.MouseEvent) => {
+      event.preventDefault();
+      putNote.setFrom({ type: selfType, rollId });
+    };
+    const onMouseUp = (event: React.MouseEvent) => {
+      event.preventDefault();
+      putNote.setTo({ type: selfType, rollId });
+      setRollId(rollId);
+    };
+    return (
+      <li key={rollId} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+        {rollId}
+      </li>
+    );
+  });
+
+  return (
+    <article className="">
+      <h1>rolls________</h1>
+      <ul>{list}</ul>
     </article>
-}
+  );
+};
 
-export default RollList
+export default RollList;

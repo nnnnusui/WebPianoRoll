@@ -3,7 +3,6 @@ import Roll, { RollProps } from "./Roll";
 import SelectLayer from "./layer/SelectLayer";
 import ActionLayer from "./layer/ActionLayer";
 import Grid from "./contexts/GridContext";
-import PutNote from "./contexts/PutNoteContext";
 import RollRest from "./rest/RollRest";
 import AudioPlayer from "./AudioPlayer";
 
@@ -12,7 +11,7 @@ type Prop = {
   rollId: number;
 };
 const PianoRoll: React.FC<Prop> = ({ urlRoot, rollId }): ReactElement => {
-  console.log(`rerender: PianoRoll _ roll_id: ${rollId}`)
+  // console.log(`rerender: PianoRoll _ roll_id: ${rollId}`);
   const [roll, setRoll] = useState<RollProps>();
   useEffect(() => {
     const { url, get } = RollRest(urlRoot);
@@ -29,12 +28,10 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot, rollId }): ReactElement => {
   return (
     <div className="relative h-full w-full">
       <Grid.Provider>
-        <PutNote.Providers>
-          <AudioPlayer urlRoot={roll.url}></AudioPlayer>
-          <ActionLayer></ActionLayer>
-          <Roll {...roll}></Roll>
-          <SelectLayer></SelectLayer>
-        </PutNote.Providers>
+        <AudioPlayer urlRoot={roll.url}></AudioPlayer>
+        <ActionLayer></ActionLayer>
+        <Roll {...roll}></Roll>
+        <SelectLayer></SelectLayer>
       </Grid.Provider>
     </div>
   );

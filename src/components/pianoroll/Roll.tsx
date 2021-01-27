@@ -144,13 +144,18 @@ const Roll: React.FC<Props> = ({
     putNote.setApply(false);
     const from = putNote.from;
     const to = putNote.to;
-    const fromPos = gridIndexToPos(from.gridIndex);
-    const toPos = gridIndexToPos(to.gridIndex);
     const gridIndexesFromLength = (gridIndex: number, length: number) =>
       range0to(length).map((index) => gridIndex + index * grid.height);
 
-    const length = Math.abs(fromPos.x - toPos.x) + 1;
-    const create = (gridIndex: number) => {
+    const create = (beforeGridIndex: number, afterGridIndex: number) => {
+      const fromPos = gridIndexToPos(beforeGridIndex);
+      const toPos = gridIndexToPos(afterGridIndex);
+      const noteStartPos = {
+        x: Math.min(fromPos.x, toPos.x),
+        y: fromPos.y,
+      };
+      const gridIndex = posToGridIndex(noteStartPos);
+      const length = Math.abs(fromPos.x - toPos.x) + 1;
       const noteGridIndexes = gridIndexesFromLength(gridIndex, length);
       const noteKeys = noteGridIndexes.map((gridIndex) =>
         getKeysFromPos(gridIndexToPos(gridIndex))
@@ -180,33 +185,16 @@ const Roll: React.FC<Props> = ({
       // setNotes({ type: "update", beforeGridIndex, getValue: prev=> ({...prev, gridIndex: afterGridIndex}) });
       // remove(beforeGridIndex).then(() => create(afterGridIndex));
     };
-    switch (from.type) {
-      case "ActionCell":
-        switch (to.type) {
-          case "ActionCell": {
-            const noteStartPos = {
-              x: Math.min(fromPos.x, toPos.x),
-              y: fromPos.y,
-            };
-            const gridIndex = posToGridIndex(noteStartPos);
-            create(gridIndex);
-            break;
-          }
-          case "Note":
-            break;
-        }
-        break;
-      case "Note":
-        switch (to.type) {
-          case "ActionCell":
-            update(from.gridIndex, to.gridIndex);
-            break;
-          case "Note":
-            if (from.gridIndex == to.gridIndex) remove(to.gridIndex);
-            break;
-        }
-        break;
-    }
+    console.log(`${from.type}, ${to.type}`);
+    if (from.type == "ActionCell")
+      if (to.type == "ActionCell") create(from.gridIndex, to.gridIndex);
+    if (from.type == "Note")
+      if (to.type == "Note")
+        if (from.gridIndex == to.gridIndex) remove(to.gridIndex);
+    if (from.type == "Note")
+      if (to.type == "ActionCell") update(from.gridIndex, to.gridIndex);
+    if (from.type == "RollList")
+      if (to.type == "ActionCell") create(to.gridIndex, to.gridIndex);
   }, [putNote.apply]);
 
   const style = {

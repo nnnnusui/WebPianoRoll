@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import SoundRest from "./rest/SoundRest";
 
 type Prop = {
@@ -11,13 +11,14 @@ const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
   const rest = SoundRest(`${urlRoot}/1`);
 
   const onClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
     if (checked) {
       audio?.stop();
     } else {
       const context = new AudioContext();
       const sampleRate = context.sampleRate;
       rest.get(sampleRate).then((sound) => {
-        console.log(sound)
+        console.log(sound);
         const length = sound.length;
         const channel = 1;
         const buffer = context.createBuffer(channel, length, sampleRate);
@@ -27,7 +28,7 @@ const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
         const gainNode = context.createGain();
         gainNode.gain.value = 0.5;
         source.connect(gainNode);
-        gainNode.connect(context.destination)
+        gainNode.connect(context.destination);
         source.start();
         setAudio(source);
       });

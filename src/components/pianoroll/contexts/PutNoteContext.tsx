@@ -1,10 +1,15 @@
 import React from "react";
 import GenerateContext from "../../GenerateContext";
 
-type Source = {
-  type: "Note" | "ActionCell";
-  gridIndex: number;
-};
+type Source =
+  | {
+      type: "Note" | "ActionCell";
+      gridIndex: number;
+    }
+  | {
+      type: "RollList";
+      rollId: number;
+    };
 const Contexts = {
   from: GenerateContext({} as Source),
   to: GenerateContext({} as Source),

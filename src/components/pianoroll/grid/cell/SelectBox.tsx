@@ -1,5 +1,5 @@
 import React from "react";
-import Selection, { SelectionMode } from "../contexts/SelectionContext";
+import Selection, { SelectionMode } from "../../contexts/SelectionContext";
 
 const SelectBox: React.FC = () => {
   const [from, to, mode] = [

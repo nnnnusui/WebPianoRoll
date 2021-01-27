@@ -1,7 +1,7 @@
 import React, { ReactElement, useEffect, useState } from "react";
-import Roll, { RollProps } from "./Roll";
-import SelectLayer from "./layer/SelectLayer";
-import ActionLayer from "./layer/ActionLayer";
+import Roll, { RollProps } from "./grid/layer/Roll";
+import SelectLayer from "./grid/layer/SelectLayer";
+import ActionLayer from "./grid/layer/ActionLayer";
 import Grid from "./contexts/GridContext";
 import RollRest from "./rest/RollRest";
 

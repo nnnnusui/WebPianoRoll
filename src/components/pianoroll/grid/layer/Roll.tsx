@@ -1,9 +1,9 @@
 import React, { useEffect, useReducer } from "react";
-import Grid from "./contexts/GridContext";
-import PutNote from "./contexts/PutNoteContext";
-import Note, { NoteNeeds } from "./Note";
-import NoteRest from "./rest/NoteRest";
-import { range0to } from "../range";
+import Grid from "../../contexts/GridContext";
+import PutNote from "../../contexts/PutNoteContext";
+import Note, { NoteNeeds } from "../cell/Note";
+import NoteRest from "../../rest/NoteRest";
+import { range0to } from "../../../range";
 
 type Props = {
   url: string;

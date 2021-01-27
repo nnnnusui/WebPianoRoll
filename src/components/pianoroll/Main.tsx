@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import PianoRoll from "../components/pianoroll/PianoRoll";
-import RollList from "../components/RollList";
-import PutNote from "./pianoroll/contexts/PutNoteContext";
-import AudioPlayer from "./pianoroll/AudioPlayer";
+import PianoRoll from "./PianoRoll";
+import RollList from "./RollList";
+import PutNote from "./contexts/PutNoteContext";
+import AudioPlayer from "./AudioPlayer";
 
 const Main: React.FC = () => {
   const [selectedRollId, setSelectedRollId] = useState<number>(-1);

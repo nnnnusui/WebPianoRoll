@@ -1,29 +1,19 @@
 import React from "react";
-import PutNote from "./contexts/PutNoteContext";
-import getCellFromPoint from "./getCellFromPoint";
+import PutNote from "../../contexts/PutNoteContext";
+import getCellFromPoint from "../getCellFromPoint";
 
 type Props = {
-  gridIndexToPos: (gridIndex: number) => { x: number; y: number };
-} & Needs;
-type Needs = {
   gridIndex: number;
-  length: number;
-  childRollId: number | null;
 };
-const selfType = "Note";
-const Note: React.FC<Props> = ({
-  gridIndex,
-  length,
-  childRollId,
-  gridIndexToPos,
-}) => {
-  // console.log(`rerender: Note _ ${rollId}`)
+
+const selfType = "ActionCell";
+const ActionCell: React.FC<Props> = ({ gridIndex }) => {
+  // console.log("rerender: ActionCell");
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
     setApply: PutNote.Contexts.apply.Dispatch(),
   };
-
   const onMouseDown = (event: React.MouseEvent) => {
     event.preventDefault();
     putNote.setFrom({ type: selfType, gridIndex });
@@ -44,26 +34,20 @@ const Note: React.FC<Props> = ({
     putNote.setTo(to);
     putNote.setApply(true);
   };
-
-  const pos = gridIndexToPos(gridIndex);
-  const style = {
-    gridColumnStart: pos.x + 1,
-    gridRowStart: pos.y + 1,
-    gridColumnEnd: pos.x + length + 1,
-  };
   return (
     <div
       {...{ type: selfType, gridindex: gridIndex }}
-      className="pointer-events-auto bg-yellow-500 rounded-lg"
-      style={style}
+      className="action-cell relative h-full w-full bg-gray-600 rounded-sm"
+      onContextMenu={suplessRightClickMenu}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
       onTouchEnd={onTouchEnd}
-    >
-      {childRollId}
-    </div>
+    ></div>
   );
 };
 
-export default Note;
-export type { Needs as NoteNeeds };
+const suplessRightClickMenu = (event: React.MouseEvent) => {
+  if (!event.altKey) event.preventDefault();
+};
+
+export default ActionCell;

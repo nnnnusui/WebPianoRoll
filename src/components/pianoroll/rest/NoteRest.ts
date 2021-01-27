@@ -1,4 +1,4 @@
-import typedFetch from "../../typedFetch";
+import typedFetch from "./typedFetch";
 
 type NoteRestType = NoteCreate;
 type NoteCreate = {

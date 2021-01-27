@@ -1,4 +1,4 @@
-import typedFetch from "../../typedFetch";
+import typedFetch from "./typedFetch";
 
 type SoundRest = {
   length: number;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import RollRest, { RollRestType } from "./pianoroll/rest/RollRest";
-import PutNote from "./pianoroll/contexts/PutNoteContext";
+import RollRest, { RollRestType } from "./rest/RollRest";
+import PutNote from "./contexts/PutNoteContext";
 
 type Prop = {
   urlRoot: string;

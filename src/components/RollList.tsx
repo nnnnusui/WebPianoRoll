@@ -42,7 +42,7 @@ const RollList: React.FC<Prop> = ({ urlRoot, setRollId }) => {
   });
 
   return (
-    <article className="">
+    <article>
       <h1>rolls________</h1>
       <ul>{list}</ul>
     </article>

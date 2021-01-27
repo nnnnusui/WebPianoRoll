@@ -4,7 +4,6 @@ import SelectLayer from "./layer/SelectLayer";
 import ActionLayer from "./layer/ActionLayer";
 import Grid from "./contexts/GridContext";
 import RollRest from "./rest/RollRest";
-import AudioPlayer from "./AudioPlayer";
 
 type Prop = {
   urlRoot: string;
@@ -28,7 +27,6 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot, rollId }): ReactElement => {
   return (
     <div className="relative h-full w-full">
       <Grid.Provider>
-        <AudioPlayer urlRoot={roll.url}></AudioPlayer>
         <ActionLayer></ActionLayer>
         <Roll {...roll}></Roll>
         <SelectLayer></SelectLayer>

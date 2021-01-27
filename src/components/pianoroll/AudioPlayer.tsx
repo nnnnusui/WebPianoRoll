@@ -2,19 +2,15 @@ import React, { useState } from "react";
 import SoundRest from "./rest/SoundRest";
 
 type Prop = {
-  urlRoot: string;
+  url: string;
 };
-const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
+const AudioPlayer: React.FC<Prop> = ({ url }) => {
   // console.log("rerender: AudioPlayer");
   const [audio, setAudio] = useState<AudioBufferSourceNode>();
-  const [checked, setChecked] = useState(false);
-  const rest = SoundRest(`${urlRoot}/1`);
+  const rest = SoundRest(url);
 
-  const onClick = (event: React.MouseEvent<HTMLElement>) => {
-    event.preventDefault();
-    if (checked) {
-      audio?.stop();
-    } else {
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.checked) {
       const context = new AudioContext();
       const sampleRate = context.sampleRate;
       rest.get(sampleRate).then((sound) => {
@@ -33,13 +29,14 @@ const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
         source.start();
         setAudio(source);
       });
+    } else {
+      audio?.stop();
     }
-    setChecked(!checked);
   };
 
   return (
     <div>
-      <input className="w-20 h-20" type="checkbox" onClick={onClick}></input>
+      <input className="w-20 h-20" type="checkbox" onChange={onChange}></input>
     </div>
   );
 };

@@ -5,12 +5,14 @@ type RollCreate = {
   division: number;
 }
 type RollKeys = {
-  id: number
+  id: number;
 }
 const RollRest = (rootUrl: string) => {
   const url = `${rootUrl}/rolls`;
   console.log(url);
-  const getAll = () => typedFetch<Array<RollRestType>>(url)
+  const getAll = () =>
+    typedFetch<{ values: Array<RollRestType> }>(url)
+      .then(result => result.values)
   const get = (id: number) => typedFetch<RollRestType>(`${url}/${id}`);
   const create = (body: RollCreate) => typedFetch<RollRestType>(url, {
     method: "POST",
@@ -24,4 +26,4 @@ const RollRest = (rootUrl: string) => {
 };
 
 export default RollRest;
-export type {RollRestType}
+export type { RollRestType };

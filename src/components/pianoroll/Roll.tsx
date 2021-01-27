@@ -119,7 +119,7 @@ const Roll: React.FC<Props> = ({
         value: values,
       });
     });
-  }, [setGrid]);
+  }, [setGrid, rollId]);
   const posToGridIndex = (pos: { x: number; y: number }) =>
     pos.x * grid.height + pos.y;
   const gridIndexToPos = (gridIndex: number) => ({

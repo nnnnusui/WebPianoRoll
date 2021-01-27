@@ -9,12 +9,13 @@ import AudioPlayer from "./AudioPlayer";
 
 type Prop = {
   urlRoot: string;
+  rollId: number;
 };
-const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
+const PianoRoll: React.FC<Prop> = ({ urlRoot, rollId }): ReactElement => {
+  console.log(`rerender: PianoRoll _ roll_id: ${rollId}`)
   const [roll, setRoll] = useState<RollProps>();
   useEffect(() => {
     const { url, get } = RollRest(urlRoot);
-    const rollId = 1;
     get(rollId).then((result) => {
       const maxPitch = 12;
       const maxOffset = result.division;
@@ -22,11 +23,11 @@ const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
       const maxOctave = 1;
       setRoll({ url, rollId, maxOffset, minOctave, maxOctave, maxPitch });
     });
-  }, [urlRoot]);
+  }, [urlRoot, rollId]);
   if (roll == undefined) return <></>;
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-full w-full">
       <Grid.Provider>
         <PutNote.Providers>
           <AudioPlayer urlRoot={roll.url}></AudioPlayer>

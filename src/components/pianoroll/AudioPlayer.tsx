@@ -29,6 +29,7 @@ const AudioPlayer: React.FC<Prop> = ({ urlRoot }) => {
         gainNode.gain.value = 0.5;
         source.connect(gainNode);
         gainNode.connect(context.destination);
+        source.loop = true
         source.start();
         setAudio(source);
       });

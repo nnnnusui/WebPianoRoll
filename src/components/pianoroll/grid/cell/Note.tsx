@@ -13,12 +13,13 @@ type Needs = {
 };
 const selfType = "Note";
 const Note: React.FC<Props> = ({
+  id,
   gridIndex,
   length,
   childRollId,
   gridIndexToPos,
 }) => {
-  // console.log(`rerender: Note _ ${id}`)
+  console.log(`rerender: Note _ ${id}`);
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),

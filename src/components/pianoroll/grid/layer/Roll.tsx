@@ -73,6 +73,7 @@ const Roll: React.FC<Props> = ({
     setGrid({ width, height });
     noteRest.getAll().then((result) => {
       const values: NoteNeeds[] = result.map((it) => {
+        console.log(it.id);
         const pos = {
           x: it.offset,
           y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch - 1),
@@ -146,6 +147,28 @@ const Roll: React.FC<Props> = ({
       });
     };
     const update = (beforeGridIndex: number, afterGridIndex: number) => {
+      const fromPos = gridIndexToPos(beforeGridIndex);
+      const toPos = gridIndexToPos(afterGridIndex);
+      const noteStartPos = {
+        x: Math.min(fromPos.x, toPos.x),
+        y: fromPos.y,
+      };
+      const gridIndex = posToGridIndex(noteStartPos);
+      const notePosition = getNoteRestValuesFromPos(gridIndexToPos(gridIndex));
+      const toForward = beforeGridIndex < afterGridIndex;
+      setNotes({
+        type: "update",
+        beforeGridIndex,
+        getValue: (prev) => {
+          const fix = toForward ? 1 : prev.length;
+          const length = Math.abs(fromPos.x - toPos.x) + fix;
+          const id = prev.id;
+          const childRollId = prev.childRollId;
+          console.log(`${fromPos.x}, ${toPos.x} _ ${length}`);
+          noteRest.update({ id, ...notePosition, length, childRollId });
+          return { id, gridIndex, length, childRollId };
+        },
+      });
       // const fromPos = gridIndexToPos(beforeGridIndex);
       // const toPos = gridIndexToPos(afterGridIndex);
       // setNotes({ type: "update", beforeGridIndex, getValue: prev=> {

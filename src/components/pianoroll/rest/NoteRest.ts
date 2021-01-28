@@ -28,12 +28,22 @@ const NoteRest = (rootUrl: string) => {
       body: JSON.stringify(note),
     });
   };
+
+  const update = (input: NoteRestType) =>
+    typedFetch(`${url}/${input.id}`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
   const remove = (keys: NoteKeys) =>
     typedFetch(`${url}/${keys.id}`, {
       method: "DELETE",
     });
 
-  return { getAll, create, remove };
+  return { getAll, create, update, remove };
 };
 
 export default NoteRest;

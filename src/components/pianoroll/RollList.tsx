@@ -24,6 +24,7 @@ const RollList: React.FC<Prop> = ({ urlRoot }) => {
     if (!createFired) return;
     setCreateFired(false);
     rest.getAll().then((result) => {
+      result.map((it) => console.log(it));
       setRolls(result);
       if (result.length != 0) putNote.setSelectedRollId(result[0].id);
     });

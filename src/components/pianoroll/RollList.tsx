@@ -67,12 +67,15 @@ const RollList: React.FC<Prop> = ({ urlRoot }) => {
   return (
     <article className="relative w-full">
       <h1>Rolls</h1>
-      <input
-        type="number"
-        placeholder="*division"
-        onChange={(e) => setDivision(Number(e.target.value))}
-        className="w-full bg-gray-400"
-      />
+      <div className="flex flex-row items-end ">
+        <p className="text-sm">division:</p>
+        <input
+          type="number"
+          placeholder="*division"
+          onChange={(e) => setDivision(Number(e.target.value))}
+          className="w-full text-right bg-gray-400"
+        />
+      </div>
       <input
         type="button"
         className="w-full bg-gray-400"

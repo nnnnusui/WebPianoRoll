@@ -32,12 +32,12 @@ const RollList: React.FC<Prop> = ({ urlRoot }) => {
 
   const onClick = () => {
     if (division == undefined) return;
-    rest.create({ division }).then(result => {
+    rest.create({ division }).then((result) => {
       // const rollId = result.id
       // putNote.setFrom({ type: selfType, rollId });
       // putNote.setTo({ type: selfType, rollId });
       // putNote.setApply(true);
-      setCreateFired(true)
+      setCreateFired(true);
     });
   };
   const list = rolls.map((roll) => {

@@ -1,38 +1,40 @@
 import typedFetch from "./typedFetch";
 
-type NoteRestType = NoteCreate;
+type NoteRestType = NoteKeys & NoteCreate;
 type NoteCreate = {
-  sticky: boolean;
-  childRollId: number | null;
-} & NoteKeys;
-type NoteKeys = {
   offset: number;
   octave: number;
   pitch: number;
+  length: number;
+  childRollId: number | null;
+};
+type NoteKeys = {
+  id: number;
 };
 
 const NoteRest = (rootUrl: string) => {
   const url = `${rootUrl}/notes`;
-  const getAll = () => typedFetch<{ values: Array<NoteRestType> }>(url);
-  const create = (notes: Array<NoteCreate>) => {
+  const getAll = () =>
+    typedFetch<{ values: Array<NoteRestType> }>(url).then(
+      (result) => result.values
+    );
+  const create = (note: NoteCreate) => {
     return typedFetch<NoteRestType>(url, {
       method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(notes),
+      body: JSON.stringify(note),
     });
   };
   const remove = (keys: NoteKeys) =>
-    typedFetch(
-      `${url}?offset=${keys.offset}&octave=${keys.octave}&pitch=${keys.pitch}`,
-      {
-        method: "DELETE",
-      }
-    );
+    typedFetch(`${url}/${keys.id}`, {
+      method: "DELETE",
+    });
 
   return { getAll, create, remove };
 };
 
 export default NoteRest;
+export type { NoteRestType };

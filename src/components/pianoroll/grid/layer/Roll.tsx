@@ -72,65 +72,16 @@ const Roll: React.FC<Props> = ({
   useEffect(() => {
     setGrid({ width, height });
     noteRest.getAll().then((result) => {
-      const reduced = result.values
-        .sort((a, b) => a.offset - b.offset)
-        .sort((a, b) => a.pitch - b.pitch)
-        .sort((a, b) => a.octave - b.octave)
-        .map((it) => ({
-          sticky: it.sticky,
-          childRollId: it.childRollId,
-          pos: {
-            x: it.offset,
-            y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch - 1),
-          },
-        }))
-        .reduce(
-          (sum, it) => {
-            if (!sum.beforeSticky || sum.pos.y != it.pos.y) {
-              const gridIndex = posToGridIndex(sum.pos);
-              return {
-                store: [
-                  ...sum.store,
-                  {
-                    gridIndex,
-                    length: sum.length,
-                    childRollId: sum.childRollId,
-                  },
-                ],
-                pos: it.pos,
-                length: 1,
-                beforeSticky: it.sticky,
-                childRollId: it.childRollId,
-              };
-            }
-            const length = sum.length + 1;
-            return {
-              ...sum,
-              length,
-              beforeSticky: it.sticky,
-              childRollId: sum.childRollId,
-            };
-          },
-          {
-            store: [],
-            pos: { x: -1, y: -1 },
-            length: 0,
-            childRollId: null,
-            beforeSticky: false,
-          } as {
-            store: Array<NoteNeeds>;
-            pos: { x: number; y: number };
-            length: number;
-            childRollId: number | null;
-            beforeSticky: boolean;
-          }
-        );
-      const last: NoteNeeds = {
-        gridIndex: posToGridIndex(reduced.pos),
-        length: reduced.length,
-        childRollId: reduced.childRollId,
-      };
-      const values = [...reduced.store, last].slice(1);
+      const values: NoteNeeds[] = result.map((it) => {
+        const pos = {
+          x: it.offset,
+          y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch - 1),
+        };
+        const gridIndex = posToGridIndex(pos);
+        const length = it.length;
+        const childRollId = it.childRollId;
+        return { id: it.id, gridIndex, length, childRollId };
+      });
       setNotes({
         type: "init",
         value: values,
@@ -143,7 +94,7 @@ const Roll: React.FC<Props> = ({
     x: Math.floor(gridIndex / grid.height),
     y: gridIndex % grid.height,
   });
-  const getKeysFromPos = (pos: { x: number; y: number }) => {
+  const getNoteRestValuesFromPos = (pos: { x: number; y: number }) => {
     const offset = pos.x;
     const octave = maxOctave - Math.floor(pos.y / maxPitch);
     const pitch = maxPitch - (pos.y % maxPitch) - 1;
@@ -178,18 +129,12 @@ const Roll: React.FC<Props> = ({
       };
       const gridIndex = posToGridIndex(noteStartPos);
       const length = Math.abs(fromPos.x - toPos.x) + 1;
-      const noteGridIndexes = gridIndexesFromLength(gridIndex, length);
-      const noteKeys = noteGridIndexes.map((gridIndex) =>
-        getKeysFromPos(gridIndexToPos(gridIndex))
-      );
-      const noteCreateRequests = noteKeys
-        .slice(0, -1)
-        .map((noteKeys) => ({ ...noteKeys, sticky: true, childRollId }))
-        .concat([{ ...noteKeys.slice(-1)[0], sticky: false, childRollId }]);
-      return noteRest.create(noteCreateRequests).then(() =>
+      const notePosition = getNoteRestValuesFromPos(gridIndexToPos(gridIndex));
+      const request = { ...notePosition, length, childRollId };
+      return noteRest.create(request).then((result) =>
         setNotes({
           type: "add",
-          value: { gridIndex, length: length, childRollId },
+          value: { gridIndex, length: length, childRollId, id: result.id },
         })
       );
     };
@@ -197,15 +142,30 @@ const Roll: React.FC<Props> = ({
       setNotes({
         type: "remove",
         gridIndex,
-        useValue: (note) => {
-          gridIndexesFromLength(gridIndex, note.length)
-            .map((gridIndex) => getKeysFromPos(gridIndexToPos(gridIndex)))
-            .forEach((it) => noteRest.remove(it));
-        },
+        useValue: (note) => noteRest.remove({ id: note.id }),
       });
     };
     const update = (beforeGridIndex: number, afterGridIndex: number) => {
-      // setNotes({ type: "update", beforeGridIndex, getValue: prev=> ({...prev, gridIndex: afterGridIndex}) });
+      // const fromPos = gridIndexToPos(beforeGridIndex);
+      // const toPos = gridIndexToPos(afterGridIndex);
+      // setNotes({ type: "update", beforeGridIndex, getValue: prev=> {
+      //   // if(fromPos.x + prev.length > toPos.x) return prev;
+      //   const toForward = fromPos.x < toPos.x
+      //   const x = toForward ? {
+      //     start: fromPos.x + prev.length,
+      //     end: toPos.x
+      //   } : {
+      //     start: toPos.x,
+      //     end: fromPos.x - 1
+      //   }
+      //   if (toForward && x.end < fromPos.x + prev.length) return prev;
+      //   create(posToGridIndex({x: x.start, y: fromPos.y}), posToGridIndex({x: x.end, y: fromPos.y}))
+      //   // const noteStartPos = {
+      //   //   x: Math.min(fromPos.x, toPos.x),
+      //   //   y: fromPos.y,
+      //   // };
+      //   return {gridIndex: posToGridIndex({x: x.start, y: fromPos.y}), length: x.end - x.start + prev.length}
+      // } });
       // remove(beforeGridIndex).then(() => create(afterGridIndex));
     };
     console.log(`${from.type}, ${to.type}`);
@@ -233,8 +193,8 @@ const Roll: React.FC<Props> = ({
       className="pointer-events-none absolute h-full w-full grid grid-flow-col"
       style={style}
     >
-      {notes.map((it, index) => {
-        return <Note key={index} {...{ ...it, gridIndexToPos }}></Note>;
+      {notes.map((note) => {
+        return <Note key={note.id} {...{ ...note, gridIndexToPos }}></Note>;
       })}
     </div>
   );

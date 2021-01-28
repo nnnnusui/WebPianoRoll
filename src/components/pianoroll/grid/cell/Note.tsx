@@ -6,6 +6,7 @@ type Props = {
   gridIndexToPos: (gridIndex: number) => { x: number; y: number };
 } & Needs;
 type Needs = {
+  id: number;
   gridIndex: number;
   length: number;
   childRollId: number | null;
@@ -17,7 +18,7 @@ const Note: React.FC<Props> = ({
   childRollId,
   gridIndexToPos,
 }) => {
-  // console.log(`rerender: Note _ ${childRollId}`)
+  // console.log(`rerender: Note _ ${id}`)
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),

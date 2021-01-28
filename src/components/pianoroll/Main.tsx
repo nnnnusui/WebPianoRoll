@@ -29,7 +29,7 @@ const Main: React.FC = () => {
       <PutNote.Providers>
         <div className="h-full w-20 flex flex-col">
           <AudioPlayer url={`${url}/rolls/${selectedRollId}`}></AudioPlayer>
-          <RollList urlRoot={url} setRollId={setSelectedRollId} />
+          <RollList urlRoot={url} selectedRollId={selectedRollId} setRollId={setSelectedRollId} />
         </div>
         {pianoRoll}
       </PutNote.Providers>

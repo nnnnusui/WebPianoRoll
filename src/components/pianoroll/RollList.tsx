@@ -4,10 +4,11 @@ import PutNote from "./contexts/PutNoteContext";
 
 type Prop = {
   urlRoot: string;
+  selectedRollId: number;
   setRollId: React.Dispatch<React.SetStateAction<number>>;
 };
 const selfType = "RollList";
-const RollList: React.FC<Prop> = ({ urlRoot, setRollId }) => {
+const RollList: React.FC<Prop> = ({ urlRoot, selectedRollId, setRollId }) => {
   console.log("rerender: RollList");
   const rest = RollRest(urlRoot);
   const [division, setDivision] = useState<number>();
@@ -44,8 +45,10 @@ const RollList: React.FC<Prop> = ({ urlRoot, setRollId }) => {
       putNote.setTo({ type: selfType, rollId });
       setRollId(rollId);
     };
+    const color = rollId == selectedRollId ? "bg-gray-400" : ""
     return (
-      <li key={rollId} onMouseDown={onMouseDown} onMouseUp={onMouseUp}>
+      <li key={rollId} onMouseDown={onMouseDown} onMouseUp={onMouseUp}
+      className={`${color}`}>
         {`${rollId}: ${roll.division}`}
       </li>
     );

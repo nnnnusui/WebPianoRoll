@@ -155,6 +155,7 @@ const Roll: React.FC<Props> = ({
     to: PutNote.Contexts.to.State(),
     apply: PutNote.Contexts.apply.State(),
     setApply: PutNote.Contexts.apply.Dispatch(),
+    setSelectedRollId: PutNote.Contexts.selectedRollId.Dispatch(),
   };
   useEffect(() => {
     if (!putNote.apply) return;
@@ -218,6 +219,9 @@ const Roll: React.FC<Props> = ({
     if (from.type == "RollList")
       if (to.type == "ActionCell")
         create(to.gridIndex, to.gridIndex, from.rollId);
+    if (from.type == "RollList")
+      if (to.type == "RollList")
+        if (from.rollId == to.rollId) putNote.setSelectedRollId(to.rollId);
   }, [putNote.apply]);
 
   const style = {

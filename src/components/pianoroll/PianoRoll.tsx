@@ -4,24 +4,27 @@ import SelectLayer from "./grid/layer/SelectLayer";
 import ActionLayer from "./grid/layer/ActionLayer";
 import Grid from "./contexts/GridContext";
 import RollRest from "./rest/RollRest";
+import PutNote from "./contexts/PutNoteContext";
 
 type Prop = {
   urlRoot: string;
-  rollId: number;
 };
-const PianoRoll: React.FC<Prop> = ({ urlRoot, rollId }): ReactElement => {
+const PianoRoll: React.FC<Prop> = ({ urlRoot }): ReactElement => {
   // console.log(`rerender: PianoRoll _ roll_id: ${rollId}`);
+  const selectedRollId = PutNote.Contexts.selectedRollId.State();
   const [roll, setRoll] = useState<RollProps>();
   useEffect(() => {
+    if (selectedRollId < 1) return;
     const { url, get } = RollRest(urlRoot);
-    get(rollId).then((result) => {
+    get(selectedRollId).then((result) => {
+      const rollId = result.id;
       const maxPitch = 12;
       const maxOffset = result.division;
       const minOctave = -1;
       const maxOctave = 1;
       setRoll({ url, rollId, maxOffset, minOctave, maxOctave, maxPitch });
     });
-  }, [urlRoot, rollId]);
+  }, [urlRoot, selectedRollId]);
   if (roll == undefined) return <></>;
 
   return (

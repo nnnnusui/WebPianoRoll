@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import SoundRest from "./rest/SoundRest";
+import PutNote from "./contexts/PutNoteContext";
 
 type Prop = {
   url: string;
 };
 const AudioPlayer: React.FC<Prop> = ({ url }) => {
   // console.log("rerender: AudioPlayer");
+  const selectedRollId = PutNote.Contexts.selectedRollId.State();
   const [audio, setAudio] = useState<AudioBufferSourceNode>();
-  const rest = SoundRest(url);
+  const rest = SoundRest(`${url}/${selectedRollId}`);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {

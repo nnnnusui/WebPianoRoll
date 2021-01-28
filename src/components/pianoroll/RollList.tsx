@@ -4,36 +4,42 @@ import PutNote from "./contexts/PutNoteContext";
 
 type Prop = {
   urlRoot: string;
-  selectedRollId: number;
-  setRollId: React.Dispatch<React.SetStateAction<number>>;
 };
 const selfType = "RollList";
-const RollList: React.FC<Prop> = ({ urlRoot, selectedRollId, setRollId }) => {
+const RollList: React.FC<Prop> = ({ urlRoot }) => {
   console.log("rerender: RollList");
   const rest = RollRest(urlRoot);
-  const [division, setDivision] = useState<number>();
-  const [createFired, setCreateFired] = useState(true);
-  const onClick = () => {
-    if (division == undefined) return;
-    rest.create({ division }).then(() => setCreateFired(true));
-  };
 
   const [rolls, setRolls] = useState<Array<RollRestType>>();
   const putNote = {
     setFrom: PutNote.Contexts.from.Dispatch(),
     setTo: PutNote.Contexts.to.Dispatch(),
     setApply: PutNote.Contexts.apply.Dispatch(),
+    selectedRollId: PutNote.Contexts.selectedRollId.State(),
+    setSelectedRollId: PutNote.Contexts.selectedRollId.Dispatch(),
   };
+  const [division, setDivision] = useState<number>();
+  const [createFired, setCreateFired] = useState(true);
   useEffect(() => {
     if (!createFired) return;
     setCreateFired(false);
     rest.getAll().then((result) => {
       setRolls(result);
-      if (result.length != 0) setRollId(result[0].id);
+      if (result.length != 0) putNote.setSelectedRollId(result[0].id);
     });
   }, [createFired]);
   if (rolls == undefined) return <></>;
 
+  const onClick = () => {
+    if (division == undefined) return;
+    rest.create({ division }).then(result => {
+      // const rollId = result.id
+      // putNote.setFrom({ type: selfType, rollId });
+      // putNote.setTo({ type: selfType, rollId });
+      // putNote.setApply(true);
+      setCreateFired(true)
+    });
+  };
   const list = rolls.map((roll) => {
     const rollId = roll.id;
     const onMouseDown = (event: React.MouseEvent) => {
@@ -43,12 +49,16 @@ const RollList: React.FC<Prop> = ({ urlRoot, selectedRollId, setRollId }) => {
     const onMouseUp = (event: React.MouseEvent) => {
       event.preventDefault();
       putNote.setTo({ type: selfType, rollId });
-      setRollId(rollId);
+      putNote.setApply(true);
     };
-    const color = rollId == selectedRollId ? "bg-gray-400" : ""
+    const color = rollId == putNote.selectedRollId ? "bg-gray-300" : "";
     return (
-      <li key={rollId} onMouseDown={onMouseDown} onMouseUp={onMouseUp}
-      className={`${color}`}>
+      <li
+        key={rollId}
+        onMouseDown={onMouseDown}
+        onMouseUp={onMouseUp}
+        className={`${color}`}
+      >
         {`${rollId}: ${roll.division}`}
       </li>
     );
@@ -61,10 +71,11 @@ const RollList: React.FC<Prop> = ({ urlRoot, selectedRollId, setRollId }) => {
         type="number"
         placeholder="*division"
         onChange={(e) => setDivision(Number(e.target.value))}
+        className="w-full bg-gray-400"
       />
       <input
         type="button"
-        className="w-full"
+        className="w-full bg-gray-400"
         value="create"
         onClick={onClick}
       />

@@ -5,7 +5,6 @@ import PutNote from "./contexts/PutNoteContext";
 import AudioPlayer from "./AudioPlayer";
 
 const Main: React.FC = () => {
-  const [selectedRollId, setSelectedRollId] = useState<number>(-1);
   const [url, setUrl] = useState("");
   useEffect(() => {
     setUrl(
@@ -18,20 +17,15 @@ const Main: React.FC = () => {
     );
   }, []);
   if (url == "") return <></>;
-  const pianoRoll =
-    selectedRollId > 0 ? (
-      <PianoRoll urlRoot={url} rollId={selectedRollId} />
-    ) : (
-      <></>
-    );
+
   return (
     <div className="h-full w-full flex justify-between">
       <PutNote.Providers>
-        <div className="h-full w-20 flex flex-col">
-          <AudioPlayer url={`${url}/rolls/${selectedRollId}`}></AudioPlayer>
-          <RollList urlRoot={url} selectedRollId={selectedRollId} setRollId={setSelectedRollId} />
+        <div className="h-full w-20 flex flex-col bg-gray-400">
+          <AudioPlayer url={`${url}/rolls/`}></AudioPlayer>
+          <RollList urlRoot={url} />
         </div>
-        {pianoRoll}
+        <PianoRoll urlRoot={url} />
       </PutNote.Providers>
     </div>
   );

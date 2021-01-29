@@ -1,9 +1,9 @@
 import React from "react";
 import { NextPage } from "next";
-import Main from "../components/pianoroll/Main";
+import PianoRoll from "../components/pianoroll/PianoRoll";
 
 const Home: NextPage = () => {
-  return <Main />;
+  return <PianoRoll />;
 };
 
 export default Home;

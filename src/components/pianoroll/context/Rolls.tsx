@@ -7,16 +7,14 @@ import React, {
 } from "react";
 import Roll from "../entity/Roll";
 import Rest from "../rest/Rest";
+import { RollRestOthers } from "../rest/Roll";
 
-type Action = typeof Action[keyof typeof Action];
-const Action = {
-  init: {
-    type: "init",
-  },
-  create: {
-    type: "create"
-  }
-} as const;
+type Init = { type: "init" };
+type Create = {
+  type: "create";
+  parameter: RollRestOthers;
+};
+type Action = Init | Create;
 
 type Rester = ReturnType<typeof Rest>["roll"];
 const getAsyncCallback = (
@@ -24,13 +22,18 @@ const getAsyncCallback = (
   dispatch: React.Dispatch<ReturnType<typeof Roll>[]>
 ) => {
   return (action: Action) => {
-    switch (action) {
-      case Action.init:
+    switch (action.type) {
+      case "init":
         rest
           .getAll()
           .then((result) =>
             dispatch(result.map((it, index) => <Roll key={index} {...it} />))
           );
+        break;
+      case "create":
+      rest
+        .create(action.parameter)
+        // .then((result)=> dispatch(Array(<Roll {...result}/>)));
     }
   };
 };
@@ -46,8 +49,7 @@ const Provider: React.FC<Props> = ({ children, rest }) => {
   const dispatchAsync = useCallback(getAsyncCallback(rest, dispatch), []);
 
   useEffect(() => {
-    if(state.length == 0)
-      dispatchAsync(Action.init);
+    if (state.length == 0) dispatchAsync({ type: "init" });
   }, [dispatchAsync]);
   return (
     <StateContext.Provider value={state}>

@@ -10,7 +10,12 @@ import Rest from "../rest/Rest";
 
 type Action = typeof Action[keyof typeof Action];
 const Action = {
-  init: "init",
+  init: {
+    type: "init",
+  },
+  create: {
+    type: "create"
+  }
 } as const;
 
 type Rester = ReturnType<typeof Rest>["roll"];
@@ -23,7 +28,9 @@ const getAsyncCallback = (
       case Action.init:
         rest
           .getAll()
-          .then((result) => dispatch(result.map((it) => <Roll key={it.id} />)));
+          .then((result) =>
+            dispatch(result.map((it, index) => <Roll key={index} {...it} />))
+          );
     }
   };
 };
@@ -39,7 +46,8 @@ const Provider: React.FC<Props> = ({ children, rest }) => {
   const dispatchAsync = useCallback(getAsyncCallback(rest, dispatch), []);
 
   useEffect(() => {
-    dispatchAsync(Action.init);
+    if(state.length == 0)
+      dispatchAsync(Action.init);
   }, [dispatchAsync]);
   return (
     <StateContext.Provider value={state}>

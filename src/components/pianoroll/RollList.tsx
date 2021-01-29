@@ -7,7 +7,7 @@ const RollList: React.FC = () => {
   return (
     <article className="relative w-full">
       <h1>Rolls</h1>
-      {rolls}
+      {rolls.map((it) => it?.props.division)}
     </article>
   );
 };

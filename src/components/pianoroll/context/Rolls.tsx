@@ -19,7 +19,7 @@ type Action = Init | Create;
 type Rester = ReturnType<typeof Rest>["roll"];
 const getAsyncCallback = (
   rest: Rester,
-  dispatch: React.Dispatch<ReturnType<typeof Roll>[]>
+  dispatch: React.Dispatch<React.SetStateAction<ReturnType<typeof Roll>[]>>
 ) => {
   return (action: Action) => {
     switch (action.type) {
@@ -33,7 +33,7 @@ const getAsyncCallback = (
       case "create":
       rest
         .create(action.parameter)
-        // .then((result)=> dispatch(Array(<Roll {...result}/>)));
+        .then((result)=> dispatch(prev=> [...prev, <Roll key={prev.length} {...result}/>]));
     }
   };
 };

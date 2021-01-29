@@ -73,7 +73,6 @@ const Roll: React.FC<Props> = ({
     setGrid({ width, height });
     noteRest.getAll().then((result) => {
       const values: NoteNeeds[] = result.map((it) => {
-        console.log(it.id);
         const pos = {
           x: it.offset,
           y: (maxOctave - it.octave) * maxPitch + (maxPitch - it.pitch - 1),
@@ -114,8 +113,6 @@ const Roll: React.FC<Props> = ({
     putNote.setApply(false);
     const from = putNote.from;
     const to = putNote.to;
-    const gridIndexesFromLength = (gridIndex: number, length: number) =>
-      range0to(length).map((index) => gridIndex + index * grid.height);
 
     const create = (
       beforeGridIndex: number,
@@ -169,29 +166,9 @@ const Roll: React.FC<Props> = ({
           return { id, gridIndex, length, childRollId };
         },
       });
-      // const fromPos = gridIndexToPos(beforeGridIndex);
-      // const toPos = gridIndexToPos(afterGridIndex);
-      // setNotes({ type: "update", beforeGridIndex, getValue: prev=> {
-      //   // if(fromPos.x + prev.length > toPos.x) return prev;
-      //   const toForward = fromPos.x < toPos.x
-      //   const x = toForward ? {
-      //     start: fromPos.x + prev.length,
-      //     end: toPos.x
-      //   } : {
-      //     start: toPos.x,
-      //     end: fromPos.x - 1
-      //   }
-      //   if (toForward && x.end < fromPos.x + prev.length) return prev;
-      //   create(posToGridIndex({x: x.start, y: fromPos.y}), posToGridIndex({x: x.end, y: fromPos.y}))
-      //   // const noteStartPos = {
-      //   //   x: Math.min(fromPos.x, toPos.x),
-      //   //   y: fromPos.y,
-      //   // };
-      //   return {gridIndex: posToGridIndex({x: x.start, y: fromPos.y}), length: x.end - x.start + prev.length}
-      // } });
-      // remove(beforeGridIndex).then(() => create(afterGridIndex));
     };
-    console.log(`${from.type}, ${to.type}`);
+
+    // console.log(`${from.type}, ${to.type}`);
     if (from.type == "ActionCell")
       if (to.type == "ActionCell") create(from.gridIndex, to.gridIndex);
     if (from.type == "Note")

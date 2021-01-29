@@ -7,7 +7,7 @@ type Prop = {
 };
 const selfType = "RollList";
 const RollList: React.FC<Prop> = ({ urlRoot }) => {
-  console.log("rerender: RollList");
+  // console.log("rerender: RollList");
   const rest = RollRest(urlRoot);
 
   const [rolls, setRolls] = useState<Array<RollRestType>>();
@@ -24,9 +24,9 @@ const RollList: React.FC<Prop> = ({ urlRoot }) => {
     if (!createFired) return;
     setCreateFired(false);
     rest.getAll().then((result) => {
-      result.map((it) => console.log(it));
       setRolls(result);
-      if (result.length != 0) putNote.setSelectedRollId(result[0].id);
+      if (result.length != 0 && putNote.selectedRollId < 1)
+        putNote.setSelectedRollId(result[0].id);
     });
   }, [createFired]);
   if (rolls == undefined) return <></>;
@@ -34,11 +34,11 @@ const RollList: React.FC<Prop> = ({ urlRoot }) => {
   const onClick = () => {
     if (division == undefined) return;
     rest.create({ division }).then((result) => {
-      // const rollId = result.id
-      // putNote.setFrom({ type: selfType, rollId });
-      // putNote.setTo({ type: selfType, rollId });
-      // putNote.setApply(true);
       setCreateFired(true);
+      const rollId = result.id;
+      putNote.setFrom({ type: selfType, rollId });
+      putNote.setTo({ type: selfType, rollId });
+      putNote.setApply(true);
     });
   };
   const list = rolls.map((roll) => {

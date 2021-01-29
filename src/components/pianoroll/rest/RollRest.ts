@@ -14,7 +14,6 @@ const RollRest = (rootUrl: string) => {
     typedFetch<{ values: Array<RollRestType> }>(url).then(
       (result) => result.values
     );
-  const get = (id: number) => typedFetch<RollRestType>(`${url}/${id}`);
   const create = (body: RollCreate) =>
     typedFetch<RollRestType>(url, {
       method: "POST",
@@ -24,7 +23,17 @@ const RollRest = (rootUrl: string) => {
       },
       body: JSON.stringify(body),
     });
-  return { url, getAll, get, create };
+  const get = (id: number) => typedFetch<RollRestType>(`${url}/${id}`);
+  const update = (input: RollRestType) =>
+    typedFetch<RollRestType>(`${url}/${input.id}`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(input),
+    });
+  return { url, getAll, create, get, update };
 };
 
 export default RollRest;

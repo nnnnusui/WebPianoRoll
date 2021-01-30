@@ -5,51 +5,65 @@ import React, {
   useEffect,
   useContext,
 } from "react";
-import Roll from "../entity/Roll";
+import { RollProps } from "../entity/Roll";
 import Rest from "../rest/Rest";
-import { RollRestOthers } from "../rest/Roll";
+import { RollRestData, RollRestOthers } from "../rest/Roll";
 
 type Init = { type: "init" };
 type Create = {
   type: "create";
-  parameter: RollRestOthers;
+  request: RollRestOthers;
 };
-type Action = Init | Create;
+type Update = {
+  type: "update";
+  request: RollRestData;
+};
+type Action = Init | Create | Update;
 
 type Rester = ReturnType<typeof Rest>["roll"];
+type Store = Map<number, RollProps>;
 const getAsyncCallback = (
   rest: Rester,
-  dispatch: React.Dispatch<React.SetStateAction<ReturnType<typeof Roll>[]>>
+  dispatch: React.Dispatch<React.SetStateAction<Store>>
 ) => {
   return (action: Action) => {
     switch (action.type) {
       case "init":
         rest
           .getAll()
-          .then((result) =>
-            dispatch(result.map((it, index) => <Roll key={index} {...it} />))
-          );
+          .then((result) => dispatch(new Map(result.map((it) => [it.id, it]))));
         break;
       case "create":
-      rest
-        .create(action.parameter)
-        .then((result)=> dispatch(prev=> [...prev, <Roll key={prev.length} {...result}/>]));
+        rest
+          .create(action.request)
+          .then((result) =>
+            dispatch((prev) => new Map(prev.set(result.id, result)))
+          );
+        break;
+      case "update":
+        rest
+          .update(action.request)
+          .then((result) =>
+            dispatch((prev) => new Map(prev.set(result.id, result)))
+          );
+        break;
     }
   };
 };
 
-const StateContext = createContext([] as ReturnType<typeof Roll>[]);
+const initState: Store = new Map();
+const StateContext = createContext(initState);
 const DispatchContext = createContext({} as React.Dispatch<Action>);
 
 type Props = {
   rest: Rester;
 };
 const Provider: React.FC<Props> = ({ children, rest }) => {
-  const [state, dispatch] = useState<ReturnType<typeof Roll>[]>([]);
+  const [state, dispatch] = useState<Store>(initState);
   const dispatchAsync = useCallback(getAsyncCallback(rest, dispatch), []);
 
   useEffect(() => {
-    if (state.length == 0) dispatchAsync({ type: "init" });
+    dispatchAsync({ type: "init" });
   }, [dispatchAsync]);
   return (
     <StateContext.Provider value={state}>

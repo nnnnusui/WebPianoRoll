@@ -9,7 +9,7 @@ const RollForm: React.FC = () => {
     setDivision(Number(event.target.value));
   const onCreateClick = () => {
     if (division == undefined) return;
-    setRolls({ type: "create", parameter: { division } });
+    setRolls({ type: "create", request: { division } });
   };
 
   return (

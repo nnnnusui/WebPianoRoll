@@ -21,6 +21,8 @@ const Roll = (url: string) => {
     getAll: () =>
       typedFetch<{ values: Array<Data> }>(url).then((result) => result.values),
     create: (body: Others) => typedFetch<Data>(url, post(body)),
+    update: (request: Data) =>
+      typedFetch<Data>(`${url}/${request.id}`, post(request)),
   };
 };
 export default Roll;

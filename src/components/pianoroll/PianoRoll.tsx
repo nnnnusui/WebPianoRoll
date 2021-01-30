@@ -1,8 +1,7 @@
 import React, { ReactElement, useState, useEffect } from "react";
 import Rest from "./rest/Rest";
 import Context from "./context/Context";
-import RollList from "./RollList";
-import RollForm from "./RollForm";
+import RollController from "./controller/RollController";
 
 const PianoRoll: React.FC = (): ReactElement => {
   const url = Init();
@@ -13,8 +12,7 @@ const PianoRoll: React.FC = (): ReactElement => {
   return (
     <div className="h-full w-full flex justify-between">
       <Context.Provider rest={rest}>
-        <RollForm />
-        <RollList />
+        <RollController />
       </Context.Provider>
     </div>
   );

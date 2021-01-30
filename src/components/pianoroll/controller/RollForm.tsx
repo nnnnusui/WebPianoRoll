@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Context from "./context/Context";
+import Context from "../context/Context";
 
 const RollForm: React.FC = () => {
   const setRolls = Context.rolls.Dispatch();

@@ -1,5 +1,5 @@
 import React from "react";
-import Context from "./context/Context";
+import Context from "../context/Context";
 
 const RollList: React.FC = () => {
   const rolls = Context.rolls.State();
@@ -19,10 +19,10 @@ const RollList: React.FC = () => {
   });
 
   return (
-    <article className="relative w-full">
-      <h1>Rolls</h1>
+    <section className="relative w-full">
+      <h1 className="text-center">selector</h1>
       {lines}
-    </article>
+    </section>
   );
 };
 

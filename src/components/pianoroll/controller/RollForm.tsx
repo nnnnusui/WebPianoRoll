@@ -27,7 +27,7 @@ const RollForm: React.FC = () => {
           placeholder="id"
           disabled={true}
           type="number"
-          value={selectedRoll?.id}
+          defaultValue={selectedRoll?.id}
           className="w-full text-right"
         />
       </label>

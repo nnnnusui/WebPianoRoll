@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useContext,
 } from "react";
-import { RollProps } from "../entity/Roll";
+import Roll, { RollProps } from "../entity/Roll";
 import Rest from "../rest/Rest";
 import { RollRestData, RollRestOthers } from "../rest/Roll";
 
@@ -21,7 +21,11 @@ type Update = {
 type Action = Init | Create | Update;
 
 type Rester = ReturnType<typeof Rest>["roll"];
-type Store = Map<number, RollProps>;
+type RollId = number;
+const value = (props: RollProps) => {
+  return { props, element: <Roll {...props} /> };
+};
+type Store = Map<RollId, ReturnType<typeof value>>;
 const getAsyncCallback = (
   rest: Rester,
   dispatch: React.Dispatch<React.SetStateAction<Store>>
@@ -31,20 +35,22 @@ const getAsyncCallback = (
       case "init":
         rest
           .getAll()
-          .then((result) => dispatch(new Map(result.map((it) => [it.id, it]))));
+          .then((result) =>
+            dispatch(new Map(result.map((it) => [it.id, value(it)])))
+          );
         break;
       case "create":
         rest
           .create(action.request)
-          .then((result) =>
-            dispatch((prev) => new Map(prev.set(result.id, result)))
+          .then((it) =>
+            dispatch((prev) => new Map(prev.set(it.id, value(it))))
           );
         break;
       case "update":
         rest
           .update(action.request)
-          .then((result) =>
-            dispatch((prev) => new Map(prev.set(result.id, result)))
+          .then((it) =>
+            dispatch((prev) => new Map(prev.set(it.id, value(it))))
           );
         break;
     }

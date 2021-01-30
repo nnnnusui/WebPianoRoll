@@ -1,11 +1,10 @@
 import React from "react";
 import Context from "./context/Context";
-import Roll from "./entity/Roll";
 
 const View: React.FC = () => {
-  const roll = Context.roll.selected();
+  const roll = Context.roll.selected()?.element;
   if (roll == undefined) return <></>;
 
-  return <Roll {...roll} />;
+  return roll;
 };
 export default View;

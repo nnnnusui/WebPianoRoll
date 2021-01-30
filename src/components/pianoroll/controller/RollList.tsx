@@ -6,7 +6,7 @@ const RollList: React.FC = () => {
   const setSelectedRollId = Context.roll.selectedId.Dispatch();
   const selectedRollId = Context.roll.selectedId.State();
 
-  const lines = Array.from(rolls).map(([id, props]) => {
+  const lines = Array.from(rolls).map(([id, { props }]) => {
     const onClick = () => {
       setSelectedRollId(id);
     };

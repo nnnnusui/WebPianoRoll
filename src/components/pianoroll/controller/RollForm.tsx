@@ -3,7 +3,7 @@ import Context from "../context/Context";
 
 const RollForm: React.FC = () => {
   const setRolls = Context.rolls.Dispatch();
-  const selectedRoll = Context.roll.selected();
+  const selectedRoll = Context.roll.selected()?.props;
   const [division, setDivision] = useState<number>(selectedRoll?.division || 4);
 
   const onDivisionChange = (event: React.ChangeEvent<HTMLInputElement>) =>

@@ -7,7 +7,7 @@ const RollController: React.FC = () => {
     <article className="w-1/6">
       <h1 className="text-center">RollController</h1>
       <RollForm />
-      <hr className="border-none h-3.5"/>
+      <hr className="border-none h-3.5" />
       <RollList />
     </article>
   );

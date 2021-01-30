@@ -1,13 +1,5 @@
+import post from "./post";
 import typedFetch from "./typedFetch";
-
-const post = <T>(body: T) => ({
-  method: "POST",
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify(body),
-});
 
 type Data = Primaries & Others;
 type Primaries = {
@@ -21,6 +13,7 @@ const Roll = (url: string) => {
     getAll: () =>
       typedFetch<{ values: Array<Data> }>(url).then((result) => result.values),
     create: (body: Others) => typedFetch<Data>(url, post(body)),
+    get: (key: Primaries) => typedFetch<Data>(`${url}/${key.id}`),
     update: (request: Data) =>
       typedFetch<Data>(`${url}/${request.id}`, post(request)),
   };

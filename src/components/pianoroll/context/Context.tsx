@@ -17,6 +17,7 @@ const Provider: React.FC<Props> = ({ children, rest }) => {
 const Context = {
   roll: {
     selectedId: RollSelection,
+    selected: () => Rolls.State().get(RollSelection.State()),
   },
   rolls: Rolls,
   Provider,

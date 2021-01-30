@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Context from "../context/Context";
 
 const RollForm: React.FC = () => {
   const setRolls = Context.rolls.Dispatch();
-  const rolls = Context.rolls.State();
-  const selectedRollId = Context.roll.selectedId.State();
-  const [division, setDivision] = useState<number>(4);
-
-  const selectedRoll = rolls.get(selectedRollId);
-  useEffect(() => {
-    if (selectedRoll == undefined) return;
-    setDivision(selectedRoll.division);
-  }, [selectedRoll]);
+  const selectedRoll = Context.roll.selected();
+  const [division, setDivision] = useState<number>(selectedRoll?.division || 4);
 
   const onDivisionChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     setDivision(Number(event.target.value));
@@ -19,7 +12,8 @@ const RollForm: React.FC = () => {
     setRolls({ type: "create", request: { division } });
   };
   const onUpdateClick = () => {
-    setRolls({ type: "update", request: { id: selectedRollId, division } });
+    if (selectedRoll == undefined) return;
+    setRolls({ type: "update", request: { id: selectedRoll.id, division } });
   };
 
   return (

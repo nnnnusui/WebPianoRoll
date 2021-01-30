@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Context from "../context/Context";
 
 const RollForm: React.FC = () => {
   const setRolls = Context.rolls.Dispatch();
   const selectedRoll = Context.roll.selected()?.props;
-  const [division, setDivision] = useState<number>(selectedRoll?.division || 4);
+  const [division, setDivision] = useState<number>(4);
+  useEffect(() => {
+    setDivision((prev) => selectedRoll?.division || prev);
+  }, [selectedRoll]);
 
   const onDivisionChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     setDivision(Number(event.target.value));
@@ -24,7 +27,7 @@ const RollForm: React.FC = () => {
           placeholder="id"
           disabled={true}
           type="number"
-          defaultValue={selectedRoll?.id}
+          value={selectedRoll?.id}
           className="w-full text-right"
         />
       </label>

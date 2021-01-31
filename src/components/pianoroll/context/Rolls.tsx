@@ -22,8 +22,16 @@ type Action = Init | Create | Update;
 
 type Rester = ReturnType<typeof Rest>["roll"];
 type RollId = number;
-const value = (props: RollProps) => {
-  return { props, element: <Roll {...props} /> };
+const value = (data: RollRestData) => {
+  const maxOffset = data.division;
+  const minOctave = 0;
+  const maxOctave = 0;
+  const maxPitch = 12;
+
+  const octaveRange = maxOctave + 1 - minOctave;
+  const height = octaveRange * maxPitch;
+  const width = maxOffset;
+  return { props: { ...data, width, height } };
 };
 type Store = Map<RollId, ReturnType<typeof value>>;
 const getAsyncCallback = (

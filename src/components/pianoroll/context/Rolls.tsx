@@ -5,9 +5,9 @@ import React, {
   useEffect,
   useContext,
 } from "react";
-import Roll, { RollProps } from "../entity/Roll";
 import Rest from "../rest/Rest";
 import { RollRestData, RollRestOthers } from "../rest/Roll";
+import Context from "./Context";
 
 type Init = { type: "init" };
 type Create = {
@@ -23,6 +23,7 @@ type Action = Init | Create | Update;
 type Rester = ReturnType<typeof Rest>["roll"];
 type RollId = number;
 const value = (data: RollRestData) => {
+  const id = data.id;
   const maxOffset = data.division;
   const minOctave = 0;
   const maxOctave = 0;
@@ -31,7 +32,9 @@ const value = (data: RollRestData) => {
   const octaveRange = maxOctave + 1 - minOctave;
   const height = octaveRange * maxPitch;
   const width = maxOffset;
-  return { props: { ...data, width, height } };
+  return {
+    data: { id, maxOffset, minOctave, maxOctave, maxPitch, width, height },
+  };
 };
 type Store = Map<RollId, ReturnType<typeof value>>;
 const getAsyncCallback = (

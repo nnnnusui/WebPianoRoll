@@ -9,9 +9,9 @@ type Props = {
 };
 const ActionLayer: React.FC<Props> = ({ width, height }) => {
   const onMouseDown = (event: React.MouseEvent) => {
-    const gridIndex = GetCell().onMouseEvent(event).gridIndex
-    console.log(gridIndex)
-  }
+    const gridIndex = GetCell().onMouseEvent(event).gridIndex;
+    console.log(gridIndex);
+  };
   const style = {
     gridTemplateColumns: `repeat(${width}, 1fr)`,
     gridTemplateRows: `repeat(${height}, 1fr)`,

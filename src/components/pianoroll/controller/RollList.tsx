@@ -6,14 +6,14 @@ const RollList: React.FC = () => {
   const setSelectedRollId = Context.roll.selectedId.Dispatch();
   const selectedRollId = Context.roll.selectedId.State();
 
-  const lines = Array.from(rolls).map(([id, { props }]) => {
+  const lines = Array.from(rolls).map(([id, { data }]) => {
     const onClick = () => {
       setSelectedRollId(id);
     };
     const color = id == selectedRollId ? "bg-gray-300" : "";
     return (
       <div key={id} className={`${color}`} onClick={onClick}>
-        roll _ {id} : {props.division}
+        roll _ {id} : {data.maxOffset}
       </div>
     );
   });

@@ -1,5 +1,4 @@
 import React, { createContext, useState, useCallback, useContext } from "react";
-import { NoteProps } from "../entity/Note";
 import { NoteRestData, NoteRestOthers } from "../rest/Note";
 import Rest from "../rest/Rest";
 
@@ -19,7 +18,11 @@ type Action = GetAll | Create | Update;
 
 type Rester = ReturnType<typeof Rest>["note"];
 type RollId = number;
-type Store = Map<RollId, NoteProps>;
+type NoteId = number;
+const value = (data: NoteRestData) => {
+  return { data };
+};
+type Store = Map<RollId, Map<NoteId, ReturnType<typeof value>>>;
 const getAsyncCallback = (
   _rest: Rester,
   dispatch: React.Dispatch<React.SetStateAction<Store>>
@@ -32,20 +35,49 @@ const getAsyncCallback = (
         rest
           .getAll()
           .then((result) =>
-            dispatch(new Map(result.map((it) => [rollId, { rollId, ...it }])))
+            dispatch(
+              new Map([
+                [
+                  rollId,
+                  new Map(
+                    result.map((it) => [it.id, { rollId, ...value(it) }])
+                  ),
+                ],
+              ])
+            )
           );
         break;
       case "create":
         rest
           .create(action.request)
           .then((result) => ({ rollId, ...result }))
-          .then((it) => dispatch((prev) => new Map(prev.set(it.rollId, it))));
+          .then((it) =>
+            dispatch(
+              (prev) =>
+                new Map(
+                  prev.set(
+                    it.rollId,
+                    prev.get(it.rollId)!.set(it.id, value(it))
+                  )
+                )
+            )
+          );
         break;
       case "update":
         rest
           .update(action.request)
           .then((result) => ({ rollId, ...result }))
-          .then((it) => dispatch((prev) => new Map(prev.set(it.rollId, it))));
+          .then((it) =>
+            dispatch(
+              (prev) =>
+                new Map(
+                  prev.set(
+                    it.rollId,
+                    prev.get(it.rollId)!.set(it.id, value(it))
+                  )
+                )
+            )
+          );
         break;
     }
   };

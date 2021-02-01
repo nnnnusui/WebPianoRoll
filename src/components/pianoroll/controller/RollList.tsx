@@ -1,27 +1,16 @@
 import React from "react";
 import Context from "../context/Context";
+import RollListCell from "./RollListCell";
+import ActionListeners from "../grid/ActionListeners";
 
 const RollList: React.FC = () => {
-  const rolls = Context.rolls.State();
-  const setSelectedRollId = Context.roll.selectedId.Dispatch();
-  const selectedRollId = Context.roll.selectedId.State();
-
-  const lines = Array.from(rolls).map(([id, { data }]) => {
-    const onClick = () => {
-      setSelectedRollId(id);
-    };
-    const color = id == selectedRollId ? "bg-gray-300" : "";
-    return (
-      <div key={id} className={`${color}`} onClick={onClick}>
-        roll _ {id} : {data.maxOffset}
-      </div>
-    );
-  });
+  const rolls = Array.from(Context.rolls.State());
+  const actionListeners = ActionListeners();
 
   return (
-    <section className="relative w-full">
+    <section className="relative w-full" {...actionListeners}>
       <h1 className="text-center">selector</h1>
-      {lines}
+      {rolls.map(([id]) => <RollListCell key={id} rollId={id} />)}
     </section>
   );
 };

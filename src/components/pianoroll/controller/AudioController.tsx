@@ -24,7 +24,7 @@ const AudioController: React.FC<Props> = ({ rest }) => {
           const source = context.createBufferSource();
           source.buffer = buffer;
           const gainNode = context.createGain();
-          gainNode.gain.value = 0.5;
+          gainNode.gain.value = 0.05;
           source.connect(gainNode);
           gainNode.connect(context.destination);
           source.loop = true;

@@ -7,7 +7,11 @@ type Note = {
   noteId: number;
   part: "left" | "right" | "center";
 };
-type ActionSource = ActionCell | Note;
+type RollListCell = {
+  type: "RollListCell"
+  rollId: number
+}
+type ActionSource = ActionCell | Note | RollListCell;
 type Value = {
   from: ActionSource;
   to: ActionSource;

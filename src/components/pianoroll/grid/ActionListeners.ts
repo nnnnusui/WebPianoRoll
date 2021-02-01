@@ -37,9 +37,10 @@ const getCellFromPoint = (clientX: number, clientY: number) => {
   const element = document.elementFromPoint(clientX, clientY);
   const type = element?.getAttribute("type");
   const gridIndex = Number(element?.getAttribute("gridindex"));
+  const rollId = Number(element?.getAttribute("rollid"));
   const noteId = Number(element?.getAttribute("noteid"));
   const length = Number(element?.getAttribute("length"));
   const part = element?.getAttribute("part");
   if (type == null) return;
-  return { type, gridIndex, noteId, length, part } as ActionSource;
+  return { type, gridIndex, rollId, noteId, length, part } as ActionSource;
 };

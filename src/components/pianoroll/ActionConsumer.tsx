@@ -26,7 +26,8 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
     if (!apply) return;
     setUnApply();
 
-    const create = () => {
+    // add note
+    if (from.type == "ActionCell" && to.type == "ActionCell") {
       const fromPos = posFromGridIndex(from.gridIndex);
       const toPos = posFromGridIndex(to.gridIndex);
       const startPos = {
@@ -40,7 +41,33 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
       };
       noteAction({ type: "create", rollId, request });
     };
-    const update = () => {
+    // add note has childRoll
+    if (from.type == "RollListCell" && to.type == "ActionCell") {
+      const toPos = posFromGridIndex(to.gridIndex);
+      const request = {
+        ...getNoteRestDataFromPos(toPos),
+        length: 1,
+        childRollId: from.rollId,
+      };
+      console.log(request)
+      noteAction({ type: "create", rollId, request });
+    }
+
+    // remove note
+    if (from.type == "Note" && to.type == "Note"){ 
+      if (from.part != "center") return;
+      if (from.gridIndex != to.gridIndex) return;
+      
+      if (to.type != "Note") return;
+      noteAction({
+        type: "delete",
+        rollId: roll.id,
+        request: { id: to.noteId },
+      });
+    }
+
+    // move/edit note
+    if (from.type == "Note" && to.type == "ActionCell") {
       if (from.type != "Note") return;
       const fromNote = notes.get(from.noteId)!.data;
       const fromPos = posFromGridIndex(from.gridIndex);
@@ -82,26 +109,7 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
           break;
       }
     };
-    const remove = () => {
-      if (to.type != "Note") return;
-      noteAction({
-        type: "delete",
-        rollId: roll.id,
-        request: { id: to.noteId },
-      });
-    };
 
-    if (from.type == "ActionCell") if (to.type == "ActionCell") create();
-    if (from.type == "Note")
-      if (to.type == "Note")
-        if (from.part == "center" && from.gridIndex == to.gridIndex) remove();
-    if (from.type == "Note") if (to.type == "ActionCell") update();
-    // if (from.type == "RollList")
-    //   if (to.type == "ActionCell")
-    //     create(to.gridIndex, to.gridIndex, from.rollId);
-    // if (from.type == "RollList")
-    //   if (to.type == "RollList")
-    //     if (from.rollId == to.rollId) putNote.setSelectedRollId(to.rollId);
   }, [action]);
 
   return <></>;

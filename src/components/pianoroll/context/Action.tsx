@@ -1,7 +1,12 @@
 import React, { createContext, useState, useContext } from "react";
 
 type ActionCell = { type: "ActionCell"; gridIndex: number };
-type Note = { type: "Note"; gridIndex: number; noteId: number };
+type Note = {
+  type: "Note";
+  gridIndex: number;
+  noteId: number;
+  part: "left" | "right" | "center";
+};
 type ActionSource = ActionCell | Note;
 type Value = {
   from: ActionSource;

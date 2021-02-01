@@ -28,7 +28,6 @@ const Roll: React.FC<Props> = ({ id, width, height }) => {
       className="pointer-events-none absolute h-full w-full grid grid-flow-col"
       style={style}
     >
-      <h1 className="">__roll {id}</h1>
       {notes.map(([noteId]) => (
         <Note key={noteId} {...{ rollId: id, id: noteId }} />
       ))}

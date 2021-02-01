@@ -3,6 +3,8 @@ import Context from "./context/Context";
 import { RollProps } from "./entity/Roll";
 
 const ActionConsumer: React.FC<RollProps> = (roll) => {
+  const rollId = roll.id;
+  const notes = Context.notes.State().get(rollId)!;
   const action = Context.action.State();
   const setAction = Context.action.Dispatch();
   const setUnApply = () => setAction((prev) => ({ ...prev, apply: false }));
@@ -36,7 +38,49 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
         length: Math.abs(fromPos.x - toPos.x) + 1,
         childRollId: null,
       };
-      noteAction({ type: "create", rollId: roll.id, request });
+      noteAction({ type: "create", rollId, request });
+    };
+    const update = () => {
+      if (from.type != "Note") return;
+      const fromNote = notes.get(from.noteId)!.data;
+      const fromPos = posFromGridIndex(from.gridIndex);
+      const toPos = posFromGridIndex(to.gridIndex);
+      switch (from.part) {
+        case "left": {
+          const noteEnd = posFromGridIndex(
+            from.gridIndex + (fromNote.length - 1) * roll.height
+          );
+          const exceedEnd = noteEnd.x < toPos.x;
+          const startPos = { x: Math.min(toPos.x, noteEnd.x), y: fromPos.y };
+          const request = {
+            ...fromNote,
+            ...getNoteRestDataFromPos(startPos),
+            length: exceedEnd ? 1 : noteEnd.x - toPos.x + 1,
+          };
+          noteAction({ type: "update", rollId, request });
+          break;
+        }
+        case "right": {
+          const noteStart = fromPos;
+          const exceedStart = from.gridIndex < to.gridIndex;
+          const startPos = noteStart;
+          const request = {
+            ...fromNote,
+            ...getNoteRestDataFromPos(startPos),
+            length: exceedStart ? toPos.x - fromPos.x + 1 : 1,
+          };
+          noteAction({ type: "update", rollId, request });
+          break;
+        }
+        case "center":
+          const request = {
+            ...fromNote,
+            ...getNoteRestDataFromPos(toPos),
+            length: fromNote.length,
+          };
+          noteAction({ type: "update", rollId, request });
+          break;
+      }
     };
     const remove = () => {
       if (to.type != "Note") return;
@@ -49,9 +93,9 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
 
     if (from.type == "ActionCell") if (to.type == "ActionCell") create();
     if (from.type == "Note")
-      if (to.type == "Note") if (from.gridIndex == to.gridIndex) remove();
-    // if (from.type == "Note")
-    //   if (to.type == "ActionCell") update(from.gridIndex, to.gridIndex);
+      if (to.type == "Note")
+        if (from.part == "center" && from.gridIndex == to.gridIndex) remove();
+    if (from.type == "Note") if (to.type == "ActionCell") update();
     // if (from.type == "RollList")
     //   if (to.type == "ActionCell")
     //     create(to.gridIndex, to.gridIndex, from.rollId);

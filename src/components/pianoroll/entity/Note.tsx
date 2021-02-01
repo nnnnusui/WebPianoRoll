@@ -25,13 +25,24 @@ const Note: React.FC<Props> = ({ rollId, id }) => {
     gridRowStart: pos.y + 1,
     gridColumnEnd: pos.x + note.length + 1,
   };
+  const info = { type: selfType, gridindex: gridIndex, noteid: id };
   return (
     <div
       {...{ type: selfType, gridindex: gridIndex, noteid: id }}
-      className="pointer-events-auto bg-yellow-500 rounded-lg"
+      className="pointer-events-auto flex flex-row bg-yellow-500 rounded-lg"
       style={style}
     >
-      {note.childRollId}
+      <div
+        {...{ ...info, part: "left" }}
+        className="w-full max-w-border cursor-resize-v"
+      />
+      <div {...{ ...info, part: "center" }} className="w-full cursor-move">
+        {note.childRollId}
+      </div>
+      <div
+        {...{ ...info, part: "right" }}
+        className="w-full max-w-border cursor-resize-v"
+      />
     </div>
   );
 };

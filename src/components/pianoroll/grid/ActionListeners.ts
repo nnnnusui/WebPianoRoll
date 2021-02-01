@@ -4,12 +4,13 @@ import { ActionSource } from "../context/Action";
 const ActionListeners = () => {
   const action = Context.action.Dispatch();
   return {
-    onPointerDown: (event: React.PointerEvent) =>
+    onPointerDown: (event: React.PointerEvent) => {
       action((prev) => ({
         ...prev,
         from: getCellOnPointerEvent(event) || prev.from,
         apply: false,
-      })),
+      }));
+    },
     onPointerMove: (event: React.PointerEvent) =>
       action((prev) => ({
         ...prev,
@@ -37,7 +38,8 @@ const getCellFromPoint = (clientX: number, clientY: number) => {
   const type = element?.getAttribute("type");
   const gridIndex = Number(element?.getAttribute("gridindex"));
   const noteId = Number(element?.getAttribute("noteid"));
+  const length = Number(element?.getAttribute("length"));
+  const part = element?.getAttribute("part");
   if (type == null) return;
-  if (isNaN(gridIndex)) return;
-  return { type, gridIndex, noteId } as ActionSource;
+  return { type, gridIndex, noteId, length, part } as ActionSource;
 };

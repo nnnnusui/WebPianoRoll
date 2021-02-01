@@ -11,19 +11,17 @@ type Props = {
   width: number;
   height: number;
 };
-const Roll: React.FC<{ id: number }> = ({ id }) => {
-  const roll = Context.rolls.State().get(id)?.data;
+const Roll: React.FC<Props> = ({ id, width, height }) => {
   const notes = Array.from(Context.notes.State().get(id) || []);
-  if (roll == null) return <></>;
 
   const noteAction = Context.notes.Dispatch();
   useEffect(() => {
-    noteAction({ type: "getAll", rollId: roll.id });
-  }, [roll]);
+    noteAction({ type: "getAll", rollId: id });
+  }, [id]);
 
   const style = {
-    gridTemplateColumns: `repeat(${roll.width}, 1fr)`,
-    gridTemplateRows: `repeat(${roll.height}, 1fr)`,
+    gridTemplateColumns: `repeat(${width}, 1fr)`,
+    gridTemplateRows: `repeat(${height}, 1fr)`,
   };
 
   return (

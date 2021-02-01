@@ -4,8 +4,9 @@ import Roll, { RollProps } from "./entity/Roll";
 import ActionLayer from "./grid/layer/ActionLayer";
 
 const View: React.FC = () => {
-  const roll = Context.roll.selected();
-  if (roll == undefined) return <></>;
+  const selectedRollId = Context.roll.selectedId.State();
+  const roll = Context.rolls.State().get(selectedRollId);
+  if (roll == null) return <></>;
 
   return (
     <div className="relative h-full w-full">

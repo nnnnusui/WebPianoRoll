@@ -9,7 +9,6 @@ const selfType = "Note";
 const Note: React.FC<Props> = ({ rollId, id }) => {
   const roll = Context.rolls.State().get(id)?.data;
   const note = Context.notes.State().get(rollId)?.get(id)?.data;
-  console.log(note);
   if (roll == null) return <></>;
   if (note == null) return <></>;
 

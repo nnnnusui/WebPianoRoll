@@ -7,7 +7,7 @@ type Props = {
 };
 const selfType = "Note";
 const Note: React.FC<Props> = ({ rollId, id }) => {
-  const roll = Context.rolls.State().get(id)?.data;
+  const roll = Context.rolls.State().get(rollId)?.data;
   const note = Context.notes.State().get(rollId)?.get(id)?.data;
   if (roll == null) return <></>;
   if (note == null) return <></>;
@@ -27,7 +27,7 @@ const Note: React.FC<Props> = ({ rollId, id }) => {
   };
   return (
     <div
-      {...{ type: selfType, gridindex: gridIndex }}
+      {...{ type: selfType, gridindex: gridIndex, noteid: id }}
       className="pointer-events-auto bg-yellow-500 rounded-lg"
       style={style}
     >

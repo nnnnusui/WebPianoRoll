@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import Rest from "../rest/Rest";
 import { RollRestData, RollRestOthers } from "../rest/Roll";
-import Context from "./Context";
 
 type Init = { type: "init" };
 type Create = {

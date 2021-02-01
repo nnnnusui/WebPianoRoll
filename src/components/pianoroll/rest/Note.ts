@@ -19,6 +19,8 @@ const Note = (url: string) => {
     create: (body: Others) => typedFetch<Data>(url, post(body)),
     update: (request: Data) =>
       typedFetch<Data>(`${url}/${request.id}`, post(request)),
+    delete: (request: Primaries) =>
+      typedFetch<Data>(`${url}/${request.id}/`, { method: "DELETE" }),
   };
 };
 export default Note;

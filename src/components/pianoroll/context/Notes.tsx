@@ -1,5 +1,5 @@
 import React, { createContext, useState, useCallback, useContext } from "react";
-import { NoteRestData, NoteRestOthers } from "../rest/Note";
+import { NoteRestData, NoteRestOthers, NoteRestPrimaries } from "../rest/Note";
 import Rest from "../rest/Rest";
 
 type Premise = {
@@ -14,7 +14,11 @@ type Update = {
   type: "update";
   request: NoteRestData;
 } & Premise;
-type Action = GetAll | Create | Update;
+type Delete = {
+  type: "delete";
+  request: NoteRestPrimaries;
+} & Premise;
+type Action = GetAll | Create | Update | Delete;
 
 type Rester = ReturnType<typeof Rest>["note"];
 type RollId = number;
@@ -51,17 +55,17 @@ const getAsyncCallback = (
         rest
           .create(action.request)
           .then((result) => ({ rollId, ...result }))
-          .then((it) =>
+          .then((it) => {
             dispatch(
               (prev) =>
                 new Map(
                   prev.set(
                     it.rollId,
-                    prev.get(it.rollId)!.set(it.id, value(it))
+                    new Map(prev.get(it.rollId)!.set(it.id, value(it)))
                   )
                 )
-            )
-          );
+            );
+          });
         break;
       case "update":
         rest
@@ -74,6 +78,26 @@ const getAsyncCallback = (
                   prev.set(
                     it.rollId,
                     prev.get(it.rollId)!.set(it.id, value(it))
+                  )
+                )
+            )
+          );
+        break;
+      case "delete":
+        rest
+          .delete(action.request)
+          .then((result) => ({ rollId, ...result }))
+          .then((it) =>
+            dispatch(
+              (prev) =>
+                new Map(
+                  prev.set(
+                    it.rollId,
+                    (() => {
+                      const before = prev.get(it.rollId)!;
+                      before.delete(action.request.id);
+                      return before;
+                    })()
                   )
                 )
             )

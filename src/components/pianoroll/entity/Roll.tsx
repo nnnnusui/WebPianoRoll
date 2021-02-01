@@ -13,7 +13,6 @@ type Props = {
 };
 const Roll: React.FC<Props> = ({ id, width, height }) => {
   const notes = Array.from(Context.notes.State().get(id) || []);
-
   const noteAction = Context.notes.Dispatch();
   useEffect(() => {
     noteAction({ type: "getAll", rollId: id });
@@ -30,8 +29,8 @@ const Roll: React.FC<Props> = ({ id, width, height }) => {
       style={style}
     >
       <h1 className="">__roll {id}</h1>
-      {notes.map(([noteId], index) => (
-        <Note key={index} {...{ rollId: id, id: noteId }} />
+      {notes.map(([noteId]) => (
+        <Note key={noteId} {...{ rollId: id, id: noteId }} />
       ))}
     </div>
   );

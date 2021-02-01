@@ -1,5 +1,5 @@
+import React, { useEffect } from "react";
 import Context from "./context/Context";
-import { useEffect } from "react";
 import { RollProps } from "./entity/Roll";
 
 const ActionConsumer: React.FC<RollProps> = (roll) => {
@@ -28,7 +28,7 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
       const fromPos = posFromGridIndex(from.gridIndex);
       const toPos = posFromGridIndex(to.gridIndex);
       const startPos = {
-        x: Math.max(fromPos.x, toPos.x),
+        x: Math.min(fromPos.x, toPos.x),
         y: fromPos.y,
       };
       const request = {

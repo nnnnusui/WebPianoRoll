@@ -1,12 +1,26 @@
 import React, { useRef, useState } from "react";
-import { range0to } from "../../range";
-import ResizeListener from "./ResizeListener";
-import Context from "../context/Context";
+import { range0to } from "../../../range";
+import ResizeListener from "../ResizeListener";
+import Context from "../../context/Context";
 
-const Grid: React.FC = () => {
+type Props = {
+  setSelection: React.Dispatch<
+    React.SetStateAction<{
+      from: {
+        x: number;
+        y: number;
+      };
+      to: {
+        x: number;
+        y: number;
+      };
+    }>
+  >;
+};
+const Grid: React.FC<Props> = ({ setSelection }) => {
   const [canvasSize, setCanvasSize] = useState({ width: 100, height: 100 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvas = canvasRef.current;
+  const canvas = canvasRef.current!;
   const context = canvas?.getContext("2d");
 
   const roll = Context.roll.selected()!.data;
@@ -15,36 +29,41 @@ const Grid: React.FC = () => {
     height: (canvas?.height || 200) / roll.height,
   };
   const getCellFromEvent = (event: React.PointerEvent) => {
-    if (canvas == null) return;
-    const bouds = canvas.getBoundingClientRect()
+    const bouds = canvas.getBoundingClientRect();
     const innerClickPos = {
       x: event.clientX - bouds.left,
-      y: event.clientY - bouds.top
-    }
+      y: event.clientY - bouds.top,
+    };
     return {
       x: Math.floor(innerClickPos.x / cellSize.width),
       y: Math.floor(innerClickPos.y / cellSize.height),
-    }
-  }
+    };
+  };
 
   const draw = () => {
     if (canvas == null) return;
     if (context == null) return;
-    context.beginPath()
-    context.clearRect(0, 0, canvas.width, canvas.height)
+    context.beginPath();
+    context.clearRect(0, 0, canvas.width, canvas.height);
     drawGrid(context, cellSize, { ...roll });
-  }
+  };
   window.requestAnimationFrame(draw);
 
-  const onPointerDown = (event: React.PointerEvent)=> {
-    console.log(getCellFromEvent(event))
-  }
-  const onPointerUp = onPointerDown
+  const onPointerDown = (event: React.PointerEvent) => {
+    setSelection((prev) => ({ ...prev, from: getCellFromEvent(event) }));
+  };
+  const onPointerUp = (event: React.PointerEvent) => {
+    setSelection((prev) => ({ ...prev, to: getCellFromEvent(event) }));
+  };
 
   return (
     <>
-      <ResizeListener setSize={setCanvasSize}/>
-      <canvas ref={canvasRef} {...canvasSize} {...{onPointerDown, onPointerUp}}></canvas>
+      <ResizeListener setSize={setCanvasSize} />
+      <canvas
+        ref={canvasRef}
+        {...canvasSize}
+        {...{ onPointerDown, onPointerUp }}
+      ></canvas>
     </>
   );
 };

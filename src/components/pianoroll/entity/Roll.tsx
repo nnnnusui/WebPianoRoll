@@ -1,26 +1,17 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Context from "../context/Context";
-import Note from "./Note";
+import Notes from "./Notes";
 
 type Props = {
   id: number;
-  maxOffset: number;
-  minOctave: number;
-  maxOctave: number;
-  maxPitch: number;
-  width: number;
-  height: number;
 };
-const Roll: React.FC<Props> = ({ id, width, height }) => {
-  const notes = Array.from(Context.notes.State().get(id) || []);
-  const noteAction = Context.notes.Dispatch();
-  useEffect(() => {
-    noteAction({ type: "getAll", rollId: id });
-  }, [id]);
+const Roll: React.FC<Props> = ({ id }) => {
+  const roll = Context.rolls.State().get(id)?.data;
+  if (roll == null) return <></>;
 
   const style = {
-    gridTemplateColumns: `repeat(${width}, 1fr)`,
-    gridTemplateRows: `repeat(${height}, 1fr)`,
+    gridTemplateColumns: `repeat(${roll.width}, 1fr)`,
+    gridTemplateRows: `repeat(${roll.height}, 1fr)`,
   };
 
   return (
@@ -28,9 +19,7 @@ const Roll: React.FC<Props> = ({ id, width, height }) => {
       className="pointer-events-none absolute h-full w-full grid grid-flow-col"
       style={style}
     >
-      {notes.map(([noteId]) => (
-        <Note key={noteId} {...{ rollId: id, id: noteId }} />
-      ))}
+      <Notes rollId={id} />
     </div>
   );
 };

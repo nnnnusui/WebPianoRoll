@@ -61,7 +61,9 @@ const getAsyncCallback = (
                 new Map(
                   prev.set(
                     it.rollId,
-                    new Map(prev.get(it.rollId)!.set(it.id, value(it)))
+                    new Map(
+                      prev.get(it.rollId)?.set(it.id, value(it)) || new Map()
+                    )
                   )
                 )
             );

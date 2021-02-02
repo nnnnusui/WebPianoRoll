@@ -8,9 +8,9 @@ type Note = {
   part: "left" | "right" | "center";
 };
 type RollListCell = {
-  type: "RollListCell"
-  rollId: number
-}
+  type: "RollListCell";
+  rollId: number;
+};
 type ActionSource = ActionCell | Note | RollListCell;
 type Value = {
   from: ActionSource;

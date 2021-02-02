@@ -40,7 +40,7 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
         childRollId: null,
       };
       noteAction({ type: "create", rollId, request });
-    };
+    }
     // add note has childRoll
     if (from.type == "RollListCell" && to.type == "ActionCell") {
       const toPos = posFromGridIndex(to.gridIndex);
@@ -49,15 +49,15 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
         length: 1,
         childRollId: from.rollId,
       };
-      console.log(request)
+      console.log(request);
       noteAction({ type: "create", rollId, request });
     }
 
     // remove note
-    if (from.type == "Note" && to.type == "Note"){ 
+    if (from.type == "Note" && to.type == "Note") {
       if (from.part != "center") return;
       if (from.gridIndex != to.gridIndex) return;
-      
+
       if (to.type != "Note") return;
       noteAction({
         type: "delete",
@@ -108,8 +108,7 @@ const ActionConsumer: React.FC<RollProps> = (roll) => {
           noteAction({ type: "update", rollId, request });
           break;
       }
-    };
-
+    }
   }, [action]);
 
   return <></>;

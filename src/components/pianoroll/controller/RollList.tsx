@@ -10,7 +10,9 @@ const RollList: React.FC = () => {
   return (
     <section className="relative w-full" {...actionListeners}>
       <h1 className="text-center">selector</h1>
-      {rolls.map(([id]) => <RollListCell key={id} rollId={id} />)}
+      {rolls.map(([id]) => (
+        <RollListCell key={id} rollId={id} />
+      ))}
     </section>
   );
 };

@@ -14,13 +14,12 @@ const scaleInfo = {
 const Grid: React.FC<Props> = () => {
   const [canvasSize, setCanvasSize] = useState({ width: 100, height: 100 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasElement = <canvas ref={canvasRef}></canvas>;
 
   const [scaleCount, setScaleCount] = useState(1)
-  const [selection, setSelection] = useState({
-    from: { x: 0, y: 0 },
-    to: { x: 0, y: 0 },
-  });
+  const scale = scaleInfo.min + (scaleCount * scaleInfo.step)
+  const [onMove, setOnMove] = useState(false)
+  const [moveFrom, setMoveFrom] = useState({x: 0, y: 0})
+  const [move, setMove] = useState({x: 0, y: 0})
 
   const canvas = canvasRef.current;
   const context = canvas?.getContext("2d");
@@ -35,56 +34,74 @@ const Grid: React.FC<Props> = () => {
       height: (canvas?.height || 200) / roll.height,
     };
   
-  
-    const getCellFromEvent = (event: React.PointerEvent) => {
-      const bouds = canvas.getBoundingClientRect();
-      const innerClickPos = {
-        x: event.clientX - bouds.left,
-        y: event.clientY - bouds.top,
-      };
-      return {
-        x: Math.floor(innerClickPos.x / cellSize.width),
-        y: Math.floor(innerClickPos.y / cellSize.height),
-      };
-    };
-  
     const draw = () => {
       context.beginPath();
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.save();
 
-      const scale = scaleInfo.min + (scaleCount * scaleInfo.step)
       context.scale(scale, 1);
-      const tranlate = scaleInfo.step / (scale * (scale - scaleInfo.step));
-      const scaledCanvasWidth = canvas.width / scale
-      // translate samples
-      // scaledCanvasWidth: canvas.width / scale
-      // stickingToRight: -(canvas.width - scaledCanvasWidth)
-      // focusCenter: stickingToRight / 2
-      const focusCenter = -(canvas.width - scaledCanvasWidth) / 2
-      context.translate(focusCenter, -50)
-      
-      drawGrid(context, cellSize, { ...roll });
+      drawGrid(context, {x: -move.x, y: -move.y}, cellSize, { ...roll });
       context.restore();
     };
     window.requestAnimationFrame(draw);
   
+    const getElementLocalMousePosFromEvent = (event: React.PointerEvent) => {
+      const element = event.target as HTMLElement
+      const rect = element.getBoundingClientRect();
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      }
+    }
+    const moveStart = (start: Pos) => {
+      const mouse = {
+        x: start.x + move.x,
+        y: start.y + move.y,
+      }
+      setMoveFrom(mouse)
+      setOnMove(true)
+    }
+    const moveIn = (pos: Pos) => {
+      if(!onMove) return;
+      const vector = {
+        x: moveFrom.x - pos.x,
+        y: moveFrom.y - pos.y,
+      }
+      setMove(vector)
+    }
+    const moveEnd = () => {
+      setMoveFrom({x: 0, y: 0})
+      setOnMove(false)
+    }
     const onPointerDown = (event: React.PointerEvent) => {
-      setSelection((prev) => ({ ...prev, from: getCellFromEvent(event) }));
+      const mouse = getElementLocalMousePosFromEvent(event)
+      moveStart(mouse)
     };
+    const onPointerMove = (event: React.PointerEvent) => {
+      const mouse = getElementLocalMousePosFromEvent(event)
+      moveIn(mouse)
+    }
     const onPointerUp = (event: React.PointerEvent) => {
-      setSelection((prev) => ({ ...prev, to: getCellFromEvent(event) }));
+      moveEnd()
     };
     const onWheel = (event: React.WheelEvent) =>{
-      const scaleIn = event.deltaY > 0
-      setScaleCount(prev => {
-        const next = prev + (scaleIn ? 1 : -1)
-        if (next <= 0) return 0;
-        if (next > scaleInfo.max) return scaleInfo.max;
-        return next
-      })
+      // const scaleIn = event.deltaY > 0
+      // setScaleCount(prev => {
+      //   const next = prev + (scaleIn ? 1 : -1)
+      //   if (next <= 0) return 0;
+      //   if (next > scaleInfo.max) return scaleInfo.max;
+      //   const element = event.target as HTMLElement
+      //   const rect = element.getBoundingClientRect();
+      //   const mouse = {
+      //     x: event.clientX - rect.left,
+      //     y: event.clientY - rect.top,
+      //   }
+      //   console.log(canvas.width)
+      //   console.log(mouse.x / scale)
+      //   return next
+      // })
     }
-    return <div className="absolute h-full w-full" {...{ onPointerDown, onPointerUp, onWheel }}></div>
+    return <div className="absolute h-full w-full" {...{ onPointerDown, onPointerMove, onPointerUp, onWheel }}></div>
   }
 
   return (
@@ -119,6 +136,7 @@ type Rect = {
 };
 const drawGrid = (
   context: CanvasRenderingContext2D,
+  start: Pos,
   cellSize: Size,
   quantities: Size
 ) => {
@@ -128,12 +146,14 @@ const drawGrid = (
   };
   range0to(quantities.width + 1)
     .map((index) => index * cellSize.width)
+    .map(it => it + start.x)
     .forEach((it) => {
       context.moveTo(it, 0);
       context.lineTo(it, max.height);
     });
   range0to(quantities.height + 1)
     .map((index) => index * cellSize.height)
+    .map(it => it + start.y)
     .forEach((it) => {
       context.moveTo(        0, it);
       context.lineTo(max.width, it);

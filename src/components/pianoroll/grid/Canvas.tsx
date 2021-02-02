@@ -1,29 +1,51 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 import { range0to } from "../../range";
 import ResizeListener from "./ResizeListener";
+import Context from "../context/Context";
 
 const Canvas: React.FC = () => {
   const [canvasSize, setCanvasSize] = useState({ width: 100, height: 100 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const size = {
-    width: 80,
-    height: 120,
-  };
-  const width = 40;
-  const height = 20;
-
   const canvas = canvasRef.current;
   const context = canvas?.getContext("2d");
-  useEffect(() => {
-    console.log(context);
+
+  const roll = Context.roll.selected()!.data;
+  const cellSize = {
+    width: (canvas?.width || 100) / roll.width,
+    height: (canvas?.height || 200) / roll.height,
+  };
+  const getCellFromEvent = (event: React.PointerEvent) => {
+    if (canvas == null) return;
+    const bouds = canvas.getBoundingClientRect()
+    const innerClickPos = {
+      x: event.clientX - bouds.left,
+      y: event.clientY - bouds.top
+    }
+    return {
+      x: Math.floor(innerClickPos.x / cellSize.width),
+      y: Math.floor(innerClickPos.y / cellSize.height),
+    }
+  }
+
+  const draw = () => {
+    if (canvas == null) return;
     if (context == null) return;
-    drawGrid(context, { width, height }, size);
-  }, [canvasRef, canvasSize]);
+    context.beginPath()
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    context.save()
+    drawGrid(context, cellSize, { ...roll });
+  }
+  window.requestAnimationFrame(draw);
+
+  const onPointerDown = (event: React.PointerEvent)=> {
+    console.log(getCellFromEvent(event))
+  }
+  const onPointerUp = onPointerDown
 
   return (
     <>
       <ResizeListener setSize={setCanvasSize}/>
-      <canvas ref={canvasRef} {...canvasSize}></canvas>
+      <canvas ref={canvasRef} {...canvasSize} {...{onPointerDown, onPointerUp}}></canvas>
     </>
   );
 };

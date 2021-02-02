@@ -21,6 +21,6 @@ const ResizeListener: React.FC<Props> = (props) => {
   useEffect(()=> applySize(), [])
   window.addEventListener("resize", ()=> applySize());
 
-  return <div ref={ref} className="absolute h-full w-full"></div>;
+  return <div ref={ref} className="pointer-events-none absolute h-full w-full"></div>;
 };
 export default ResizeListener;

@@ -14,13 +14,34 @@ const Notes: React.FC<Props> = ({ rollId }) => {
     }, [rollId]);
     return <></>;
   }
+  const roll = Context.rolls.State().get(rollId)?.data;
+  if (roll == null) return <></>;
   const notes = Array.from(notesState);
 
+  const posFromNoteData = (note: {
+    offset: number;
+    octave: number;
+    pitch: number;
+  }) => ({
+    x: note.offset,
+    y:
+      (roll.maxOctave - note.octave) * roll.maxPitch +
+      (roll.maxPitch - note.pitch - 1),
+  });
+  const gridIndexFromPos = (pos: ReturnType<typeof posFromNoteData>) =>
+    pos.x * roll.height + pos.y;
   return (
     <>
-      {notes.map(([noteId]) => (
-        <Note key={noteId} {...{ rollId, id: noteId }} />
-      ))}
+      {notes.map(([noteId, { data }]) => {
+        const pos = posFromNoteData(data);
+        const gridIndex = gridIndexFromPos(pos);
+        return (
+          <Note
+            key={noteId}
+            {...{ rollId, id: noteId, posFromNoteData, gridIndexFromPos }}
+          />
+        );
+      })}
     </>
   );
 };

@@ -5,25 +5,30 @@ import Roll from "./Roll";
 type Props = {
   rollId: number;
   id: number;
+  posFromNoteData: (data: {
+    offset: number;
+    octave: number;
+    pitch: number;
+  }) => { x: number; y: number };
+  gridIndexFromPos: (pos: { x: number; y: number }) => number;
 };
 const selfType = "Note";
-const Note: React.FC<Props> = ({ rollId, id }) => {
-  const roll = Context.rolls.State().get(rollId)?.data;
+const Note: React.FC<Props> = ({
+  rollId,
+  id,
+  posFromNoteData,
+  gridIndexFromPos,
+}) => {
   const note = Context.notes.State().get(rollId)?.get(id)?.data;
-  if (roll == null) return <></>;
   if (note == null) return <></>;
   const childRollId = note.childRollId;
   const childRoll = childRollId
     ? Context.rolls.State().get(childRollId)?.data
     : null;
+  console.log(childRoll);
 
-  const pos = {
-    x: note.offset,
-    y:
-      (roll.maxOctave - note.octave) * roll.maxPitch +
-      (roll.maxPitch - note.pitch - 1),
-  };
-  const gridIndex = pos.x * roll.height + pos.y;
+  const pos = posFromNoteData({ ...note });
+  const gridIndex = gridIndexFromPos(pos);
 
   const style = {
     gridColumnStart: pos.x + 1,

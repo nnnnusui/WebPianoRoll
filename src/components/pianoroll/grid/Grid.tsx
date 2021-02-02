@@ -3,7 +3,7 @@ import { range0to } from "../../range";
 import ResizeListener from "./ResizeListener";
 import Context from "../context/Context";
 
-const Canvas: React.FC = () => {
+const Grid: React.FC = () => {
   const [canvasSize, setCanvasSize] = useState({ width: 100, height: 100 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvas = canvasRef.current;
@@ -32,7 +32,6 @@ const Canvas: React.FC = () => {
     if (context == null) return;
     context.beginPath()
     context.clearRect(0, 0, canvas.width, canvas.height)
-    context.save()
     drawGrid(context, cellSize, { ...roll });
   }
   window.requestAnimationFrame(draw);
@@ -49,7 +48,7 @@ const Canvas: React.FC = () => {
     </>
   );
 };
-export default Canvas;
+export default Grid;
 
 type Size = {
   width: number;

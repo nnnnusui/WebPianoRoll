@@ -4,7 +4,7 @@ import Roll from "./entity/Roll";
 import ActionLayer from "./grid/layer/ActionLayer";
 import ActionListeners from "./grid/ActionListeners";
 import ActionConsumer from "./ActionConsumer";
-import Canvas from "./grid/Canvas";
+import Grid from "./grid/Grid";
 
 const View: React.FC = () => {
   const selectedRollId = Context.roll.selectedId.State();
@@ -17,7 +17,7 @@ const View: React.FC = () => {
       {/* <ActionConsumer {...roll.data} />
       <ActionLayer {...roll.data} />
       <Roll {...roll.data} /> */}
-      <Canvas />
+      <Grid />
     </div>
   );
 };

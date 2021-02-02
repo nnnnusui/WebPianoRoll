@@ -15,11 +15,9 @@ const Grid: React.FC<Props> = () => {
   const [canvasSize, setCanvasSize] = useState({ width: 100, height: 100 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const move = MoveController();
   const [scaleCount, setScaleCount] = useState(1)
   const scale = scaleInfo.min + (scaleCount * scaleInfo.step)
-  const [onMove, setOnMove] = useState(false)
-  const [moveFrom, setMoveFrom] = useState({x: 0, y: 0})
-  const [move, setMove] = useState({x: 0, y: 0})
 
   const canvas = canvasRef.current;
   const context = canvas?.getContext("2d");
@@ -40,7 +38,7 @@ const Grid: React.FC<Props> = () => {
       context.save();
 
       context.scale(scale, 1);
-      drawGrid(context, {x: -move.x, y: -move.y}, cellSize, { ...roll });
+      drawGrid(context, {x: -move.state.x, y: -move.state.y}, cellSize, { ...roll });
       context.restore();
     };
     window.requestAnimationFrame(draw);
@@ -53,36 +51,17 @@ const Grid: React.FC<Props> = () => {
         y: event.clientY - rect.top,
       }
     }
-    const moveStart = (start: Pos) => {
-      const mouse = {
-        x: start.x + move.x,
-        y: start.y + move.y,
-      }
-      setMoveFrom(mouse)
-      setOnMove(true)
-    }
-    const moveIn = (pos: Pos) => {
-      if(!onMove) return;
-      const vector = {
-        x: moveFrom.x - pos.x,
-        y: moveFrom.y - pos.y,
-      }
-      setMove(vector)
-    }
-    const moveEnd = () => {
-      setMoveFrom({x: 0, y: 0})
-      setOnMove(false)
-    }
+    
     const onPointerDown = (event: React.PointerEvent) => {
       const mouse = getElementLocalMousePosFromEvent(event)
-      moveStart(mouse)
+      move.start(mouse)
     };
     const onPointerMove = (event: React.PointerEvent) => {
       const mouse = getElementLocalMousePosFromEvent(event)
-      moveIn(mouse)
+      move.in(mouse)
     }
     const onPointerUp = (event: React.PointerEvent) => {
-      moveEnd()
+      move.end()
     };
     const onWheel = (event: React.WheelEvent) =>{
       // const scaleIn = event.deltaY > 0
@@ -116,6 +95,39 @@ const Grid: React.FC<Props> = () => {
   );
 };
 export default Grid;
+
+const MoveController = () => {
+  const [onMove, setOnMove] = useState(false)
+  const [moveFrom, setMoveFrom] = useState({x: 0, y: 0})
+  const [move, setMove] = useState({x: 0, y: 0})
+  const moveStart = (start: Pos) => {
+    const mouse = {
+      x: start.x + move.x,
+      y: start.y + move.y,
+    }
+    setMoveFrom(mouse)
+    setOnMove(true)
+  }
+  const moveIn = (pos: Pos) => {
+    if(!onMove) return;
+    const vector = {
+      x: moveFrom.x - pos.x,
+      y: moveFrom.y - pos.y,
+    }
+    setMove(vector)
+  }
+  const moveEnd = () => {
+    setMoveFrom({x: 0, y: 0})
+    setOnMove(false)
+  }
+  return {
+    state: move,
+    start: moveStart,
+    in: moveIn,
+    end: moveEnd,
+  }
+}
+
 
 export type Selection = {
   from: Pos;

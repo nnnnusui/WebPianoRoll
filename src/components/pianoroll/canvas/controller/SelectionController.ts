@@ -19,7 +19,7 @@ const SelectionController = () => {
     setOn(false);
   };
   return {
-    state: { from, to },
+    get: { from, to },
     start,
     middle,
     end,

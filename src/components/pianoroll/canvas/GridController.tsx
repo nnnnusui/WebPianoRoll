@@ -17,13 +17,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const selection = SelectionController();
 
   const cellSize = {
-    width: (canvasSize.width / gridSize.width) * scale.state,
-    height: (canvasSize.height / gridSize.height) * scale.state,
+    width: (canvasSize.width / gridSize.width) * scale.get,
+    height: (canvasSize.height / gridSize.height) * scale.get,
   };
   const getCellPos = (viewLocal: Pos): Pos => {
     const gridLocal = {
-      x: move.state.x + viewLocal.x,
-      y: move.state.y + viewLocal.y,
+      x: move.get.x + viewLocal.x,
+      y: move.get.y + viewLocal.y,
     };
     return {
       x: Math.floor(gridLocal.x / cellSize.width),
@@ -36,8 +36,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.clearRect(0, 0, canvasSize.width, canvasSize.height);
     context.save();
 
-    drawGrid(context, move.state, cellSize, gridSize);
-    drawRect(context, move.state, selection.state, cellSize);
+    drawGrid(context, move.get, cellSize, gridSize);
+    drawRect(context, move.get, cellSize, selection.get);
     context.restore();
   };
   window.requestAnimationFrame(draw);
@@ -67,7 +67,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
   const onPointerMove = (event: React.PointerEvent) => {
     const mouse = getElementLocalMousePosFromEvent(event);
-    move.in(mouse);
+    move.middle(mouse);
     const cellPos = getCellPos(mouse);
     selection.middle(cellPos);
   };
@@ -92,8 +92,8 @@ export default GridController;
 const drawRect = (
   context: CanvasRenderingContext2D,
   start: Pos,
-  range: { from: Pos; to: Pos },
-  cellSize: Size
+  cellSize: Size,
+  range: { from: Pos; to: Pos }
 ) => {
   const { from, to } = range;
   const rect = {

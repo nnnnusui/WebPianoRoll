@@ -15,8 +15,8 @@ const ScaleController = (maxPos: Pos, maxCount: number, step: number) => {
 
       const scaled = next == result;
       const ratio = {
-        width: (move.state.x + viewLocal.x) / (maxPos.x * scale),
-        height: (move.state.y + viewLocal.y) / (maxPos.y * scale),
+        width: (move.get.x + viewLocal.x) / (maxPos.x * scale),
+        height: (move.get.y + viewLocal.y) / (maxPos.y * scale),
       };
       const scalingVector = {
         x: step * maxPos.x,
@@ -28,7 +28,7 @@ const ScaleController = (maxPos: Pos, maxCount: number, step: number) => {
       };
       if (scaled) {
         const nextScale = 1 + result * step;
-        move.setState((prev) => {
+        move.set((prev) => {
           return {
             scale: nextScale,
             pos: {
@@ -43,7 +43,7 @@ const ScaleController = (maxPos: Pos, maxCount: number, step: number) => {
   };
   return {
     set: setScale,
-    state: scale,
+    get: scale,
     move: move,
   };
 };

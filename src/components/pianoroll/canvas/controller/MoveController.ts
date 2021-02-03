@@ -49,10 +49,10 @@ const MoveController = (max: Pos, scale: number) => {
     setOnMove(false);
   };
   return {
-    state: move,
-    setState: updateMoveState,
+    get: move,
+    set: updateMoveState,
     start: moveStart,
-    in: moveIn,
+    middle: moveIn,
     end: moveEnd,
   };
 };

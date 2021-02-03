@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { range0to } from "../../range";
 import ScaleController from "./controller/ScaleController";
+import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
 
@@ -13,12 +14,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const scale = ScaleController(maxPos, 10, 0.5);
   const move = scale.move;
-
-  // const [selection, setSelection] = useState({
-  //   from: { x: 0, y: 0 },
-  //   to: { x: 0, y: 0 },
-  // });
-  // const [notes, setNotes] = useState<Pos[]>([]);
+  const selection = SelectionController();
 
   const cellSize = {
     width: (canvasSize.width / gridSize.width) * scale.state,
@@ -41,14 +37,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.save();
 
     drawGrid(context, move.state, cellSize, gridSize);
-    // drawRect(context, move.state, selection, cellSize);
-    // notes.forEach((note) => {
-    //   const start = {
-    //     x: note.x * cellSize.width,
-    //     y: note.y * cellSize.height,
-    //   };
-    //   context.fillRect(start.x, start.y, cellSize.width, cellSize.height);
-    // });
+    drawRect(context, move.state, selection.state, cellSize);
     context.restore();
   };
   window.requestAnimationFrame(draw);
@@ -67,13 +56,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     switch (event.button) {
       case 0:
         const cellPos = getCellPos(mouse);
-        // setSelection((prev) => ({ from: cellPos, to: cellPos }));
-        // console.log(cellPos);
-        // setNotes((prev) => {
-        //   const notEqualToCurrent = (it: Pos) =>
-        //     !(it.x == cellPos.x && it.y == cellPos.y);
-        //   return [...prev.filter((it) => notEqualToCurrent(it)), cellPos];
-        // });
+        selection.start(cellPos);
         break;
       case 1:
         move.start(mouse);
@@ -85,12 +68,12 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const onPointerMove = (event: React.PointerEvent) => {
     const mouse = getElementLocalMousePosFromEvent(event);
     move.in(mouse);
+    const cellPos = getCellPos(mouse);
+    selection.middle(cellPos);
   };
   const onPointerUp = (event: React.PointerEvent) => {
     move.end();
-    const mouse = getElementLocalMousePosFromEvent(event);
-    const cellPos = getCellPos(mouse);
-    // setSelection((prev) => ({ ...prev, to: cellPos }));
+    selection.end();
   };
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;

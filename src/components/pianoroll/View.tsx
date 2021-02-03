@@ -4,7 +4,7 @@ import Roll from "./entity/Roll";
 import ActionLayer from "./grid/layer/ActionLayer";
 import ActionListeners from "./grid/ActionListeners";
 import ActionConsumer from "./ActionConsumer";
-import Grid from "./grid/layer/Grid";
+import Grid from "./canvas/Grid";
 import Select from "./grid/layer/Select";
 
 const View: React.FC = () => {

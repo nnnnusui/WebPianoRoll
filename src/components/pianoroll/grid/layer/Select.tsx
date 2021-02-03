@@ -23,18 +23,20 @@ const Select: React.FC<Props> = ({ selection, cellSize }) => {
       height: range.height * cellSize.height,
     },
   };
-  const style = styleFromRect(rect)
+  const style = styleFromRect(rect);
 
-  return <div {...{style}} className="pointer-events-none absolute bg-black"/>;
+  return (
+    <div {...{ style }} className="pointer-events-none absolute bg-black" />
+  );
 };
 export default Select;
 
 const styleFromRect = (rect: Rect) => ({
-    top: rect.pos.y,
-    left: rect.pos.x,
-    width: rect.size.width,
-    height: rect.size.height,
-})
+  top: rect.pos.y,
+  left: rect.pos.x,
+  width: rect.size.width,
+  height: rect.size.height,
+});
 export type Selection = {
   from: Pos;
   to: Pos;

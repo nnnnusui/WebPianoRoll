@@ -10,9 +10,10 @@ const Grid: React.FC<Props> = () => {
   const [canvasSize, setCanvasSize] = useState({ width: 100, height: 100 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const maxPos = { x: canvasSize.width, y: canvasSize.height };
-  const scale = ScaleController(maxPos, 10, 0.5);
-  const move = scale.move;
+  const { draw, getCellPos, move, scale } = GridController(canvasSize, {
+    width: 32,
+    height: 12,
+  });
 
   const [selection, setSelection] = useState({
     from: { x: 0, y: 0 },
@@ -28,40 +29,8 @@ const Grid: React.FC<Props> = () => {
     if (canvas == null) return;
     if (context == null) return;
     if (roll == null) return;
-    const cellSize = {
-      width: (canvas.width / roll.width) * scale.state,
-      height: (canvas.height / roll.height) * scale.state,
-    };
-    const getCellPos = (viewLocal: Pos): Pos => {
-      const gridLocal = {
-        x: move.state.x + viewLocal.x,
-        y: move.state.y + viewLocal.y,
-      };
-      return {
-        x: Math.floor(gridLocal.x / cellSize.width),
-        y: Math.floor(gridLocal.y / cellSize.height),
-      };
-    };
 
-    const draw = () => {
-      context.beginPath();
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.save();
-
-      drawGrid(context, move.state, cellSize, {
-        ...roll,
-      });
-      drawRect(context, move.state, selection, cellSize);
-      notes.forEach((note) => {
-        const start = {
-          x: note.x * cellSize.width,
-          y: note.y * cellSize.height,
-        };
-        context.fillRect(start.x, start.y, cellSize.width, cellSize.height);
-      });
-      context.restore();
-    };
-    window.requestAnimationFrame(draw);
+    window.requestAnimationFrame(() => draw(context));
 
     const getElementLocalMousePosFromEvent = (event: React.MouseEvent) => {
       const element = event.target as HTMLElement;
@@ -128,6 +97,54 @@ const Grid: React.FC<Props> = () => {
   );
 };
 export default Grid;
+
+const GridController = (canvasSize: Size, size: Size) => {
+  const maxPos = { x: canvasSize.width, y: canvasSize.height };
+  const scale = ScaleController(maxPos, 10, 0.5);
+  const move = scale.move;
+
+  const cellSize = {
+    width: (canvasSize.width / size.width) * scale.state,
+    height: (canvasSize.height / size.height) * scale.state,
+  };
+  const getCellPos = (viewLocal: Pos): Pos => {
+    const gridLocal = {
+      x: move.state.x + viewLocal.x,
+      y: move.state.y + viewLocal.y,
+    };
+    console.log(gridLocal)
+    return {
+      x: Math.floor(gridLocal.x / cellSize.width),
+      y: Math.floor(gridLocal.y / cellSize.height),
+    };
+  };
+
+  const draw = (context: CanvasRenderingContext2D) => {
+    context.beginPath();
+    context.clearRect(0, 0, canvasSize.width, canvasSize.height);
+    context.save();
+
+    drawGrid(context, move.state, cellSize, {
+      ...size,
+    });
+    // drawRect(context, move.state, selection, cellSize);
+    // notes.forEach((note) => {
+    //   const start = {
+    //     x: note.x * cellSize.width,
+    //     y: note.y * cellSize.height,
+    //   };
+    //   context.fillRect(start.x, start.y, cellSize.width, cellSize.height);
+    // });
+    context.restore();
+  };
+
+  return {
+    draw,
+    getCellPos,
+    move,
+    scale,
+  };
+};
 
 export type Selection = {
   from: Pos;

@@ -26,13 +26,22 @@ const Grid: React.FC<Props> = () => {
       width: (canvas.width / roll.width) * scale.state,
       height: (canvas.height / roll.height) * scale.state,
     };
+    const getCellPos = (viewLocal: Pos): Pos => {
+      const gridLocal = {
+        x: move.state.x + viewLocal.x,
+        y: move.state.y + viewLocal.y,
+      };
+      return {
+        x: gridLocal.x / cellSize.width,
+        y: gridLocal.y / cellSize.height,
+      };
+    };
 
     const draw = () => {
       context.beginPath();
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.save();
 
-      // context.scale(1, 1);
       drawGrid(context, { x: -move.state.x, y: -move.state.y }, cellSize, {
         ...roll,
       });
@@ -51,7 +60,16 @@ const Grid: React.FC<Props> = () => {
 
     const onPointerDown = (event: React.PointerEvent) => {
       const mouse = getElementLocalMousePosFromEvent(event);
-      move.start(mouse);
+      switch (event.button) {
+        case 0:
+          console.log(getCellPos(mouse));
+          break;
+        case 1:
+          move.start(mouse);
+          break;
+        case 2:
+          break;
+      }
     };
     const onPointerMove = (event: React.PointerEvent) => {
       const mouse = getElementLocalMousePosFromEvent(event);

@@ -14,6 +14,12 @@ const Grid: React.FC<Props> = () => {
   const scale = ScaleController(maxPos, 10, 0.5);
   const move = scale.move;
 
+  const [selection, setSelection] = useState({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: 0 },
+  });
+  const [notes, setNotes] = useState<Pos[]>([]);
+
   const canvas = canvasRef.current;
   const context = canvas?.getContext("2d");
   const roll = Context.roll.selected()?.data;
@@ -32,8 +38,8 @@ const Grid: React.FC<Props> = () => {
         y: move.state.y + viewLocal.y,
       };
       return {
-        x: gridLocal.x / cellSize.width,
-        y: gridLocal.y / cellSize.height,
+        x: Math.floor(gridLocal.x / cellSize.width),
+        y: Math.floor(gridLocal.y / cellSize.height),
       };
     };
 
@@ -42,8 +48,16 @@ const Grid: React.FC<Props> = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.save();
 
-      drawGrid(context, { x: -move.state.x, y: -move.state.y }, cellSize, {
+      drawGrid(context, move.state, cellSize, {
         ...roll,
+      });
+      drawRect(context, move.state, selection, cellSize);
+      notes.forEach((note) => {
+        const start = {
+          x: note.x * cellSize.width,
+          y: note.y * cellSize.height,
+        };
+        context.fillRect(start.x, start.y, cellSize.width, cellSize.height);
       });
       context.restore();
     };
@@ -62,7 +76,14 @@ const Grid: React.FC<Props> = () => {
       const mouse = getElementLocalMousePosFromEvent(event);
       switch (event.button) {
         case 0:
-          console.log(getCellPos(mouse));
+          const cellPos = getCellPos(mouse);
+          setSelection((prev) => ({ from: cellPos, to: cellPos }));
+          console.log(cellPos);
+          setNotes((prev) => {
+            const notEqualToCurrent = (it: Pos) =>
+              !(it.x == cellPos.x && it.y == cellPos.y);
+            return [...prev.filter((it) => notEqualToCurrent(it)), cellPos];
+          });
           break;
         case 1:
           move.start(mouse);
@@ -77,6 +98,9 @@ const Grid: React.FC<Props> = () => {
     };
     const onPointerUp = (event: React.PointerEvent) => {
       move.end();
+      const mouse = getElementLocalMousePosFromEvent(event);
+      const cellPos = getCellPos(mouse);
+      setSelection((prev) => ({ ...prev, to: cellPos }));
     };
     const onWheel = (event: React.WheelEvent) => {
       const scaleIn = event.deltaY > 0;
@@ -119,6 +143,25 @@ type Rect = {
   pos: Pos;
   size: Size;
 };
+const drawRect = (
+  context: CanvasRenderingContext2D,
+  start: Pos,
+  range: { from: Pos; to: Pos },
+  cellSize: Size
+) => {
+  const { from, to } = range;
+  const rect = {
+    pos: {
+      x: Math.min(from.x, to.x) * cellSize.width - start.x,
+      y: Math.min(from.y, to.y) * cellSize.height - start.y,
+    },
+    size: {
+      width: (Math.abs(to.x - from.x) + 1) * cellSize.width,
+      height: (Math.abs(to.y - from.y) + 1) * cellSize.height,
+    },
+  };
+  context.fillRect(rect.pos.x, rect.pos.y, rect.size.width, rect.size.height);
+};
 const drawGrid = (
   context: CanvasRenderingContext2D,
   start: Pos,
@@ -131,14 +174,14 @@ const drawGrid = (
   };
   range0to(quantities.width + 1)
     .map((index) => index * cellSize.width)
-    .map((it) => it + start.x)
+    .map((it) => it - start.x)
     .forEach((it) => {
       context.moveTo(it, 0);
       context.lineTo(it, max.height);
     });
   range0to(quantities.height + 1)
     .map((index) => index * cellSize.height)
-    .map((it) => it + start.y)
+    .map((it) => it - start.y)
     .forEach((it) => {
       context.moveTo(0, it);
       context.lineTo(max.width, it);

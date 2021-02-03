@@ -16,8 +16,11 @@ const Grid: React.FC<Props> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const move = MoveController();
-  const [scaleCount, setScaleCount] = useState(1)
+  const [scaleCount, setScaleCount] = useState(0)
   const scale = scaleInfo.min + (scaleCount * scaleInfo.step)
+  const updateMoveState = (func: (prev: Pos) => Pos) => {
+    move.setState(prev=> func(prev))
+  }
 
   const canvas = canvasRef.current;
   const context = canvas?.getContext("2d");
@@ -28,8 +31,8 @@ const Grid: React.FC<Props> = () => {
     if (context == null) return;
     if (roll == null) return;
     const cellSize = {
-      width: (canvas?.width || 100) / roll.width,
-      height: (canvas?.height || 200) / roll.height,
+      width: (canvas?.width || 100) / roll.width * scale,
+      height: (canvas?.height || 200) / roll.height * scale,
     };
   
     const draw = () => {
@@ -37,13 +40,13 @@ const Grid: React.FC<Props> = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.save();
 
-      context.scale(scale, 1);
+      // context.scale(scale, 1);
       drawGrid(context, {x: -move.state.x, y: -move.state.y}, cellSize, { ...roll });
       context.restore();
     };
     window.requestAnimationFrame(draw);
   
-    const getElementLocalMousePosFromEvent = (event: React.PointerEvent) => {
+    const getElementLocalMousePosFromEvent = (event: React.MouseEvent) => {
       const element = event.target as HTMLElement
       const rect = element.getBoundingClientRect();
       return {
@@ -64,6 +67,36 @@ const Grid: React.FC<Props> = () => {
       move.end()
     };
     const onWheel = (event: React.WheelEvent) =>{
+      const scaleIn = event.deltaY > 0
+      setScaleCount(prev => {
+        const direction = (scaleIn ? 1 : -1)
+        const next = prev + direction
+        const result = scaleIn
+          ? (next > 10 ? 10 : next)
+          : (next <  0 ?  0 : next)
+
+        // const scaled = next == result
+        // const mouse = getElementLocalMousePosFromEvent(event)
+        // const ratio = {
+        //   width: mouse.x / canvas.width,
+        //   height: mouse.y / canvas.height,
+        // }
+        // const scalingVector = {
+        //   x: scaleInfo.step * canvas.width,
+        //   y: scaleInfo.step * canvas.height,
+        // }
+        // const moveVector = {
+        //   x: ratio.width * scalingVector.x * direction,
+        //   y: ratio.height * scalingVector.y * direction,
+        // }
+        // if(scaled)
+        //   updateMoveState(prev=> ({...prev,
+        //     x: prev.x + moveVector.x,
+        //     y: prev.y + moveVector.y,
+        //   }))
+        
+        return result
+      })
       // const scaleIn = event.deltaY > 0
       // setScaleCount(prev => {
       //   const next = prev + (scaleIn ? 1 : -1)
@@ -122,6 +155,7 @@ const MoveController = () => {
   }
   return {
     state: move,
+    setState: setMove,
     start: moveStart,
     in: moveIn,
     end: moveEnd,

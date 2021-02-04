@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { range0to } from "../../range";
 import ScaleController from "./controller/ScaleController";
 import SelectionController from "./controller/SelectionController";
@@ -18,6 +18,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const selection = SelectionController();
   const grid = Grid(gridSize);
 
+  const note = NotesController();
+
   const cellSize = {
     width: (canvasSize.width / grid.size.width) * scale.get,
     height: (canvasSize.height / grid.size.height) * scale.get,
@@ -35,6 +37,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.save();
 
     grid.draw(context, move.get, cellSize);
+    note.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
     context.restore();
   };
@@ -58,15 +61,24 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const onPointerDown = (event: React.PointerEvent) => {
     const viewLocal = getElementLocalMousePosFromEvent(event);
     const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
-    switch (event.button) {
-      case 0:
-        selection.start(gridLocal);
-        break;
-      case 1:
-        move.start(viewLocal);
-        break;
-      case 2:
-        break;
+    const cellPos = getCellPos(gridLocal);
+
+    const click = {
+      left: event.button == 0,
+      middle: event.button == 1,
+      right: event.button == 2,
+    };
+    const key = {
+      ctrl: event.ctrlKey,
+    };
+    const primary = event.isPrimary;
+    if (false) {
+    } else if (click.left && key.ctrl) {
+      selection.start(gridLocal);
+    } else if (click.left) {
+      note.toggle(cellPos);
+    } else if (click.middle) {
+      move.start(viewLocal);
     }
   };
   const onPointerMove = (event: React.PointerEvent) => {
@@ -121,4 +133,40 @@ const Grid = (size: Size) => {
     context.stroke();
   };
   return { size, draw };
+};
+const NotesController = () => {
+  const [notes, setNotes] = useState<Pos[]>([]);
+  const isEquals = (noteA: Pos, noteB: Pos) =>
+    noteA.x == noteB.x && noteA.y == noteB.y;
+  const exists = (note: Pos) => notes.find((it) => isEquals(it, note)) != null;
+  const add = (note: Pos) => {
+    setNotes((prev) => [...prev.filter((it) => !isEquals(it, note)), note]);
+  };
+  const remove = (note: Pos) => {
+    setNotes((prev) => prev.filter((it) => !isEquals(it, note)));
+  };
+  const toggle = (note: Pos) => {
+    if (exists(note)) remove(note);
+    else add(note);
+  };
+
+  const draw = (
+    context: CanvasRenderingContext2D,
+    move: Pos,
+    cellSize: Size
+  ) => {
+    notes.forEach((note) => {
+      const start = {
+        x: note.x * cellSize.width - move.x,
+        y: note.y * cellSize.height - move.y,
+      };
+      context.fillRect(start.x, start.y, cellSize.width, cellSize.height);
+    });
+  };
+  return {
+    add,
+    remove,
+    toggle,
+    draw,
+  };
 };

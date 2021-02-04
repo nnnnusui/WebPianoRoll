@@ -21,11 +21,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     width: (canvasSize.width / gridSize.width) * scale.get,
     height: (canvasSize.height / gridSize.height) * scale.get,
   };
-  const getCellPos = (viewLocal: Pos): Pos => {
-    const gridLocal = {
-      x: move.get.x + viewLocal.x,
-      y: move.get.y + viewLocal.y,
-    };
+  const getCellPos = (gridLocal: Pos): Pos => {
     return {
       x: Math.floor(gridLocal.x / cellSize.width),
       y: Math.floor(gridLocal.y / cellSize.height),
@@ -38,7 +34,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.save();
 
     drawGrid(context, move.get, cellSize, gridSize);
-    selection.draw(context, move.get, cellSize);
+    selection.draw(context, move.get);
     context.restore();
   };
   window.requestAnimationFrame(draw);
@@ -51,26 +47,33 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       y: event.clientY - rect.top,
     };
   };
+  const getGridLocalMousePosFromEvent = (event: React.MouseEvent) => {
+    const elementLocal = getElementLocalMousePosFromEvent(event)
+    return {
+      x: move.get.x + elementLocal.x,
+      y: move.get.y + elementLocal.y,
+    }
+  }
 
   const onPointerDown = (event: React.PointerEvent) => {
-    const mouse = getElementLocalMousePosFromEvent(event);
+    const viewLocal = getElementLocalMousePosFromEvent(event);
+    const gridLocal = getGridLocalMousePosFromEvent(event);
     switch (event.button) {
       case 0:
-        const cellPos = getCellPos(mouse);
-        selection.start(cellPos);
+        selection.start(gridLocal);
         break;
       case 1:
-        move.start(mouse);
+        move.start(viewLocal);
         break;
       case 2:
         break;
     }
   };
   const onPointerMove = (event: React.PointerEvent) => {
-    const mouse = getElementLocalMousePosFromEvent(event);
-    const cellPos = getCellPos(mouse);
-    move.middle(mouse, scale.get);
-    selection.middle(cellPos);
+    const viewLocal = getElementLocalMousePosFromEvent(event);
+    const gridLocal = getGridLocalMousePosFromEvent(event);
+    move.middle(viewLocal, scale.get);
+    selection.middle(gridLocal);
   };
   const onPointerUp = (event: React.PointerEvent) => {
     move.end();
@@ -78,8 +81,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
-    const mouse = getElementLocalMousePosFromEvent(event);
-    scale.set(scaleIn, mouse);
+    const viewLocal = getElementLocalMousePosFromEvent(event);
+    scale.set(scaleIn, viewLocal);
   };
   return (
     <div

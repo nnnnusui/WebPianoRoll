@@ -18,9 +18,13 @@ const ScaleController = (
       const result = Math.max(Math.min(next, maxCount), minCount);
 
       const scaled = next == result;
+      const focus = {
+        x: move.get.x + viewLocal.x,
+        y: move.get.y + viewLocal.y,
+      }
       const ratio = {
-        width: (move.get.x + viewLocal.x) / (maxPos.x * scale),
-        height: (move.get.y + viewLocal.y) / (maxPos.y * scale),
+        width: focus.x / (maxPos.x * scale),
+        height: focus.y / (maxPos.y * scale),
       };
       const scalingVector = {
         x: step * maxPos.x,

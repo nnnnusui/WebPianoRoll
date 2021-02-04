@@ -15,10 +15,12 @@ const Grid: React.FC<Props> = () => {
   const forward = () => {
     if (canvas == null) return;
     if (context == null) return;
-    if (roll == null) return;
-    return (
-      <GridController {...{ context, canvasSize, gridSize: { ...roll } }} />
-    );
+    // if (roll == null) return;
+    const gridSize = {
+      width: roll?.width || 32,
+      height: roll?.height || 12,
+    };
+    return <GridController {...{ context, canvasSize, gridSize }} />;
   };
 
   return (

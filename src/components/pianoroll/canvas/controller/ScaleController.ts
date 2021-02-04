@@ -10,45 +10,37 @@ const ScaleController = (
   defaultCount: number
 ) => {
   const maxPos = move.maxPos;
-  const minCount = 0;
-  const [count, setCount] = useState(defaultCount);
-  const scale = 1 + count * step;
-  const setScale = (scaleIn: boolean, viewLocal: Pos) => {
-    const direction = scaleIn ? 1 : -1;
-    setCount((prev) => {
-      const next = prev + direction;
-      const result = Math.max(Math.min(next, maxCount), minCount);
-
-      const scaled = next == result;
-      const focus = {
-        x: move.get.x + viewLocal.x,
-        y: move.get.y + viewLocal.y,
-      };
-      const ratio = {
-        width: focus.x / (maxPos.x * scale),
-        height: focus.y / (maxPos.y * scale),
-      };
-      const scalingVector = {
-        x: step * maxPos.x,
-        y: step * maxPos.y,
-      };
-      const moveVector = {
-        x: ratio.width * scalingVector.x * direction,
-        y: ratio.height * scalingVector.y * direction,
-      };
-      if (scaled) {
-        const nextScale = 1 + result * step;
-        move.set(nextScale, (prev) => ({
-          x: prev.x + moveVector.x,
-          y: prev.y + moveVector.y,
-        }));
-      }
-      return result;
-    });
-  };
-
   const stateInit = { width: 1, height: 1 };
   const [state, setState] = useState(stateInit);
+  
+  const setScale = (scaleIn: boolean, viewLocal: Pos) => {
+    const direction = scaleIn ? 1 : -1;
+    const focus = {
+      x: move.get.x + viewLocal.x,
+      y: move.get.y + viewLocal.y,
+    };
+    const ratio = {
+      width: focus.x / (maxPos.x * state.width),
+      height: focus.y / (maxPos.y * state.height),
+    };
+    const scalingVector = {
+      x: step * maxPos.x,
+      y: step * maxPos.y,
+    };
+    const moveVector = {
+      x: ratio.width * scalingVector.x * direction,
+      y: ratio.height * scalingVector.y * direction,
+    };
+    const next = {
+      width: state.width + (step * direction),
+      height: state.height + (step * direction),
+    }
+    move.set(next, (prev) => ({
+      x: prev.x + moveVector.x,
+      y: prev.y + moveVector.y,
+    }));
+    setState(next)
+  };
 
   const fromInit = { width: 0, height: 0 };
   const [onPinch, setOnPinch] = useState(false);

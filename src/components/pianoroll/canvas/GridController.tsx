@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { range0to } from "../../range";
 import ScaleController from "./controller/ScaleController";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
+import MoveController from "./controller/MoveController";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -12,8 +13,8 @@ type Props = {
 };
 const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
-  const scale = ScaleController(maxPos, 10, 0.5);
-  const move = scale.move;
+  const move = MoveController(maxPos);
+  const scale = ScaleController(move, 10, 0.5);
   const selection = SelectionController();
 
   const cellSize = {
@@ -37,7 +38,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.save();
 
     drawGrid(context, move.get, cellSize, gridSize);
-    drawRect(context, move.get, cellSize, selection.get);
+    selection.draw(context, move.get, cellSize);
     context.restore();
   };
   window.requestAnimationFrame(draw);
@@ -67,8 +68,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
   const onPointerMove = (event: React.PointerEvent) => {
     const mouse = getElementLocalMousePosFromEvent(event);
-    move.middle(mouse);
     const cellPos = getCellPos(mouse);
+    move.middle(mouse, scale.get);
     selection.middle(cellPos);
   };
   const onPointerUp = (event: React.PointerEvent) => {
@@ -89,25 +90,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 };
 export default GridController;
 
-const drawRect = (
-  context: CanvasRenderingContext2D,
-  start: Pos,
-  cellSize: Size,
-  range: { from: Pos; to: Pos }
-) => {
-  const { from, to } = range;
-  const rect = {
-    pos: {
-      x: Math.min(from.x, to.x) * cellSize.width - start.x,
-      y: Math.min(from.y, to.y) * cellSize.height - start.y,
-    },
-    size: {
-      width: (Math.abs(to.x - from.x) + 1) * cellSize.width,
-      height: (Math.abs(to.y - from.y) + 1) * cellSize.height,
-    },
-  };
-  context.fillRect(rect.pos.x, rect.pos.y, rect.size.width, rect.size.height);
-};
 const drawGrid = (
   context: CanvasRenderingContext2D,
   start: Pos,

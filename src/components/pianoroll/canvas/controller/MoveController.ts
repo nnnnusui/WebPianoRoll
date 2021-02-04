@@ -1,59 +1,58 @@
 import { Pos } from "../type/Pos";
-import { useState } from "react";
+import { useState, SetStateAction } from "react";
 
-const MoveController = (max: Pos, scale: number) => {
-  const [onMove, setOnMove] = useState(false);
+const MoveController = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
+  const [on, setOn] = useState(false);
   const [from, setFrom] = useState({ x: 0, y: 0 });
-  const [move, setMove] = useState({ x: 0, y: 0 });
+  const [state, setState] = useState({ x: 0, y: 0 });
 
-  const border = {
-    start: { x: 0, y: 0 },
-    end: { x: max.x, y: max.y },
-  };
   const fixEndExceeded = (pos: Pos, scale: number) => ({
-    x: Math.min(border.end.x * scale, pos.x + max.x) - max.x,
-    y: Math.min(border.end.y * scale, pos.y + max.y) - max.y,
+    x: Math.min(max.x * scale, pos.x + max.x) - max.x,
+    y: Math.min(max.y * scale, pos.y + max.y) - max.y,
   });
   const fixStartExceeded = (pos: Pos) => ({
-    x: Math.max(border.start.x, pos.x),
-    y: Math.max(border.start.y, pos.y),
+    x: Math.max(min.x, pos.x),
+    y: Math.max(min.y, pos.y),
   });
 
-  const updateMoveState = (
-    func: (prev: Pos) => { pos: Pos; scale: number }
-  ) => {
-    setMove((prev) => {
-      const { pos: next, scale } = func(prev);
+  const updateState = (scale: number, action: SetStateAction<Pos>) => {
+    setState((prev) => {
+      const next = typeof action === "function" ? action(prev) : action;
       return fixStartExceeded(fixEndExceeded(next, scale));
     });
   };
 
-  const moveStart = (viewLocal: Pos) => {
+  const start = (viewLocal: Pos) => {
     const global = {
-      x: viewLocal.x + move.x,
-      y: viewLocal.y + move.y,
+      x: viewLocal.x + state.x,
+      y: viewLocal.y + state.y,
     };
     setFrom(global);
-    setOnMove(true);
+    setOn(true);
   };
-  const moveIn = (pos: Pos) => {
-    if (!onMove) return;
+  const middle = (pos: Pos, scale: number) => {
+    if (!on) return;
     const vector = {
       x: from.x - pos.x,
       y: from.y - pos.y,
     };
-    updateMoveState(() => ({ pos: vector, scale }));
+    updateState(scale, vector);
   };
-  const moveEnd = () => {
+  const end = () => {
     setFrom({ x: 0, y: 0 });
-    setOnMove(false);
+    setOn(false);
   };
   return {
-    get: move,
-    set: updateMoveState,
-    start: moveStart,
-    middle: moveIn,
-    end: moveEnd,
+    get: state,
+    set: updateState,
+    start,
+    middle,
+    end,
+
+    maxPos: max,
   };
 };
 export default MoveController;
+
+type MoveControllerType = ReturnType<typeof MoveController>;
+export type { MoveControllerType };

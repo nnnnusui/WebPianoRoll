@@ -119,17 +119,15 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         scale.endPinch();
         break;
       case 2:
-        const [primary, secondary] = events.sort((it) =>
-          it.isPrimary ? -1 : 1
+        const [otherSide] = events.filter(
+          (it) => it.pointerId != event.pointerId
         );
-        const from = getElementLocalMousePosFromEvent(primary);
-        const to = getElementLocalMousePosFromEvent(secondary);
+        const focus = getElementLocalMousePosFromEvent(otherSide);
         const range = {
-          width: Math.abs(to.x - from.x),
-          height: Math.abs(to.y - from.y),
+          width: Math.abs(viewLocal.x - focus.x),
+          height: Math.abs(viewLocal.y - focus.y),
         };
-        // move.middle(viewLocal, scale.get)
-        setDebug(`${scale.middlePinch(range)}`);
+        setDebug(`${scale.middlePinch(focus, range)}`);
         break;
       default:
         break;

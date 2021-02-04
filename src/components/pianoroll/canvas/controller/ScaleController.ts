@@ -3,18 +3,27 @@ import { useState } from "react";
 import { MoveControllerType } from "./MoveController";
 import { Size } from "../type/Size";
 
+const min = 1;
+const stateInit = { width: min, height: min };
 const ScaleController = (
   move: MoveControllerType,
   step: number,
-  maxCount: number,
-  defaultCount: number
+  max: number,
+  defaultValue: Size = stateInit
 ) => {
   const maxPos = move.maxPos;
-  const stateInit = { width: 1, height: 1 };
-  const [state, setState] = useState(stateInit);
-  
-  const setScale = (scaleIn: boolean, viewLocal: Pos) => {
-    const direction = scaleIn ? 1 : -1;
+  const [state, setState] = useState(defaultValue);
+
+  const fixLowerLimit = (target: Size) => ({
+    width: Math.max(min, target.width),
+    height: Math.max(min, target.height),
+  });
+  const fixHigherLimit = (target: Size) => ({
+    width: Math.min(max, target.width),
+    height: Math.min(max, target.height),
+  });
+
+  const getMoveVector = (direction: number, viewLocal: Pos) => {
     const focus = {
       x: move.get.x + viewLocal.x,
       y: move.get.y + viewLocal.y,
@@ -27,19 +36,30 @@ const ScaleController = (
       x: step * maxPos.x,
       y: step * maxPos.y,
     };
-    const moveVector = {
+    return {
       x: ratio.width * scalingVector.x * direction,
       y: ratio.height * scalingVector.y * direction,
     };
-    const next = {
-      width: state.width + (step * direction),
-      height: state.height + (step * direction),
-    }
+  };
+
+  const setScale = (scaleIn: boolean, viewLocalFocus: Pos) => {
+    const direction = scaleIn ? 1 : -1;
+    const mayBeNext = {
+      width: state.width + step * direction,
+      height: state.height + step * direction,
+    };
+    const next = fixLowerLimit(fixHigherLimit(mayBeNext));
+
+    const widthFixed = next.width != mayBeNext.width;
+    const heightFixed = next.height != mayBeNext.height;
+
+    const moveVector = getMoveVector(direction, viewLocalFocus);
+
     move.set(next, (prev) => ({
-      x: prev.x + moveVector.x,
-      y: prev.y + moveVector.y,
+      x: prev.x + (widthFixed ? 0 : moveVector.x),
+      y: prev.y + (heightFixed ? 0 : moveVector.y),
     }));
-    setState(next)
+    setState(next);
   };
 
   const fromInit = { width: 0, height: 0 };

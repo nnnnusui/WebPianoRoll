@@ -23,7 +23,7 @@ const ScaleController = (
     height: Math.min(max, target.height),
   });
 
-  const getMoveVector = (direction: number, viewLocal: Pos) => {
+  const getMoveVector = (direction: number, viewLocal: Pos, state: Size) => {
     const focus = {
       x: move.get.x + viewLocal.x,
       y: move.get.y + viewLocal.y,
@@ -44,22 +44,23 @@ const ScaleController = (
 
   const setScale = (scaleIn: boolean, viewLocalFocus: Pos) => {
     const direction = scaleIn ? 1 : -1;
-    const mayBeNext = {
-      width: state.width + step * direction,
-      height: state.height + step * direction,
-    };
-    const next = fixLowerLimit(fixHigherLimit(mayBeNext));
+    setState((prev) => {
+      const mayBeNext = {
+        width: prev.width + step * direction,
+        height: prev.height + step * direction,
+      };
+      const next = fixLowerLimit(fixHigherLimit(mayBeNext));
 
-    const widthFixed = next.width != mayBeNext.width;
-    const heightFixed = next.height != mayBeNext.height;
+      const widthFixed = next.width != mayBeNext.width;
+      const heightFixed = next.height != mayBeNext.height;
+      const moveVector = getMoveVector(direction, viewLocalFocus, prev);
+      move.set(next, (prev) => ({
+        x: prev.x + (widthFixed ? 0 : moveVector.x),
+        y: prev.y + (heightFixed ? 0 : moveVector.y),
+      }));
 
-    const moveVector = getMoveVector(direction, viewLocalFocus);
-
-    move.set(next, (prev) => ({
-      x: prev.x + (widthFixed ? 0 : moveVector.x),
-      y: prev.y + (heightFixed ? 0 : moveVector.y),
-    }));
-    setState(next);
+      return next;
+    });
   };
 
   const fromInit = { width: 0, height: 0 };

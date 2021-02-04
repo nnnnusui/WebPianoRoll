@@ -1,5 +1,5 @@
 import { Pos } from "../type/Pos";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 import { MoveControllerType } from "./MoveController";
 import { Size } from "../type/Size";
 
@@ -7,89 +7,19 @@ const min = 1;
 const stateInit = { width: min, height: min };
 const ScaleController = (
   move: MoveControllerType,
-  step: number,
   max: number,
   defaultValue: Size = stateInit
 ) => {
   const maxPos = move.maxPos;
-  const [state, setState] = useState(defaultValue);
+  const [state, _setState] = useState(defaultValue);
+  const setState = (viewLocalFocus: Pos, action: SetStateAction<Size>) => {
+    _setState((prev) => {
+      const mayBeNext = typeof action === "function" ? action(prev) : action;
 
-  const fixLowerLimit = (target: Size) => ({
-    width: Math.max(min, target.width),
-    height: Math.max(min, target.height),
-  });
-  const fixHigherLimit = (target: Size) => ({
-    width: Math.min(max, target.width),
-    height: Math.min(max, target.height),
-  });
-
-  const getMoveVector = (directions: Pos, viewLocal: Pos, state: Size) => {
-    const focus = {
-      x: move.get.x + viewLocal.x,
-      y: move.get.y + viewLocal.y,
-    };
-    const ratio = {
-      width: focus.x / (maxPos.x * state.width),
-      height: focus.y / (maxPos.y * state.height),
-    };
-    const scalingVector = {
-      x: step * maxPos.x,
-      y: step * maxPos.y,
-    };
-    return {
-      x: ratio.width * scalingVector.x * directions.x,
-      y: ratio.height * scalingVector.y * directions.y,
-    };
-  };
-
-  const setScale = (scaleIn: boolean, viewLocalFocus: Pos) => {
-    const direction = scaleIn ? 1 : -1;
-    setState((prev) => {
-      const mayBeNext = {
-        width: prev.width + step * direction,
-        height: prev.height + step * direction,
-      };
       const next = fixLowerLimit(fixHigherLimit(mayBeNext));
-
       const widthFixed = next.width != mayBeNext.width;
       const heightFixed = next.height != mayBeNext.height;
-      const moveVector = getMoveVector(
-        { x: direction, y: direction },
-        viewLocalFocus,
-        prev
-      );
-      move.set(next, (prev) => ({
-        x: prev.x + (widthFixed ? 0 : moveVector.x),
-        y: prev.y + (heightFixed ? 0 : moveVector.y),
-      }));
 
-      return next;
-    });
-  };
-
-  const fromInit = { width: 0, height: 0 };
-  const [onPinch, setOnPinch] = useState(false);
-  const [from, setFrom] = useState(fromInit);
-  const [before, setBefore] = useState(stateInit);
-  const middlePinch = (viewLocalFocus: Pos, range: Size) => {
-    if (!onPinch) {
-      setOnPinch(true);
-      setFrom(range);
-      setBefore(state);
-      return;
-    }
-    const sizeRatio = {
-      width: range.width / from.width,
-      height: range.height / from.height,
-    };
-    const mayBeNext = {
-      width: before.width * sizeRatio.width,
-      height: before.height * sizeRatio.height,
-    };
-    const next = fixLowerLimit(fixHigherLimit(mayBeNext));
-    const widthFixed = next.width != mayBeNext.width;
-    const heightFixed = next.height != mayBeNext.height;
-    setState((prev) => {
       const focus = {
         x: move.get.x + viewLocalFocus.x,
         y: move.get.y + viewLocalFocus.y,
@@ -113,17 +43,55 @@ const ScaleController = (
 
       return next;
     });
-    return `focus: ${viewLocalFocus.x}, ${viewLocalFocus.y}`;
+  };
+  const fixLowerLimit = (target: Size) => ({
+    width: Math.max(min, target.width),
+    height: Math.max(min, target.height),
+  });
+  const fixHigherLimit = (target: Size) => ({
+    width: Math.min(max, target.width),
+    height: Math.min(max, target.height),
+  });
+
+  const rangeInit = { width: 0, height: 0 };
+  const [on, setOn] = useState(false);
+  const [, setBeforeRange] = useState(rangeInit);
+  const byPinch = (viewLocalFocus: Pos, range: Size) => {
+    if (on) middlePinch(viewLocalFocus, range);
+    else startPinch(range);
+  };
+  const startPinch = (range: Size) => {
+    setOn(true);
+    setBeforeRange(range);
+  };
+  const middlePinch = (viewLocalFocus: Pos, range: Size) => {
+    setBeforeRange((before) => {
+      const sizeRatio = {
+        width: range.width / before.width,
+        height: range.height / before.height,
+      };
+      setState(viewLocalFocus, (prev) => ({
+        width: prev.width * sizeRatio.width,
+        height: prev.height * sizeRatio.height,
+      }));
+      return range;
+    });
   };
   const endPinch = () => {
-    setOnPinch(false);
-    setFrom(fromInit);
-    setBefore(stateInit);
+    setOn(false);
   };
+
+  const add = (viewLocalFocus: Pos, step: Size) => {
+    setState(viewLocalFocus, (prev) => ({
+      width: prev.width + step.width,
+      height: prev.height + step.height,
+    }));
+  };
+
   return {
     get: state,
-    set: setScale,
-    middlePinch,
+    add,
+    byPinch,
     endPinch,
   };
 };

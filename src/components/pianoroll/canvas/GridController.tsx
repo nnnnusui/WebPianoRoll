@@ -14,7 +14,7 @@ type Props = {
 const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveController(maxPos);
-  const scale = ScaleController(move, 0.5, 10);
+  const scale = ScaleController(move, 10);
   const selection = SelectionController();
   const grid = Grid(gridSize);
 
@@ -95,8 +95,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const key = {
       ctrl: event.ctrlKey,
     };
-    setDebug(`${event.isPrimary}`);
-    console.log(event);
     if (event.pointerType == "touch") {
       move.start(viewLocal);
     } else if (click.left && key.ctrl) {
@@ -127,7 +125,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           width: Math.abs(viewLocal.x - focus.x),
           height: Math.abs(viewLocal.y - focus.y),
         };
-        setDebug(`${scale.middlePinch(focus, range)}`);
+        scale.byPinch(focus, range)
         break;
       default:
         break;
@@ -147,7 +145,9 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
     const viewLocal = getElementLocalMousePosFromEvent(event);
-    scale.set(scaleIn, viewLocal);
+    const scalar = 0.5;
+    const step = scaleIn ? scalar : -scalar;
+    scale.add(viewLocal, { width: step, height: step });
   };
   return (
     <>

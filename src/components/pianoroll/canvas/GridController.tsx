@@ -47,17 +47,16 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       y: event.clientY - rect.top,
     };
   };
-  const getGridLocalMousePosFromEvent = (event: React.MouseEvent) => {
-    const elementLocal = getElementLocalMousePosFromEvent(event)
+  const getGridLocalPosFromViewLocalPos = (elementLocal: Pos) => {
     return {
       x: move.get.x + elementLocal.x,
       y: move.get.y + elementLocal.y,
-    }
-  }
+    };
+  };
 
   const onPointerDown = (event: React.PointerEvent) => {
     const viewLocal = getElementLocalMousePosFromEvent(event);
-    const gridLocal = getGridLocalMousePosFromEvent(event);
+    const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
     switch (event.button) {
       case 0:
         selection.start(gridLocal);
@@ -71,7 +70,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
   const onPointerMove = (event: React.PointerEvent) => {
     const viewLocal = getElementLocalMousePosFromEvent(event);
-    const gridLocal = getGridLocalMousePosFromEvent(event);
+    const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
     move.middle(viewLocal, scale.get);
     selection.middle(gridLocal);
   };

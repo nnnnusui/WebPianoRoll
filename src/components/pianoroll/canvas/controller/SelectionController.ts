@@ -19,10 +19,7 @@ const SelectionController = () => {
     setOn(false);
   };
 
-  const draw = (
-    context: CanvasRenderingContext2D,
-    move: Pos
-  ) => {
+  const draw = (context: CanvasRenderingContext2D, move: Pos) => {
     if (!on) return;
     const rect = {
       pos: {
@@ -30,8 +27,8 @@ const SelectionController = () => {
         y: Math.min(from.y, to.y) - move.y,
       },
       size: {
-        width: (Math.abs(to.x - from.x) + 1),
-        height: (Math.abs(to.y - from.y) + 1),
+        width: Math.abs(to.x - from.x) + 1,
+        height: Math.abs(to.y - from.y) + 1,
       },
     };
     context.fillRect(rect.pos.x, rect.pos.y, rect.size.width, rect.size.height);

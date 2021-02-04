@@ -21,7 +21,7 @@ const ScaleController = (
       const focus = {
         x: move.get.x + viewLocal.x,
         y: move.get.y + viewLocal.y,
-      }
+      };
       const ratio = {
         width: focus.x / (maxPos.x * scale),
         height: focus.y / (maxPos.y * scale),

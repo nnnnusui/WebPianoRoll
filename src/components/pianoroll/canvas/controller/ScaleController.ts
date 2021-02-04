@@ -4,12 +4,13 @@ import { MoveControllerType } from "./MoveController";
 
 const ScaleController = (
   move: MoveControllerType,
+  step: number,
   maxCount: number,
-  step: number
+  defaultCount: number
 ) => {
   const maxPos = move.maxPos;
   const minCount = 0;
-  const [count, setCount] = useState(minCount);
+  const [count, setCount] = useState(defaultCount);
   const scale = 1 + count * step;
   const setScale = (scaleIn: boolean, viewLocal: Pos) => {
     const direction = scaleIn ? 1 : -1;

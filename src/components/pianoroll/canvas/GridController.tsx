@@ -14,7 +14,7 @@ type Props = {
 const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveController(maxPos);
-  const scale = ScaleController(move, 10, 0.5);
+  const scale = ScaleController(move, 10, 0.5, 2);
   const selection = SelectionController();
   const grid = Grid(gridSize);
 

@@ -20,6 +20,29 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 
   const note = NotesController();
 
+  const [debug, setDebug] = useState("");
+  const eventCache = (() => {
+    type Target = React.PointerEvent;
+    const [cache, setCache] = useState<Map<number, Target>>(
+      new Map<number, Target>()
+    );
+    const add = (event: Target) =>
+      setCache((prev) => new Map(prev.set(event.pointerId, event)));
+    const update = (event: Target) =>
+      setCache((prev) => new Map(prev.set(event.pointerId, event)));
+    const remove = (event: Target) =>
+      setCache((prev) => {
+        prev.delete(event.pointerId);
+        return new Map(prev);
+      });
+    return {
+      get: cache,
+      add,
+      update,
+      remove,
+    };
+  })();
+
   const cellSize = {
     width: (canvasSize.width / grid.size.width) * scale.get,
     height: (canvasSize.height / grid.size.height) * scale.get,
@@ -59,6 +82,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
 
   const onPointerDown = (event: React.PointerEvent) => {
+    eventCache.add(event);
     const viewLocal = getElementLocalMousePosFromEvent(event);
     const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
     const cellPos = getCellPos(gridLocal);
@@ -71,8 +95,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const key = {
       ctrl: event.ctrlKey,
     };
-    const primary = event.isPrimary;
-    if (false) {
+    setDebug(`${event.isPrimary}`);
+    console.log(event);
+    if (event.pointerType == "touch") {
+      move.start(viewLocal);
     } else if (click.left && key.ctrl) {
       selection.start(gridLocal);
     } else if (click.left) {
@@ -82,14 +108,43 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     }
   };
   const onPointerMove = (event: React.PointerEvent) => {
+    eventCache.update(event);
+    const events = Array.from(eventCache.get.values());
     const viewLocal = getElementLocalMousePosFromEvent(event);
-    const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
-    move.middle(viewLocal, scale.get);
-    selection.middle(gridLocal);
+    switch (events.length) {
+      case 1:
+        const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
+        move.middle(viewLocal, scale.get);
+        selection.middle(gridLocal);
+        scale.endPinch();
+        break;
+      case 2:
+        const [primary, secondary] = events.sort((it) =>
+          it.isPrimary ? -1 : 1
+        );
+        const from = getElementLocalMousePosFromEvent(primary);
+        const to = getElementLocalMousePosFromEvent(secondary);
+        const range = {
+          width: Math.abs(to.x - from.x),
+          height: Math.abs(to.y - from.y),
+        };
+        // move.middle(viewLocal, scale.get)
+        setDebug(`${scale.middlePinch(range)}`);
+        break;
+      default:
+        break;
+    }
   };
   const onPointerUp = (event: React.PointerEvent) => {
-    move.end();
-    selection.end();
+    const events = Array.from(eventCache.get.values());
+    switch (events.length) {
+      case 1:
+        move.end();
+        selection.end();
+        break;
+    }
+    scale.endPinch();
+    eventCache.remove(event);
   };
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
@@ -97,10 +152,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     scale.set(scaleIn, viewLocal);
   };
   return (
-    <div
-      className="absolute h-full w-full"
-      {...{ onPointerDown, onPointerMove, onPointerUp, onWheel }}
-    ></div>
+    <>
+      <div
+        className="absolute h-full w-full"
+        {...{ onPointerDown, onPointerMove, onPointerUp, onWheel }}
+      ></div>
+      <h1>{`debug: ${debug}`}</h1>
+    </>
   );
 };
 export default GridController;

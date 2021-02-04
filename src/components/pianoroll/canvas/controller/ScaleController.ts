@@ -1,6 +1,7 @@
 import { Pos } from "../type/Pos";
 import { useState } from "react";
 import { MoveControllerType } from "./MoveController";
+import { Size } from "../type/Size";
 
 const ScaleController = (
   move: MoveControllerType,
@@ -45,9 +46,36 @@ const ScaleController = (
       return result;
     });
   };
+
+  const [state, setState] = useState(1);
+
+  const fromInit = { width: 0, height: 0 };
+  const [onPinch, setOnPinch] = useState(false);
+  const [from, setFrom] = useState(fromInit);
+  const [before, setBefore] = useState(1);
+  const middlePinch = (range: Size) => {
+    if (!onPinch) {
+      setOnPinch(true);
+      setFrom(range);
+      setBefore(state);
+      return;
+    }
+    const percentage = range.width / from.width;
+    const next = before * percentage;
+    setState(next);
+    return `before: ${before}, next: ${next}`;
+    // (`before: ${before}, next?: ${before * percentage} _ from: ${from.width}, current: ${range.width}, diff: ${difference.width}, from/current: ${from.width / range.width}`)
+  };
+  const endPinch = () => {
+    setOnPinch(false);
+    setFrom(fromInit);
+    setBefore(1);
+  };
   return {
-    get: scale,
+    get: state,
     set: setScale,
+    middlePinch,
+    endPinch,
   };
 };
 export default ScaleController;

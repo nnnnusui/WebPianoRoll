@@ -47,12 +47,13 @@ const ScaleController = (
     });
   };
 
-  const [state, setState] = useState(1);
+  const stateInit = { width: 1, height: 1 };
+  const [state, setState] = useState(stateInit);
 
   const fromInit = { width: 0, height: 0 };
   const [onPinch, setOnPinch] = useState(false);
   const [from, setFrom] = useState(fromInit);
-  const [before, setBefore] = useState(1);
+  const [before, setBefore] = useState(stateInit);
   const middlePinch = (range: Size) => {
     if (!onPinch) {
       setOnPinch(true);
@@ -60,16 +61,21 @@ const ScaleController = (
       setBefore(state);
       return;
     }
-    const percentage = range.width / from.width;
-    const next = before * percentage;
+    const sizeRatio = {
+      width: range.width / from.width,
+      height: range.height / from.height,
+    };
+    const next = {
+      width: before.width * sizeRatio.width,
+      height: before.height * sizeRatio.height,
+    };
     setState(next);
     return `before: ${before}, next: ${next}`;
-    // (`before: ${before}, next?: ${before * percentage} _ from: ${from.width}, current: ${range.width}, diff: ${difference.width}, from/current: ${from.width / range.width}`)
   };
   const endPinch = () => {
     setOnPinch(false);
     setFrom(fromInit);
-    setBefore(1);
+    setBefore(stateInit);
   };
   return {
     get: state,

@@ -44,8 +44,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   })();
 
   const cellSize = {
-    width: (canvasSize.width / grid.size.width) * scale.get,
-    height: (canvasSize.height / grid.size.height) * scale.get,
+    width: (canvasSize.width / grid.size.width) * scale.get.width,
+    height: (canvasSize.height / grid.size.height) * scale.get.height,
   };
   const getCellPos = (gridLocal: Pos): Pos => {
     return {

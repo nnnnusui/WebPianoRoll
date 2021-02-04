@@ -16,10 +16,11 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const move = MoveController(maxPos);
   const scale = ScaleController(move, 10, 0.5);
   const selection = SelectionController();
+  const grid = Grid(gridSize);
 
   const cellSize = {
-    width: (canvasSize.width / gridSize.width) * scale.get,
-    height: (canvasSize.height / gridSize.height) * scale.get,
+    width: (canvasSize.width / grid.size.width) * scale.get,
+    height: (canvasSize.height / grid.size.height) * scale.get,
   };
   const getCellPos = (gridLocal: Pos): Pos => {
     return {
@@ -33,7 +34,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.clearRect(0, 0, canvasSize.width, canvasSize.height);
     context.save();
 
-    drawGrid(context, move.get, cellSize, gridSize);
+    grid.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
     context.restore();
   };
@@ -92,30 +93,32 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 };
 export default GridController;
 
-const drawGrid = (
-  context: CanvasRenderingContext2D,
-  start: Pos,
-  cellSize: Size,
-  quantities: Size
-) => {
-  const max = {
-    width: cellSize.width * quantities.width,
-    height: cellSize.height * quantities.height,
+const Grid = (size: Size) => {
+  const draw = (
+    context: CanvasRenderingContext2D,
+    move: Pos,
+    cellSize: Size
+  ) => {
+    const max = {
+      width: cellSize.width * size.width,
+      height: cellSize.height * size.height,
+    };
+    range0to(size.width + 1)
+      .map((index) => index * cellSize.width)
+      .map((it) => it - move.x)
+      .forEach((it) => {
+        context.moveTo(it, 0);
+        context.lineTo(it, max.height);
+      });
+    range0to(size.height + 1)
+      .map((index) => index * cellSize.height)
+      .map((it) => it - move.y)
+      .forEach((it) => {
+        context.moveTo(0, it);
+        context.lineTo(max.width, it);
+      });
+    context.strokeStyle = "black";
+    context.stroke();
   };
-  range0to(quantities.width + 1)
-    .map((index) => index * cellSize.width)
-    .map((it) => it - start.x)
-    .forEach((it) => {
-      context.moveTo(it, 0);
-      context.lineTo(it, max.height);
-    });
-  range0to(quantities.height + 1)
-    .map((index) => index * cellSize.height)
-    .map((it) => it - start.y)
-    .forEach((it) => {
-      context.moveTo(0, it);
-      context.lineTo(max.width, it);
-    });
-  context.strokeStyle = "black";
-  context.stroke();
+  return { size, draw };
 };

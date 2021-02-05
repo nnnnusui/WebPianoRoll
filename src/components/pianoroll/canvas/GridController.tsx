@@ -53,6 +53,18 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       y: Math.floor(gridLocal.y / cellSize.height),
     };
   };
+  const getCellTopLeft = (cellPos: Pos): Pos => {
+    return {
+      x: cellPos.x * cellSize.width,
+      y: cellPos.y * cellSize.height,
+    };
+  };
+  const getCellBottomRight = (cellPos: Pos): Pos => {
+    return {
+      x: (cellPos.x + 1) * cellSize.width,
+      y: (cellPos.y + 1) * cellSize.height,
+    };
+  };
 
   const draw = () => {
     context.beginPath();
@@ -98,7 +110,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     if (event.pointerType == "touch") {
       move.start(viewLocal);
     } else if (click.left && key.ctrl) {
-      selection.start(gridLocal);
+      selection.start(viewLocal);
     } else if (click.left) {
       note.toggle(cellPos);
     } else if (click.middle) {
@@ -109,11 +121,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     eventCache.update(event);
     const events = Array.from(eventCache.get.values());
     const viewLocal = getElementLocalMousePosFromEvent(event);
+    const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
+    const cellPos = getCellPos(gridLocal);
+
     switch (events.length) {
       case 1:
-        const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
         move.middle(viewLocal, scale.get);
-        selection.middle(gridLocal);
+        selection.middle(viewLocal);
         scale.endPinch();
         break;
       case 2:
@@ -125,7 +139,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           width: Math.abs(viewLocal.x - focus.x),
           height: Math.abs(viewLocal.y - focus.y),
         };
-        scale.byPinch(focus, range)
+        scale.byPinch(focus, range);
         break;
       default:
         break;

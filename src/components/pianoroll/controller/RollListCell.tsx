@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Context from "../context/Context";
 
 type Props = {
@@ -8,6 +8,11 @@ const selfType = "RollListCell";
 const RollListCell: React.FC<Props> = ({ rollId }) => {
   const selectedRollId = Context.roll.selectedId.State();
   const setSelectedRollId = Context.roll.selectedId.Dispatch();
+  const notesAction = Context.notes.Dispatch();
+  useEffect(() => notesAction({ type: "getAll", rollId: selectedRollId }), [
+    selectedRollId,
+  ]);
+
   const onClick = () => {
     setSelectedRollId(rollId);
   };

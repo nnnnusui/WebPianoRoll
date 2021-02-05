@@ -5,6 +5,7 @@ import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
 import MoveController from "./controller/MoveController";
+import NotesController from "./controller/NotesController";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -112,7 +113,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     } else if (click.left && key.ctrl) {
       selection.start(viewLocal);
     } else if (click.left) {
-      note.toggle(cellPos);
+      note.start(cellPos);
     } else if (click.middle) {
       move.start(viewLocal);
     }
@@ -129,6 +130,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         move.middle(viewLocal, scale.get);
         selection.middle(viewLocal);
         scale.endPinch();
+        note.middle(cellPos);
         break;
       case 2:
         const [otherSide] = events.filter(
@@ -155,6 +157,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     }
     scale.endPinch();
     eventCache.remove(event);
+    note.end();
   };
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
@@ -203,40 +206,4 @@ const Grid = (size: Size) => {
     context.stroke();
   };
   return { size, draw };
-};
-const NotesController = () => {
-  const [notes, setNotes] = useState<Pos[]>([]);
-  const isEquals = (noteA: Pos, noteB: Pos) =>
-    noteA.x == noteB.x && noteA.y == noteB.y;
-  const exists = (note: Pos) => notes.find((it) => isEquals(it, note)) != null;
-  const add = (note: Pos) => {
-    setNotes((prev) => [...prev.filter((it) => !isEquals(it, note)), note]);
-  };
-  const remove = (note: Pos) => {
-    setNotes((prev) => prev.filter((it) => !isEquals(it, note)));
-  };
-  const toggle = (note: Pos) => {
-    if (exists(note)) remove(note);
-    else add(note);
-  };
-
-  const draw = (
-    context: CanvasRenderingContext2D,
-    move: Pos,
-    cellSize: Size
-  ) => {
-    notes.forEach((note) => {
-      const start = {
-        x: note.x * cellSize.width - move.x,
-        y: note.y * cellSize.height - move.y,
-      };
-      context.fillRect(start.x, start.y, cellSize.width, cellSize.height);
-    });
-  };
-  return {
-    add,
-    remove,
-    toggle,
-    draw,
-  };
 };

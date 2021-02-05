@@ -2,6 +2,7 @@ import Context from "../../context/Context";
 import { useState } from "react";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
+import { NoteRestData } from "../../rest/Note";
 
 const NotesController = () => {
   const roll = Context.roll.selected()?.data;
@@ -13,6 +14,19 @@ const NotesController = () => {
   const [xDiff, setXDiff] = useState(initDiff);
   const [from, setFrom] = useState(initFrom);
   const [on, setOn] = useState(false);
+
+  const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
+    const offset = pos.x;
+    const octave = roll!.maxOctave - Math.floor(pos.y / roll!.maxPitch);
+    const pitch = roll!.maxPitch - (pos.y % roll!.maxPitch) - 1;
+    return { offset, octave, pitch };
+  };
+  const getPosFromNoteData = (data: NoteRestData) => ({
+    x: data.offset,
+    y:
+      (roll!.maxOctave - data.octave) * roll!.maxPitch +
+      (roll!.maxPitch - data.pitch - 1),
+  });
 
   const start = (from: Pos) => {
     setFrom(from);
@@ -28,19 +42,39 @@ const NotesController = () => {
     setXDiff(initDiff);
     if (!prevOn) return;
     if (roll == null) return;
-    const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
-      const offset = pos.x;
-      const octave = roll.maxOctave - Math.floor(pos.y / roll.maxPitch);
-      const pitch = roll.maxPitch - (pos.y % roll.maxPitch) - 1;
-      return { offset, octave, pitch };
-    };
     const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
     const note = {
-      ...getNoteRestDataFromPos(pos),
+      ...getNoteRestDataFromPos(pos)!,
       length: Math.abs(xDiff) + 1,
       childRollId: null,
     };
     notesAction({ type: "create", rollId: roll.id, request: note });
+  };
+  const remove = (target: Pos) => {
+    if (roll == null) return;
+    const values = notes.get(roll.id)?.values();
+    if (values == null) return;
+    Array.from(values)
+      .filter((it) => {
+        const itPos = getPosFromNoteData(it.data);
+        const itRange = {
+          start: itPos,
+          end: { ...itPos, x: itPos.x + it.data.length },
+        };
+        const include = {
+          x: itRange.start.x <= target.x && target.x <= itRange.end.x,
+          y: itRange.start.y <= target.y && target.y <= itRange.end.y,
+        };
+        console.log(target);
+        return include.x && include.y;
+      })
+      .forEach((it) =>
+        notesAction({
+          type: "delete",
+          rollId: roll.id,
+          request: { id: it.data.id },
+        })
+      );
   };
 
   const draw = (
@@ -54,12 +88,7 @@ const NotesController = () => {
     }
     if (roll == null) return;
     notes.get(roll.id)?.forEach(({ data }) => {
-      const pos = {
-        x: data.offset,
-        y:
-          (roll.maxOctave - data.octave) * roll.maxPitch +
-          (roll.maxPitch - data.pitch - 1),
-      };
+      const pos = getPosFromNoteData(data);
       drawNote(context, move, cellSize, pos, data.length);
     });
   };
@@ -85,6 +114,7 @@ const NotesController = () => {
     start,
     middle,
     end,
+    remove,
     draw,
   };
 };

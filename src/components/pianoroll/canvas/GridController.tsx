@@ -116,6 +116,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       note.start(cellPos);
     } else if (click.middle) {
       move.start(viewLocal);
+    } else if (click.right) {
+      note.remove(cellPos);
     }
   };
   const onPointerMove = (event: React.PointerEvent) => {
@@ -171,6 +173,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       <div
         className="absolute h-full w-full"
         {...{ onPointerDown, onPointerMove, onPointerUp, onWheel }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          return false;
+        }}
       ></div>
       <h1>{`debug: ${debug}`}</h1>
     </>

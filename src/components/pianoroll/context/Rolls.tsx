@@ -24,8 +24,8 @@ type RollId = number;
 const value = (data: RollRestData) => {
   const id = data.id;
   const maxOffset = data.division;
-  const minOctave = 0;
-  const maxOctave = 0;
+  const minOctave = -1;
+  const maxOctave = 1;
   const maxPitch = 12;
 
   const octaveRange = maxOctave + 1 - minOctave;

@@ -13,6 +13,7 @@ type Props = {
   gridSize: Size;
 };
 const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
+  const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveController(maxPos);
   const scale = ScaleController(move, 10);
@@ -21,7 +22,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 
   const note = NotesController();
 
-  const [debug, setDebug] = useState("");
   const eventCache = (() => {
     type Target = React.PointerEvent;
     const [cache, setCache] = useState<Map<number, Target>>(
@@ -135,6 +135,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         note.middle(cellPos);
         break;
       case 2:
+        move.end();
         const [otherSide] = events.filter(
           (it) => it.pointerId != event.pointerId
         );

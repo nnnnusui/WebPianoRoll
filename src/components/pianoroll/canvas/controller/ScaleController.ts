@@ -15,10 +15,7 @@ const ScaleController = (
   const setState = (viewLocalFocus: Pos, action: SetStateAction<Size>) => {
     _setState((prev) => {
       const mayBeNext = typeof action === "function" ? action(prev) : action;
-
       const next = fixLowerLimit(fixHigherLimit(mayBeNext));
-      const widthFixed = next.width != mayBeNext.width;
-      const heightFixed = next.height != mayBeNext.height;
 
       const focus = {
         x: move.get.x + viewLocalFocus.x,
@@ -37,8 +34,8 @@ const ScaleController = (
         y: inGridRatio.height * scalingVector.y,
       };
       move.set(next, (prev) => ({
-        x: prev.x + (widthFixed ? 0 : moveVector.x),
-        y: prev.y + (heightFixed ? 0 : moveVector.y),
+        x: prev.x + moveVector.x,
+        y: prev.y + moveVector.y,
       }));
 
       return next;
@@ -53,28 +50,26 @@ const ScaleController = (
     height: Math.min(max, target.height),
   });
 
-  const rangeInit = { width: 0, height: 0 };
+  const fromInit = { scale: stateInit, range: { width: 0, height: 0 } };
   const [on, setOn] = useState(false);
-  const [, setBeforeRange] = useState(rangeInit);
+  const [from, setFrom] = useState(fromInit);
   const byPinch = (viewLocalFocus: Pos, range: Size) => {
     if (on) middlePinch(viewLocalFocus, range);
     else startPinch(range);
   };
   const startPinch = (range: Size) => {
     setOn(true);
-    setBeforeRange(range);
+    setFrom({ scale: state, range });
   };
   const middlePinch = (viewLocalFocus: Pos, range: Size) => {
-    setBeforeRange((before) => {
-      const sizeRatio = {
-        width: range.width / before.width,
-        height: range.height / before.height,
-      };
-      setState(viewLocalFocus, (prev) => ({
-        width: prev.width * sizeRatio.width,
-        height: prev.height * sizeRatio.height,
-      }));
-      return range;
+    if (range.width == 0 || range.height == 0) return;
+    const sizeRatio = {
+      width: range.width / from.range.width,
+      height: range.height / from.range.height,
+    };
+    setState(viewLocalFocus, {
+      width: from.scale.width * sizeRatio.width,
+      height: from.scale.height * sizeRatio.height,
     });
   };
   const endPinch = () => {

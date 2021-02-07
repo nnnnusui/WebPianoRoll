@@ -211,6 +211,34 @@ const Grid = (size: Size) => {
       });
     context.strokeStyle = "black";
     context.stroke();
+    drawCoordinatesText(context, move, cellSize);
+  };
+  const drawCoordinatesText = (
+    context: CanvasRenderingContext2D,
+    move: Pos,
+    cellSize: Size
+  ) => {
+    const padding = {
+      x: (cellSize.width / 10) * -1,
+      y: (cellSize.height / 10) * -1,
+    };
+
+    range0to(size.width + 1)
+      .flatMap((column) =>
+        range0to(size.height + 1).map((row) => [row, column])
+      )
+      .forEach(([row, column]) => {
+        const start = {
+          x: column * cellSize.width - move.x - padding.x,
+          y: row * cellSize.height - move.y - padding.y,
+        };
+        context.fillText(
+          `x: ${column}, y: ${row}`,
+          start.x,
+          start.y,
+          cellSize.width
+        );
+      });
   };
   return { size, draw };
 };

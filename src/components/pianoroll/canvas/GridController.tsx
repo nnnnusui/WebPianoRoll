@@ -162,6 +162,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     eventCache.remove(event);
     note.end();
   };
+  const onPointerCancel = onPointerUp;
+  const onPointerOut = onPointerUp;
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
     const viewLocal = getElementLocalMousePosFromEvent(event);
@@ -173,7 +175,14 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     <>
       <div
         className="absolute h-full w-full"
-        {...{ onPointerDown, onPointerMove, onPointerUp, onWheel }}
+        {...{
+          onPointerDown,
+          onPointerMove,
+          onPointerUp,
+          onPointerCancel,
+          onPointerOut,
+          onWheel,
+        }}
         onContextMenu={(e) => {
           e.preventDefault();
           return false;

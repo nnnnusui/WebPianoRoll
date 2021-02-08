@@ -9,19 +9,22 @@ import NotesController from "./controller/NotesController";
 
 type Props = {
   context: CanvasRenderingContext2D;
-  canvasSize: Size;
   gridSize: Size;
+  canvasSize: Size;
+  leftHeaderSize: Size;
 };
-const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
+const GridController: React.FC<Props> = ({ context, gridSize, canvasSize, leftHeaderSize }) => {
   const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveController(maxPos);
   const scale = ScaleController(move, 10);
   const selection = SelectionController();
-  const grid = Grid(gridSize);
+
+  const leftHeader = LeftHeaderController(leftHeaderSize, {x: 0, y: 0});
+  const grid = Grid(gridSize, {x: leftHeaderSize.width, y: 0});
 
   const note = NotesController();
-
+@
   const eventCache = (() => {
     type Target = React.PointerEvent;
     const [cache, setCache] = useState<Map<number, Target>>(
@@ -73,6 +76,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     context.save();
 
     grid.draw(context, move.get, cellSize);
+    leftHeader.draw(context, move.get, cellSize)
     note.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
     context.restore();
@@ -194,7 +198,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 };
 export default GridController;
 
-const Grid = (size: Size) => {
+const Grid = (size: Size, offset: Pos) => {
   const draw = (
     context: CanvasRenderingContext2D,
     move: Pos,
@@ -206,14 +210,14 @@ const Grid = (size: Size) => {
     };
     range0to(size.width + 1)
       .map((index) => index * cellSize.width)
-      .map((it) => it - move.x)
+      .map((it) => it - move.x + offset.x)
       .forEach((it) => {
         context.moveTo(it, 0);
         context.lineTo(it, max.height);
       });
     range0to(size.height + 1)
       .map((index) => index * cellSize.height)
-      .map((it) => it - move.y)
+      .map((it) => it - move.y - offset.y)
       .forEach((it) => {
         context.moveTo(0, it);
         context.lineTo(max.width, it);
@@ -251,3 +255,27 @@ const Grid = (size: Size) => {
   };
   return { size, draw };
 };
+
+const LeftHeaderController = (size: Size, offset: Pos) => {
+  const draw = (
+    context: CanvasRenderingContext2D,
+    move: Pos,
+    cellSize: Size
+  ) => {
+    context.fillRect(0, 0, size.width, size.height)
+    // const max = {
+    //   width: cellSize.width * size.width,
+    //   height: cellSize.height * size.height,
+    // };
+    // range0to(size.height + 1)
+    //   .map((index) => index * cellSize.height)
+    //   .map((it) => it - move.y - offset.y)
+    //   .forEach((it) => {
+    //     context.moveTo(0, it);
+    //     context.lineTo(max.width, it);
+    //   });
+  }
+  return {
+    draw
+  }
+}

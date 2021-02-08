@@ -1,20 +1,16 @@
 import React, { useRef, useEffect } from "react";
+import { Size } from "../canvas/type/Size";
 
 type Props = {
-  setSize: React.Dispatch<
-    React.SetStateAction<{
-      width: number;
-      height: number;
-    }>
-  >;
+  setSize: React.Dispatch<React.SetStateAction<Size | undefined>>;
 };
-const ResizeListener: React.FC<Props> = (props) => {
+const ResizeListener: React.FC<Props> = ({ children, setSize }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const applySize = () => {
     const element = ref.current;
     if (element == null) return;
-    props.setSize({
+    setSize({
       width: element.clientWidth,
       height: element.clientHeight,
     });
@@ -24,7 +20,9 @@ const ResizeListener: React.FC<Props> = (props) => {
   window.addEventListener("resize", () => applySize());
 
   return (
-    <div ref={ref} className="pointer-events-none absolute h-full w-full"></div>
+    <div ref={ref} className="pointer-events-none absolute h-full w-full">
+      {children}
+    </div>
   );
 };
 export default ResizeListener;

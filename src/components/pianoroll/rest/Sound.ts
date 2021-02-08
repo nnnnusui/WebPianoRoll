@@ -6,8 +6,10 @@ type Data = {
 };
 const Sound = (url: string) => {
   return {
-    get: (sampleRate: number) =>
-      typedFetch<Data>(`${url}?sample_rate=${sampleRate}`),
+    get: (sampleRate: number, tempo: number, beat: number) =>
+      typedFetch<Data>(
+        `${url}?sample_rate=${sampleRate}&tempo=${tempo}&beat=${beat}`
+      ),
   };
 };
 export default Sound;

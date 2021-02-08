@@ -8,13 +8,15 @@ type Props = {
 const AudioController: React.FC<Props> = ({ rest }) => {
   const rollId = Context.roll.selectedId.State();
   const [audio, setAudio] = useState<AudioBufferSourceNode>();
+  const [tempo, setTempo] = useState<number>(130);
+  const [beat, setBeat] = useState<number>(4);
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       const context = new AudioContext();
       const sampleRate = context.sampleRate;
       rest(rollId)
-        .get(sampleRate)
+        .get(sampleRate, tempo, beat)
         .then((sound) => {
           console.log(sound);
           const length = sound.length;
@@ -24,7 +26,7 @@ const AudioController: React.FC<Props> = ({ rest }) => {
           const source = context.createBufferSource();
           source.buffer = buffer;
           const gainNode = context.createGain();
-          gainNode.gain.value = 0.05;
+          gainNode.gain.value = 0.5;
           source.connect(gainNode);
           gainNode.connect(context.destination);
           source.loop = true;
@@ -36,13 +38,33 @@ const AudioController: React.FC<Props> = ({ rest }) => {
     }
   };
   return (
-    <div className="w-full">
+    <form className="w-full">
       <input
         className="w-full h-20"
         type="checkbox"
         onChange={onChange}
       ></input>
-    </div>
+      <label className="flex flex-row items-end text-sm">
+        tempo:
+        <input
+          placeholder="tempo"
+          type="number"
+          value={tempo}
+          className="w-full text-right"
+          onChange={(event) => setTempo(Number(event.target.value))}
+        />
+      </label>
+      <label className="flex flex-row items-end text-sm">
+        beat:
+        <input
+          placeholder="beat"
+          type="number"
+          value={beat}
+          className="w-full text-right"
+          onChange={(event) => setBeat(Number(event.target.value))}
+        />
+      </label>
+    </form>
   );
 };
 export default AudioController;

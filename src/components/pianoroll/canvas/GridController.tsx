@@ -109,7 +109,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ctrl: event.ctrlKey,
     };
     if (event.pointerType == "touch") {
-      move.start(viewLocal);
+      if (!note.isAlreadyExists(cellPos)) note.add.start(cellPos);
     } else if (click.left && key.ctrl) {
       selection.start(viewLocal);
     } else if (click.left) {
@@ -136,6 +136,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         break;
       case 2:
         move.end();
+        note.add.cancel();
         const [otherSide] = events.filter(
           (it) => it.pointerId != event.pointerId
         );

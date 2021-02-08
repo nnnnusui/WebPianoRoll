@@ -71,7 +71,11 @@ const NotesController = () => {
       };
       notesAction({ type: "create", rollId: roll.id, request: note });
     };
-    return { start, middle, end };
+    const cancel = () => {
+      setOn(false);
+      setXDiff(initDiff);
+    };
+    return { start, middle, end, cancel };
   })();
   const remove = (target: Pos) => {
     if (roll == null) return;

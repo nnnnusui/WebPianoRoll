@@ -16,6 +16,7 @@ const PianoRoll: React.FC = (): ReactElement => {
       <Context.Provider rest={rest}>
         <div>
           <AudioController rest={rest.sound} />
+          <hr className="border-gray-400 mt-1.5 mb-1" />
           <RollController />
         </div>
         <View />

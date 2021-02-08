@@ -4,12 +4,12 @@ import RollList from "./RollList";
 
 const RollController: React.FC = () => {
   return (
-    <article className="w-full">
+    <section className="w-full">
       <h1 className="text-center">RollController</h1>
       <RollForm />
       <hr className="border-none h-3.5" />
       <RollList />
-    </article>
+    </section>
   );
 };
 export default RollController;

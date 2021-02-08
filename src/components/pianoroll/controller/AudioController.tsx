@@ -38,33 +38,36 @@ const AudioController: React.FC<Props> = ({ rest }) => {
     }
   };
   return (
-    <form className="w-full">
-      <input
-        className="w-full h-20"
-        type="checkbox"
-        onChange={onChange}
-      ></input>
-      <label className="flex flex-row items-end text-sm">
-        tempo:
+    <section>
+      <h1 className="text-center">AudioController</h1>
+      <form className="w-full">
         <input
-          placeholder="tempo"
-          type="number"
-          value={tempo}
-          className="w-full text-right"
-          onChange={(event) => setTempo(Number(event.target.value))}
-        />
-      </label>
-      <label className="flex flex-row items-end text-sm">
-        beat:
-        <input
-          placeholder="beat"
-          type="number"
-          value={beat}
-          className="w-full text-right"
-          onChange={(event) => setBeat(Number(event.target.value))}
-        />
-      </label>
-    </form>
+          className="w-full h-20"
+          type="checkbox"
+          onChange={onChange}
+        ></input>
+        <label className="flex flex-row items-end text-sm">
+          tempo:
+          <input
+            placeholder="tempo"
+            type="number"
+            value={tempo}
+            className="w-full text-right"
+            onChange={(event) => setTempo(Number(event.target.value))}
+          />
+        </label>
+        <label className="flex flex-row items-end text-sm">
+          beat:
+          <input
+            placeholder="beat"
+            type="number"
+            value={beat}
+            className="w-full text-right"
+            onChange={(event) => setBeat(Number(event.target.value))}
+          />
+        </label>
+      </form>
+    </section>
   );
 };
 export default AudioController;

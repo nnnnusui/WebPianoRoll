@@ -48,7 +48,8 @@ const NotesController = () => {
   const add = (() => {
     const start = (from: Pos) => {
       setFrom(from);
-      setOn(true);
+      const already = getAlreadyExists(from).length > 0;
+      setOn(!already);
     };
     const middle = (to: Pos) => {
       if (!on) return;

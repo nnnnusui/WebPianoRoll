@@ -9,10 +9,13 @@ const NotesController = () => {
   const notes = Context.notes.State();
   const notesAction = Context.notes.Dispatch();
 
+  type Mode = "add" | "remove";
   const initDiff = 0;
-  const initFrom = { x: 0, y: 0 };
+  const initPos = { x: 0, y: 0 };
   const [xDiff, setXDiff] = useState(initDiff);
-  const [from, setFrom] = useState(initFrom);
+  const [mode, setMode] = useState<Mode>();
+  const [from, setFrom] = useState(initPos);
+  const [to, setTo] = useState(initPos);
   const [on, setOn] = useState(false);
 
   const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
@@ -46,48 +49,51 @@ const NotesController = () => {
   };
   const isAlreadyExists = (pos: Pos) => getAlreadyExists(pos).length > 0;
 
-  const add = (() => {
-    const start = (from: Pos) => {
-      setFrom(from);
-      setOn(true);
-    };
-    const middle = (to: Pos) => {
-      if (!on) return;
-      setXDiff(to.x - from.x);
-    };
-    const end = () => {
-      const prevOn = on;
-      setOn(false);
-      setXDiff(initDiff);
-      if (!prevOn) return;
-      if (roll == null) return;
-      const values = notes.get(roll.id)?.values();
-      if (values == null) return;
-      const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
-      const note = {
-        ...getNoteRestDataFromPos(pos)!,
-        length: Math.abs(xDiff) + 1,
-        childRollId: null,
-      };
-      notesAction({ type: "create", rollId: roll.id, request: note });
-    };
-    const cancel = () => {
-      setOn(false);
-      setXDiff(initDiff);
-    };
-    return { start, middle, end, cancel };
-  })();
-  const remove = (target: Pos) => {
+  const start = (mode: Mode, from: Pos) => {
+    setMode(mode);
+    setFrom(from);
+    setTo(from);
+    setOn(true);
+  };
+  const middle = (to: Pos) => {
+    if (!on) return;
+    setTo(to);
+  };
+  const cancel = () => setOn(false);
+  const end = () => {
+    const prevOn = on;
+    setOn(false);
+    if (!prevOn) return;
+
     if (roll == null) return;
     const values = notes.get(roll.id)?.values();
     if (values == null) return;
-    getAlreadyExists(target).forEach((it) =>
-      notesAction({
-        type: "delete",
-        rollId: roll.id,
-        request: { id: it.data.id },
-      })
-    );
+
+    switch (mode) {
+      case "add":
+        const xDiff = to.x - from.x;
+        const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
+        const note = {
+          ...getNoteRestDataFromPos(pos)!,
+          length: Math.abs(xDiff) + 1,
+          childRollId: null,
+        };
+        notesAction({ type: "create", rollId: roll.id, request: note });
+        break;
+      case "remove":
+        if (to.x != from.x || to.y != from.y) return;
+        getAlreadyExists(to).forEach((it) =>
+          notesAction({
+            type: "delete",
+            rollId: roll.id,
+            request: { id: it.data.id },
+          })
+        );
+        break;
+
+      default:
+        break;
+    }
   };
 
   const draw = (
@@ -96,6 +102,7 @@ const NotesController = () => {
     cellSize: Size
   ) => {
     if (on) {
+      const xDiff = to.x - from.x;
       const noteFrom = { ...from, x: Math.min(from.x + xDiff, from.x) };
       drawNote(context, move, cellSize, noteFrom, Math.abs(xDiff) + 1);
     }
@@ -127,8 +134,10 @@ const NotesController = () => {
   };
 
   return {
-    add,
-    remove,
+    start,
+    middle,
+    cancel,
+    end,
     draw,
     isAlreadyExists,
   };

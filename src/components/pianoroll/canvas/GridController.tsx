@@ -109,16 +109,16 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ctrl: event.ctrlKey,
     };
     if (event.pointerType == "touch") {
-      if (!note.isAlreadyExists(cellPos)) note.add.start(cellPos);
-      else note.remove(cellPos);
+      if (!note.isAlreadyExists(cellPos)) note.start("add", cellPos);
+      else note.start("remove", cellPos);
     } else if (click.left && key.ctrl) {
       selection.start(viewLocal);
     } else if (click.left) {
-      if (!note.isAlreadyExists(cellPos)) note.add.start(cellPos);
+      if (!note.isAlreadyExists(cellPos)) note.start("add", cellPos);
     } else if (click.middle) {
       move.start(viewLocal);
     } else if (click.right) {
-      note.remove(cellPos);
+      note.start("remove", cellPos);
     }
   };
   const onPointerMove = (event: React.PointerEvent) => {
@@ -133,11 +133,11 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         move.middle(viewLocal, scale.get);
         selection.middle(viewLocal);
         scale.endPinch();
-        note.add.middle(cellPos);
+        note.middle(cellPos);
         break;
       case 2:
         move.end();
-        note.add.cancel();
+        note.cancel();
         const [otherSide] = events.filter(
           (it) => it.pointerId != event.pointerId
         );
@@ -162,7 +162,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     }
     scale.endPinch();
     eventCache.remove(event);
-    note.add.end();
+    note.end();
   };
   const onPointerCancel = onPointerUp;
   const onPointerOut = onPointerUp;

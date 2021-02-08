@@ -6,6 +6,7 @@ type Props = {
   rest: ReturnType<typeof Rest>["sound"];
 };
 const AudioController: React.FC<Props> = ({ rest }) => {
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
   const rollId = Context.roll.selectedId.State();
   const [audio, setAudio] = useState<AudioBufferSourceNode>();
   const [tempo, setTempo] = useState<number>(130);

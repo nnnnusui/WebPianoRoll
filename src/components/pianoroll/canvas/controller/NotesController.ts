@@ -44,12 +44,12 @@ const NotesController = () => {
       return include.x && include.y;
     });
   };
+  const isAlreadyExists = (pos: Pos) => getAlreadyExists(pos).length > 0;
 
   const add = (() => {
     const start = (from: Pos) => {
       setFrom(from);
-      const already = getAlreadyExists(from).length > 0;
-      setOn(!already);
+      setOn(true);
     };
     const middle = (to: Pos) => {
       if (!on) return;
@@ -69,8 +69,6 @@ const NotesController = () => {
         length: Math.abs(xDiff) + 1,
         childRollId: null,
       };
-      const already = getAlreadyExists(pos).length > 0;
-      if (already) return;
       notesAction({ type: "create", rollId: roll.id, request: note });
     };
     return { start, middle, end };
@@ -128,6 +126,7 @@ const NotesController = () => {
     add,
     remove,
     draw,
+    isAlreadyExists,
   };
 };
 export default NotesController;

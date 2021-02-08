@@ -113,7 +113,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     } else if (click.left && key.ctrl) {
       selection.start(viewLocal);
     } else if (click.left) {
-      note.add.start(cellPos);
+      if (!note.isAlreadyExists(cellPos)) note.add.start(cellPos);
     } else if (click.middle) {
       move.start(viewLocal);
     } else if (click.right) {

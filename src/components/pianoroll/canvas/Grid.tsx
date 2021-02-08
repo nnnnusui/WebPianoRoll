@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import ResizeListener from "../grid/ResizeListener";
+import ResizeListener from "./ResizeListener";
 import Context from "../context/Context";
 import GridController from "./GridController";
 

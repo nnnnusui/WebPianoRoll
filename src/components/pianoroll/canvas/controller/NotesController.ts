@@ -27,54 +27,64 @@ const NotesController = () => {
       (roll!.maxOctave - data.octave) * roll!.maxPitch +
       (roll!.maxPitch - data.pitch - 1),
   });
+  const getAlreadyExists = (pos: Pos) => {
+    if (roll == null) return [];
+    const values = notes.get(roll.id)?.values();
+    if (values == null) return [];
+    return Array.from(values).filter(({ data }) => {
+      const itPos = getPosFromNoteData(data);
+      const itRange = {
+        start: itPos,
+        end: { x: itPos.x + data.length, y: itPos.y + 1 },
+      };
+      const include = {
+        x: itRange.start.x <= pos.x && pos.x < itRange.end.x,
+        y: itRange.start.y <= pos.y && pos.y < itRange.end.y,
+      };
+      return include.x && include.y;
+    });
+  };
 
-  const start = (from: Pos) => {
-    setFrom(from);
-    setOn(true);
-  };
-  const middle = (to: Pos) => {
-    if (!on) return;
-    setXDiff(to.x - from.x);
-  };
-  const end = () => {
-    const prevOn = on;
-    setOn(false);
-    setXDiff(initDiff);
-    if (!prevOn) return;
-    if (roll == null) return;
-    const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
-    const note = {
-      ...getNoteRestDataFromPos(pos)!,
-      length: Math.abs(xDiff) + 1,
-      childRollId: null,
+  const add = (() => {
+    const start = (from: Pos) => {
+      setFrom(from);
+      setOn(true);
     };
-    notesAction({ type: "create", rollId: roll.id, request: note });
-  };
+    const middle = (to: Pos) => {
+      if (!on) return;
+      setXDiff(to.x - from.x);
+    };
+    const end = () => {
+      const prevOn = on;
+      setOn(false);
+      setXDiff(initDiff);
+      if (!prevOn) return;
+      if (roll == null) return;
+      const values = notes.get(roll.id)?.values();
+      if (values == null) return;
+      const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
+      const note = {
+        ...getNoteRestDataFromPos(pos)!,
+        length: Math.abs(xDiff) + 1,
+        childRollId: null,
+      };
+      const already = getAlreadyExists(pos).length > 0;
+      if (already) return;
+      notesAction({ type: "create", rollId: roll.id, request: note });
+    };
+    return { start, middle, end };
+  })();
   const remove = (target: Pos) => {
     if (roll == null) return;
     const values = notes.get(roll.id)?.values();
     if (values == null) return;
-    Array.from(values)
-      .filter((it) => {
-        const itPos = getPosFromNoteData(it.data);
-        const itRange = {
-          start: itPos,
-          end: { ...itPos, x: itPos.x + it.data.length },
-        };
-        const include = {
-          x: itRange.start.x <= target.x && target.x <= itRange.end.x,
-          y: itRange.start.y <= target.y && target.y <= itRange.end.y,
-        };
-        console.log(target);
-        return include.x && include.y;
+    getAlreadyExists(target).forEach((it) =>
+      notesAction({
+        type: "delete",
+        rollId: roll.id,
+        request: { id: it.data.id },
       })
-      .forEach((it) =>
-        notesAction({
-          type: "delete",
-          rollId: roll.id,
-          request: { id: it.data.id },
-        })
-      );
+    );
   };
 
   const draw = (
@@ -114,9 +124,7 @@ const NotesController = () => {
   };
 
   return {
-    start,
-    middle,
-    end,
+    add,
     remove,
     draw,
   };

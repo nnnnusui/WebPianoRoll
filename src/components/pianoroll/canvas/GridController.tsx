@@ -113,7 +113,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     } else if (click.left && key.ctrl) {
       selection.start(viewLocal);
     } else if (click.left) {
-      note.start(cellPos);
+      note.add.start(cellPos);
     } else if (click.middle) {
       move.start(viewLocal);
     } else if (click.right) {
@@ -132,7 +132,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         move.middle(viewLocal, scale.get);
         selection.middle(viewLocal);
         scale.endPinch();
-        note.middle(cellPos);
+        note.add.middle(cellPos);
         break;
       case 2:
         move.end();
@@ -160,7 +160,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     }
     scale.endPinch();
     eventCache.remove(event);
-    note.end();
+    note.add.end();
   };
   const onPointerCancel = onPointerUp;
   const onPointerOut = onPointerUp;

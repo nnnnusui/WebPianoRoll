@@ -107,7 +107,10 @@ const NotesController = () => {
       width: cellSize.width * length,
       height: cellSize.height,
     };
+    context.fillStyle = "orange";
+    context.lineWidth = 2;
     context.fillRect(start.x, start.y, size.width, size.height);
+    context.strokeRect(start.x, start.y, size.width, size.height);
   };
 
   return {

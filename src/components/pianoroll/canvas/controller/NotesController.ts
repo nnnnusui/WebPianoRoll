@@ -9,7 +9,7 @@ const NotesController = () => {
   const notes = Context.notes.State();
   const notesAction = Context.notes.Dispatch();
 
-  type Mode = "add" | "remove";
+  type Mode = "add" | "remove" | "move" | "moveOrRemove";
   const initDiff = 0;
   const initPos = { x: 0, y: 0 };
   const [xDiff, setXDiff] = useState(initDiff);
@@ -49,6 +49,50 @@ const NotesController = () => {
   };
   const isAlreadyExists = (pos: Pos) => getAlreadyExists(pos).length > 0;
 
+  const getMoved = (before: Pos) => {
+    const vector = {
+      x: to.x - from.x,
+      y: to.y - from.y,
+    };
+    return {
+      x: before.x + vector.x,
+      y: before.y + vector.y,
+    };
+  };
+
+  const add = () => {
+    if (roll == null) return;
+    const xDiff = to.x - from.x;
+    const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
+    const note = {
+      ...getNoteRestDataFromPos(pos)!,
+      length: Math.abs(xDiff) + 1,
+      childRollId: null,
+    };
+    notesAction({ type: "create", rollId: roll.id, request: note });
+  };
+  const move = () => {
+    if (roll == null) return;
+    const [{ data: before }] = getAlreadyExists(from);
+    const beforePos = getPosFromNoteData(before);
+    const afterPos = getMoved(beforePos);
+    const note = {
+      ...before,
+      ...getNoteRestDataFromPos(afterPos),
+    };
+    notesAction({ type: "update", rollId: roll.id, request: note });
+  };
+  const remove = () => {
+    if (roll == null) return;
+    getAlreadyExists(to).forEach((it) =>
+      notesAction({
+        type: "delete",
+        rollId: roll.id,
+        request: { id: it.data.id },
+      })
+    );
+  };
+
   const start = (mode: Mode, from: Pos) => {
     setMode(mode);
     setFrom(from);
@@ -65,32 +109,24 @@ const NotesController = () => {
     setOn(false);
     if (!prevOn) return;
 
-    if (roll == null) return;
-    const values = notes.get(roll.id)?.values();
-    if (values == null) return;
-
     switch (mode) {
       case "add":
-        const xDiff = to.x - from.x;
-        const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
-        const note = {
-          ...getNoteRestDataFromPos(pos)!,
-          length: Math.abs(xDiff) + 1,
-          childRollId: null,
-        };
-        notesAction({ type: "create", rollId: roll.id, request: note });
+        add();
+        break;
+      case "move":
+        move();
         break;
       case "remove":
-        if (to.x != from.x || to.y != from.y) return;
-        getAlreadyExists(to).forEach((it) =>
-          notesAction({
-            type: "delete",
-            rollId: roll.id,
-            request: { id: it.data.id },
-          })
-        );
+        if (to.x != from.x || to.y != from.y) break;
+        remove();
         break;
-
+      case "moveOrRemove":
+        if (to.x != from.x || to.y != from.y) {
+          move();
+          break;
+        }
+        remove();
+        break;
       default:
         break;
     }
@@ -101,14 +137,39 @@ const NotesController = () => {
     move: Pos,
     cellSize: Size
   ) => {
+    const [nowMove] = on ? getAlreadyExists(from) : [null];
+    const nowMovePos = nowMove ? getPosFromNoteData(nowMove.data) : null;
     if (on) {
-      const xDiff = to.x - from.x;
-      const noteFrom = { ...from, x: Math.min(from.x + xDiff, from.x) };
-      drawNote(context, move, cellSize, noteFrom, Math.abs(xDiff) + 1);
+      switch (mode) {
+        case "add": {
+          const xDiff = to.x - from.x;
+          const notePos = { ...from, x: Math.min(from.x + xDiff, from.x) };
+          drawNote(context, move, cellSize, notePos, Math.abs(xDiff) + 1);
+          break;
+        }
+        case "moveOrRemove":
+        case "move": {
+          if (nowMove == null) break;
+          if (nowMovePos == null) break;
+          const before = nowMovePos;
+          const vector = {
+            x: to.x - from.x,
+            y: to.y - from.y,
+          };
+          const after = {
+            x: before.x + vector.x,
+            y: before.y + vector.y,
+          };
+          drawNote(context, move, cellSize, after, nowMove.data.length);
+          break;
+        }
+      }
     }
     if (roll == null) return;
     notes.get(roll.id)?.forEach(({ data }) => {
       const pos = getPosFromNoteData(data);
+      if (nowMovePos != null)
+        if (nowMovePos.x == pos.x && nowMovePos.y == pos.y) return;
       drawNote(context, move, cellSize, pos, data.length);
     });
   };

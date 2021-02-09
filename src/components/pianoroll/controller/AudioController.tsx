@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import Rest from "../rest/Rest";
 import Context from "../context/Context";
 
+declare global {
+  interface Window {
+    webkitAudioContext: AudioContext;
+  }
+}
 type Props = {
   rest: ReturnType<typeof Rest>["sound"];
 };

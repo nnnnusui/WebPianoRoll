@@ -16,16 +16,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [debug, setDebug] = useState("");
 
   type PointerId = number;
-  const actions = [{
-    type: "scale",
-    backward: 1,
-    after: "move",
-  }, {
-    type: "select",
-    backward: 1,
-    after: "select",
-  }]
-  const types = ["put", "move", "scale", "select"] as const;
+  const types = ["put", "scale", "select", "move"] as const;
   type Type = typeof types[number];
   type State = Map<PointerId, Type>
   const actionMapInit: Map<Type, PointerId[]> = new Map(types.map(it=> [it, []]));
@@ -42,9 +33,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       const priorityLowerPointers = getPriorityLowers(type)
       return priorityLowerPointers.length < backward ? [] : priorityLowerPointers.slice(-backward);
     }
-    const trySetAction = (args: {next: State, currentId: PointerId, type: Type, backward: number, unique: boolean}) => {
-      const {next, currentId, type, backward, unique} = args
-      if (unique && actionMap.get(type)?.length != 0) return false;
+    const trySetAction = (next: State, currentId: PointerId, type: Type, backward: number) => {
       const backwards = getBackwards(type, backward)
       backwards.forEach(([pointerId,]) => {
         setDebug(`${pointerId}`)
@@ -55,37 +44,42 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         next.set(currentId, type)
       return executed
     }
-    // const trySetSingleAction = (next: State, currentId: PointerId, target: Type) =>
-    //   trySetAction(next, currentId, target, 0)
-    // const trySetUniqueAction = (next: State, currentId: PointerId, target: Type, backward: number) => {
-    //   // if (actionMap.get(target)?.length == 0)
-    //     trySetAction(next, currentId, target, backward)
-    // }
+
+    const actionConfigDefaultParameter = { backward: 0, unique: true, conditions: (event: React.PointerEvent) => true}
+    type ActionType = { type: Type }
+    type ActionConfigParameter = typeof actionConfigDefaultParameter
+    type ActionConfig = ActionType & ActionConfigParameter
+    type ActionConfigOverride = ActionType & Partial<ActionConfigParameter>
+    const actionConfigOverrides: ActionConfigOverride[] = [{
+      type: "put",
+      unique: false
+    }, {
+      type: "scale",
+      backward: 1
+    }, {
+      type: "select",
+      backward: 1,
+      conditions: (event) => event.type == ""
+    }, {
+      type: "move",
+      backward: 2,
+    }]
+    const actionConfigs: ActionConfig[] = actionConfigOverrides.map(it=> ({...actionConfigDefaultParameter, ...it}))
+
+    const trySetActionOn = (event: React.PointerEvent,next: State, currentId: PointerId, config: ActionConfig) => {
+      const {type, backward, unique, conditions} = config
+      if (unique && actionMap.get(type)?.length != 0) return false;
+      if (!conditions(event)) return false;
+      return trySetAction(next, currentId, type, backward);
+    }
 
     const add = (event: React.PointerEvent) => {
       const currentId = event.pointerId;
-      type X = {type: Type, backward: number, unique: boolean }
-      const xDefault = {backward: 0, unique: true}
-      const x: X[] = [{
-        ...xDefault,
-        type: "put",
-        unique: false
-      }, {
-        ...xDefault,
-        type: "scale",
-        backward: 1
-      }, {
-        ...xDefault,
-        type: "select",
-        backward: 1
-      }]
       setPointers((prev) => {
         const next = new Map(prev)
-        x.sort(it=> -it.backward)
-          .reduce((hasResult, it)=> hasResult ? true : trySetAction({next, currentId, ...it}), false)
-        // trySetSingleAction(next, id, "put")
-        // trySetUniqueAction(next, id, "scale", 1)
-        // trySetUniqueAction(next, id, "select", 1)
+        actionConfigs
+          .sort(it=> -it.backward)
+          .reduce((hasResult, it)=> hasResult ? true : trySetActionOn(event, next, currentId, it), false)
         return next;
       });
     };

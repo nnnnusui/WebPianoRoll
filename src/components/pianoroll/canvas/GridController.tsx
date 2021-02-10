@@ -20,12 +20,18 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   type ActionType = typeof types[number];
   type State = Map<PointerId, ActionType>;
 
-  const defaultParameter = {
+  type ActionConfigParameter = {
+    backward: number;
+    unique: boolean;
+    residue: ActionType;
+    conditions: (event: React.PointerEvent) => boolean;
+  };
+  const defaultParameter: ActionConfigParameter = {
     backward: 0,
     unique: true,
+    residue: "put",
     conditions: (event: React.PointerEvent) => true,
   };
-  type ActionConfigParameter = typeof defaultParameter;
   type ActionConfig = Map<ActionType, ActionConfigParameter>;
   type ActionConfigOverride = [ActionType, Partial<ActionConfigParameter>];
   const actionConfigOverrides: ActionConfigOverride[] = [
@@ -114,12 +120,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       const id = event.pointerId;
       setPointers((prev) => {
         const before = prev.get(id)!;
+        const config = actionConfigs.get(before)!;
         const next = new Map(prev);
         actionMap
           .get(before)
           ?.filter((it) => it != id)
-          .slice(actionConfigs.get(before)!.backward * -1)
-          .forEach((it) => next.delete(it));
+          .slice(config.backward * -1)
+          .forEach((it) => next.set(it, config.residue));
         next.delete(id);
         return next;
       });

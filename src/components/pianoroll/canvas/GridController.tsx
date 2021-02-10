@@ -18,68 +18,95 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   type PointerId = number;
   const types = ["put", "scale", "select", "move"] as const;
   type Type = typeof types[number];
-  type State = Map<PointerId, Type>
-  const actionMapInit: Map<Type, PointerId[]> = new Map(types.map(it=> [it, []]));
+  type State = Map<PointerId, Type>;
+
+  const actionConfigDefaultParameter = {
+    backward: 0,
+    unique: true,
+    conditions: (event: React.PointerEvent) => true,
+  };
+  type ActionConfigParameter = typeof actionConfigDefaultParameter;
+  type ActionConfig = Map<Type, ActionConfigParameter>;
+  type ActionConfigOverride = [Type, Partial<ActionConfigParameter>][];
+  const actionConfigOverrides: ActionConfigOverride = [
+    ["put", { unique: false }],
+    ["scale", { backward: 1 }],
+    ["select", { backward: 1 }],
+    ["move", { backward: 2 }],
+  ];
+  const actionConfigs: ActionConfig = new Map(
+    actionConfigOverrides.map(([key, value]) => [
+      key,
+      {
+        ...actionConfigDefaultParameter,
+        ...value,
+      },
+    ])
+  );
   const [pointerMap, setPointers] = useState<State>(new Map());
   const Pointers = (() => {
-    const pointers = Array.from(pointerMap)
-    const actionMap = new Map(pointers.reduce((map, [key, value])=> map.set(value, [...map.get(value)!, key]), actionMapInit))
+    const pointers = Array.from(pointerMap);
+    const actionMapInit: Map<Type, PointerId[]> = new Map(
+      types.map((it) => [it, []])
+    );
+    const actionMap = new Map(
+      pointers.reduce(
+        (map, [key, value]) => map.set(value, [...map.get(value)!, key]),
+        actionMapInit
+      )
+    );
 
     const getPriorityLowers = (type: Type) => {
-      const targetPriority = types.indexOf(type)
-      return pointers.filter(([,type])=> types.indexOf(type) < targetPriority)
-    }
+      const targetPriority = types.indexOf(type);
+      return pointers.filter(
+        ([, type]) => types.indexOf(type) < targetPriority
+      );
+    };
     const getBackwards = (type: Type, backward: number) => {
-      const priorityLowerPointers = getPriorityLowers(type)
-      return priorityLowerPointers.length < backward ? [] : priorityLowerPointers.slice(-backward);
-    }
-    const trySetAction = (next: State, currentId: PointerId, type: Type, backward: number) => {
-      const backwards = getBackwards(type, backward)
-      backwards.forEach(([pointerId,]) => {
-        setDebug(`${pointerId}`)
-        next.set(pointerId, type)
+      const priorityLowerPointers = getPriorityLowers(type);
+      return priorityLowerPointers.length < backward
+        ? []
+        : priorityLowerPointers.slice(-backward);
+    };
+    const trySetAction = (
+      next: State,
+      currentId: PointerId,
+      type: Type,
+      backward: number
+    ) => {
+      const backwards = getBackwards(type, backward);
+      backwards.forEach(([pointerId]) => {
+        setDebug(`${pointerId}`);
+        next.set(pointerId, type);
       });
-      const executed = backwards.length >= backward
-      if (executed)
-        next.set(currentId, type)
-      return executed
-    }
+      const executed = backwards.length >= backward;
+      if (executed) next.set(currentId, type);
+      return executed;
+    };
 
-    const actionConfigDefaultParameter = { backward: 0, unique: true, conditions: (event: React.PointerEvent) => true}
-    type ActionType = { type: Type }
-    type ActionConfigParameter = typeof actionConfigDefaultParameter
-    type ActionConfig = ActionType & ActionConfigParameter
-    type ActionConfigOverride = ActionType & Partial<ActionConfigParameter>
-    const actionConfigOverrides: ActionConfigOverride[] = [{
-      type: "put",
-      unique: false
-    }, {
-      type: "scale",
-      backward: 1
-    }, {
-      type: "select",
-      backward: 1,
-      conditions: (event) => event.type == ""
-    }, {
-      type: "move",
-      backward: 2,
-    }]
-    const actionConfigs: ActionConfig[] = actionConfigOverrides.map(it=> ({...actionConfigDefaultParameter, ...it}))
-
-    const trySetActionOn = (event: React.PointerEvent,next: State, currentId: PointerId, config: ActionConfig) => {
-      const {type, backward, unique, conditions} = config
+    const trySetActionOn = (
+      event: React.PointerEvent,
+      next: State,
+      currentId: PointerId,
+      type: Type,
+      config: ActionConfigParameter
+    ) => {
+      const { backward, unique, conditions } = config;
       if (unique && actionMap.get(type)?.length != 0) return false;
       if (!conditions(event)) return false;
       return trySetAction(next, currentId, type, backward);
-    }
+    };
 
     const add = (event: React.PointerEvent) => {
       const currentId = event.pointerId;
       setPointers((prev) => {
-        const next = new Map(prev)
-        actionConfigs
-          .sort(it=> -it.backward)
-          .reduce((hasResult, it)=> hasResult ? true : trySetActionOn(event, next, currentId, it), false)
+        const next = new Map(prev);
+        Array.from(actionConfigs)
+          .sort(([, { backward }]) => -backward)
+          .reduce((hasResult, [type, parameter]) => {
+            if (hasResult) return true;
+            return trySetActionOn(event, next, currentId, type, parameter);
+          }, false);
         return next;
       });
     };
@@ -91,10 +118,12 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       setPointers((prev) => {
         const before = prev.get(id)!;
         const next = new Map(prev);
-        // actionMap.get(before)
-        //   ?.filter(it=> it != id)
-        //    .forEach(it=> next.set(it, "move"))
-        next.delete(id)
+        actionMap
+          .get(before)
+          ?.filter((it) => it != id)
+          .slice(actionConfigs.get(before)!.backward * -1)
+          .forEach((it) => next.delete(it));
+        next.delete(id);
         return next;
       });
     };

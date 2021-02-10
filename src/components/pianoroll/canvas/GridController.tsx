@@ -17,18 +17,18 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 
   type PointerId = number;
   const types = ["put", "scale", "select", "move"] as const;
-  type Type = typeof types[number];
-  type State = Map<PointerId, Type>;
+  type ActionType = typeof types[number];
+  type State = Map<PointerId, ActionType>;
 
-  const actionConfigDefaultParameter = {
+  const defaultParameter = {
     backward: 0,
     unique: true,
     conditions: (event: React.PointerEvent) => true,
   };
-  type ActionConfigParameter = typeof actionConfigDefaultParameter;
-  type ActionConfig = Map<Type, ActionConfigParameter>;
-  type ActionConfigOverride = [Type, Partial<ActionConfigParameter>][];
-  const actionConfigOverrides: ActionConfigOverride = [
+  type ActionConfigParameter = typeof defaultParameter;
+  type ActionConfig = Map<ActionType, ActionConfigParameter>;
+  type ActionConfigOverride = [ActionType, Partial<ActionConfigParameter>];
+  const actionConfigOverrides: ActionConfigOverride[] = [
     ["put", { unique: false }],
     ["scale", { backward: 1 }],
     ["select", { backward: 1 }],
@@ -37,16 +37,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const actionConfigs: ActionConfig = new Map(
     actionConfigOverrides.map(([key, value]) => [
       key,
-      {
-        ...actionConfigDefaultParameter,
-        ...value,
-      },
+      { ...defaultParameter, ...value },
     ])
   );
   const [pointerMap, setPointers] = useState<State>(new Map());
   const Pointers = (() => {
     const pointers = Array.from(pointerMap);
-    const actionMapInit: Map<Type, PointerId[]> = new Map(
+    const actionMapInit: Map<ActionType, PointerId[]> = new Map(
       types.map((it) => [it, []])
     );
     const actionMap = new Map(
@@ -56,13 +53,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       )
     );
 
-    const getPriorityLowers = (type: Type) => {
+    const getPriorityLowers = (type: ActionType) => {
       const targetPriority = types.indexOf(type);
       return pointers.filter(
         ([, type]) => types.indexOf(type) < targetPriority
       );
     };
-    const getBackwards = (type: Type, backward: number) => {
+    const getBackwards = (type: ActionType, backward: number) => {
       const priorityLowerPointers = getPriorityLowers(type);
       return priorityLowerPointers.length < backward
         ? []
@@ -71,7 +68,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const trySetAction = (
       next: State,
       currentId: PointerId,
-      type: Type,
+      type: ActionType,
       backward: number
     ) => {
       const backwards = getBackwards(type, backward);
@@ -88,7 +85,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       event: React.PointerEvent,
       next: State,
       currentId: PointerId,
-      type: Type,
+      type: ActionType,
       config: ActionConfigParameter
     ) => {
       const { backward, unique, conditions } = config;

@@ -56,6 +56,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     ActionType,
     ActionConfigParameterOverride
   >([
+    ["", { mustBe: () => false }],
     ["put", { unique: false }],
     [
       "select",

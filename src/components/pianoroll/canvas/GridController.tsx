@@ -15,8 +15,22 @@ type Props = {
 const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [debug, setDebug] = useState("");
 
+  /* 高度なActionメモ
+   * ダブルタップ
+   * -> 近い場合 状態を保持
+   *   -> 片方を離す -> select
+   *   -> 3つ目を置く
+   *     -> 横にスライド -> 横scale
+   *     -> 縦にスライド -> 縦scale
+   * -> scale
+   *
+   * これをやるには、各Actionの実行状態(actionMap)を
+   * ActionConfigParameter#conditions() に渡す必要がある？
+   *
+   * "doubleTap" 1, "select" 2, "hscale" 2, "vscale" 2, "scale" 1 でいける？
+   */
   type PointerId = number;
-  const types = ["put", "scale", "select", "move"] as const;
+  const types = ["put", "select", "scale", "move"] as const;
   type ActionType = typeof types[number];
   type State = Map<PointerId, ActionType>;
 
@@ -33,17 +47,17 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     conditions: (event: React.PointerEvent) => true,
   };
   type ActionConfig = Map<ActionType, ActionConfigParameter>;
-  type ActionConfigOverride = [ActionType, Partial<ActionConfigParameter>];
-  const actionConfigOverrides: ActionConfigOverride[] = [
+  type ActionConfigOverride = Map<ActionType, Partial<ActionConfigParameter>>;
+  const actionConfigOverride: ActionConfigOverride = new Map([
     ["put", { unique: false }],
-    ["scale", { backward: 1 }],
-    ["select", { backward: 1 }],
-    ["move", { backward: 2 }],
-  ];
-  const actionConfigs: ActionConfig = new Map(
-    actionConfigOverrides.map(([key, value]) => [
-      key,
-      { ...defaultParameter, ...value },
+    ["scale", { backward: 1, residue: "move" }],
+    ["select", { backward: 1, residue: "select", unique: false }],
+    // ["move", { backward: 2 }],
+  ]);
+  const actionConfig: ActionConfig = new Map(
+    types.map((it) => [
+      it,
+      { ...defaultParameter, ...actionConfigOverride.get(it)! },
     ])
   );
   const [pointerMap, setPointers] = useState<State>(new Map());
@@ -104,7 +118,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       const currentId = event.pointerId;
       setPointers((prev) => {
         const next = new Map(prev);
-        Array.from(actionConfigs)
+        Array.from(actionConfig)
           .sort(([, { backward }]) => -backward)
           .reduce((hasResult, [type, parameter]) => {
             if (hasResult) return true;
@@ -120,7 +134,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       const id = event.pointerId;
       setPointers((prev) => {
         const before = prev.get(id)!;
-        const config = actionConfigs.get(before)!;
+        const config = actionConfig.get(before)!;
         const next = new Map(prev);
         actionMap
           .get(before)

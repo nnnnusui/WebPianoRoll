@@ -42,19 +42,33 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     backward: number;
     unique: boolean;
     residue: ActionType;
-    conditions: (event: React.PointerEvent) => boolean;
+    mustBe: (events: React.PointerEvent[]) => boolean;
   };
   const defaultParameter: ActionConfigParameter = {
     backward: 0,
     unique: true,
     residue: "put",
-    conditions: (event: React.PointerEvent) => true,
+    mustBe: () => true,
   };
   type ActionConfig = Map<ActionType, ActionConfigParameter>;
-  type ActionConfigOverride = Map<ActionType, Partial<ActionConfigParameter>>;
-  const actionConfigOverride: ActionConfigOverride = new Map([
+  type ActionConfigParameterOverride = Partial<ActionConfigParameter>;
+  const actionConfigOverride = new Map<
+    ActionType,
+    ActionConfigParameterOverride
+  >([
     ["put", { unique: false }],
-    ["select", { backward: 1, residue: "select", unique: false }],
+    [
+      "select",
+      {
+        backward: 1,
+        residue: "select",
+        unique: false,
+        mustBe: (events) => {
+          /* TODO: judge double pointers is near */
+          return true;
+        },
+      },
+    ],
     ["scale", { backward: 1, residue: "move" }],
     // ["move", { backward: 2 }],
   ]);
@@ -72,7 +86,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     );
     const actionMap = new Map(
       pointers.reduce(
-        (map, [key, { action, event }]) =>
+        (map, [, { action, event }]) =>
           map.set(action, [...map.get(action)!, event]),
         actionMapInit
       )
@@ -91,34 +105,34 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         : priorityLowerPointers.slice(-backward);
     };
 
-    const trySetActionOn = (
+    const trySetAction = (
       event: React.PointerEvent,
       next: State,
-      currentId: PointerId,
       type: ActionType,
       config: ActionConfigParameter
     ) => {
-      const { backward, unique, conditions } = config;
+      const { backward, unique, mustBe } = config;
       if (unique && actionMap.get(type)?.length != 0) return false;
-      if (!conditions(event)) return false;
-      const pointers = [
-        ...getBackwards(type, backward).map(([pointerId]) => pointerId),
-        currentId,
+      const events = [
+        ...getBackwards(type, backward).map(([, value]) => value.event),
+        event,
       ];
-      if (pointers.length <= backward) return false;
-      pointers.map((it) => next.set(it, { ...next.get(it)!, action: type }));
+      if (events.length <= backward) return false;
+      if (!mustBe(events)) return false;
+      events.map((it) =>
+        next.set(it.pointerId, { ...next.get(it.pointerId)!, action: type })
+      );
       return true;
     };
 
     const add = (event: React.PointerEvent) => {
-      const currentId = event.pointerId;
       setPointers((prev) => {
         const next = new Map(prev);
         Array.from(actionConfig)
           .sort(([, { backward }]) => -backward)
           .reduce((hasResult, [type, parameter]) => {
             if (hasResult) return true;
-            return trySetActionOn(event, next, currentId, type, parameter);
+            return trySetAction(event, next, type, parameter);
           }, false);
         return next;
       });

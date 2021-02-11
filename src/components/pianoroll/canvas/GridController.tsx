@@ -27,10 +27,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
    * これをやるには、各Actionの実行状態(actionMap)を
    * ActionConfigParameter#conditions() に渡す必要がある？
    *
-   * "doubleTap" 1, "select" 2, "hscale" 2, "vscale" 2, "scale" 1 でいける？
+   * "select" 0, "doubleTap" 1, "hscale" 2, "vscale" 2, "scale" 1 でいける？
    */
   type PointerId = number;
-  const types = ["put", "select", "scale", "move"] as const;
+  const types = ["", "put", "move", "select", "scale"] as const;
   type ActionType = typeof types[number];
   type PointerInfo = {
     event: React.PointerEvent;
@@ -47,7 +47,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const defaultParameter: ActionConfigParameter = {
     backward: 0,
     unique: true,
-    residue: "put",
+    residue: "",
     mustBe: () => true,
   };
   type ActionConfig = Map<ActionType, ActionConfigParameter>;
@@ -70,7 +70,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       },
     ],
     ["scale", { backward: 1, residue: "move" }],
-    // ["move", { backward: 2 }],
   ]);
   const actionConfig: ActionConfig = new Map(
     types.map((it) => [
@@ -119,8 +118,11 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ];
       if (events.length <= backward) return false;
       if (!mustBe(events)) return false;
-      events.map((it) =>
-        next.set(it.pointerId, { ...next.get(it.pointerId)!, action: type })
+      events.forEach((it) =>
+        next.set(it.pointerId, {
+          action: type,
+          event: next.get(it.pointerId)?.event || event,
+        })
       );
       return true;
     };
@@ -141,19 +143,26 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       const id = event.pointerId;
     };
     const remove = (event: React.PointerEvent) => {
-      const id = event.pointerId;
+      const targetId = event.pointerId;
       setPointers((prev) => {
-        const before = prev.get(id)!.action;
-        const config = actionConfig.get(before)!;
+        if (!prev.has(targetId)) return prev;
         const next = new Map(prev);
-        actionMap
-          .get(before)
-          ?.filter((it) => it.pointerId != id)
-          .slice(config.backward * -1)
-          .forEach((it) =>
-            next.set(it.pointerId, { action: config.residue, event: it })
-          );
-        next.delete(id);
+        const targetAction = prev.get(targetId)!.action;
+        const config = actionConfig.get(targetAction)!;
+        const prevConfig = Array.from(actionConfig)
+          .reverse()
+          .find(([, parameter]) => parameter.backward == config.backward - 1);
+        if (prevConfig != null) {
+          const [residueAction] = prevConfig;
+          actionMap
+            .get(targetAction)
+            ?.filter((it) => it.pointerId != targetId)
+            .slice(config.backward * -1)
+            .forEach((it) =>
+              next.set(it.pointerId, { action: residueAction, event: it })
+            );
+        }
+        next.delete(targetId);
         return next;
       });
     };
@@ -202,9 +211,12 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           return false;
         }}
       ></div>
-      <h1>{`debug: ${debug} _ ${Array.from(pointerMap.entries())
-        .map(([, mode], index) => `${index}: ${mode}`)
-        .join(" ")}`}</h1>
+      <h1>
+        {`debug: ${debug} _
+      ${Array.from(pointerMap.entries())
+        .map(([, { action }], index) => `${index}: ${action}`)
+        .join(" ")}`}
+      </h1>
     </>
   );
 };

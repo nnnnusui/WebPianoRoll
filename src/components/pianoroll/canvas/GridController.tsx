@@ -149,19 +149,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         const next = new Map(prev);
         const targetAction = prev.get(targetId)!.action;
         const config = actionConfig.get(targetAction)!;
-        const prevConfig = Array.from(actionConfig)
-          .reverse()
-          .find(([, parameter]) => parameter.backward == config.backward - 1);
-        if (prevConfig != null) {
-          const [residueAction] = prevConfig;
-          actionMap
-            .get(targetAction)
-            ?.filter((it) => it.pointerId != targetId)
-            .slice(config.backward * -1)
-            .forEach((it) =>
-              next.set(it.pointerId, { action: residueAction, event: it })
-            );
-        }
+        actionMap
+          .get(targetAction)
+          ?.filter((it) => it.pointerId != targetId)
+          .slice(config.backward * -1)
+          .forEach((it) =>
+            next.set(it.pointerId, { action: config.residue, event: it })
+          );
         next.delete(targetId);
         return next;
       });

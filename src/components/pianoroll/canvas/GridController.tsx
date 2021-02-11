@@ -32,7 +32,11 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   type PointerId = number;
   const types = ["put", "select", "scale", "move"] as const;
   type ActionType = typeof types[number];
-  type State = Map<PointerId, ActionType>;
+  type PointerInfo = {
+    event: React.PointerEvent;
+    action: ActionType;
+  };
+  type State = Map<PointerId, PointerInfo>;
 
   type ActionConfigParameter = {
     backward: number;
@@ -50,8 +54,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   type ActionConfigOverride = Map<ActionType, Partial<ActionConfigParameter>>;
   const actionConfigOverride: ActionConfigOverride = new Map([
     ["put", { unique: false }],
-    ["scale", { backward: 1, residue: "move" }],
     ["select", { backward: 1, residue: "select", unique: false }],
+    ["scale", { backward: 1, residue: "move" }],
     // ["move", { backward: 2 }],
   ]);
   const actionConfig: ActionConfig = new Map(
@@ -63,12 +67,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [pointerMap, setPointers] = useState<State>(new Map());
   const Pointers = (() => {
     const pointers = Array.from(pointerMap);
-    const actionMapInit: Map<ActionType, PointerId[]> = new Map(
+    const actionMapInit: Map<ActionType, React.PointerEvent[]> = new Map(
       types.map((it) => [it, []])
     );
     const actionMap = new Map(
       pointers.reduce(
-        (map, [key, value]) => map.set(value, [...map.get(value)!, key]),
+        (map, [key, { action, event }]) =>
+          map.set(action, [...map.get(action)!, event]),
         actionMapInit
       )
     );
@@ -76,7 +81,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const getPriorityLowers = (type: ActionType) => {
       const targetPriority = types.indexOf(type);
       return pointers.filter(
-        ([, type]) => types.indexOf(type) < targetPriority
+        ([, { action: it }]) => types.indexOf(it) < targetPriority
       );
     };
     const getBackwards = (type: ActionType, backward: number) => {
@@ -84,21 +89,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       return priorityLowerPointers.length < backward
         ? []
         : priorityLowerPointers.slice(-backward);
-    };
-    const trySetAction = (
-      next: State,
-      currentId: PointerId,
-      type: ActionType,
-      backward: number
-    ) => {
-      const backwards = getBackwards(type, backward);
-      backwards.forEach(([pointerId]) => {
-        setDebug(`${pointerId}`);
-        next.set(pointerId, type);
-      });
-      const executed = backwards.length >= backward;
-      if (executed) next.set(currentId, type);
-      return executed;
     };
 
     const trySetActionOn = (
@@ -111,7 +101,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       const { backward, unique, conditions } = config;
       if (unique && actionMap.get(type)?.length != 0) return false;
       if (!conditions(event)) return false;
-      return trySetAction(next, currentId, type, backward);
+      const pointers = [
+        ...getBackwards(type, backward).map(([pointerId]) => pointerId),
+        currentId,
+      ];
+      if (pointers.length <= backward) return false;
+      pointers.map((it) => next.set(it, { ...next.get(it)!, action: type }));
+      return true;
     };
 
     const add = (event: React.PointerEvent) => {
@@ -133,14 +129,16 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const remove = (event: React.PointerEvent) => {
       const id = event.pointerId;
       setPointers((prev) => {
-        const before = prev.get(id)!;
+        const before = prev.get(id)!.action;
         const config = actionConfig.get(before)!;
         const next = new Map(prev);
         actionMap
           .get(before)
-          ?.filter((it) => it != id)
+          ?.filter((it) => it.pointerId != id)
           .slice(config.backward * -1)
-          .forEach((it) => next.set(it, config.residue));
+          .forEach((it) =>
+            next.set(it.pointerId, { action: config.residue, event: it })
+          );
         next.delete(id);
         return next;
       });

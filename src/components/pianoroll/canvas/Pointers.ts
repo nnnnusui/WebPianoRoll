@@ -4,11 +4,8 @@ const types = [
   "",
   "put",
   "move",
-  "select",
-  "doubleTap",
-  "hScale",
-  "vScale",
   "scale",
+  "select",
 ] as const;
 type ActionType = typeof types[number];
 
@@ -30,7 +27,11 @@ const defaultParameter: ActionConfigParameter = {
   unique: false,
   backward: 0,
   residue: "",
-  mustBe: () => true,
+  mustBe: (events) => {
+    events.map(it=> ({x: it.clientX, y: it.clientY}))
+      .forEach(it => console.log(`${it.x}, ${it.y}`))
+    return true
+  },
 };
 const actionConfigOverride = new Map<
   ActionType,
@@ -39,21 +40,24 @@ const actionConfigOverride = new Map<
   ["", { mustBe: () => false }],
   ["put", {}],
   ["move", { unique: true }],
-  ["select", {}],
+  ["scale", { unique: true, backward: 1, residue: "move" }],
   [
-    "doubleTap",
+    "select",
     {
       backward: 1,
       residue: "select",
       mustBe: (events) => {
-        /* TODO: judge double pointers is near */
-        return true;
+        const nearRange = {width: 100, height: 100}
+        const [base, ...others] = events.map(it=> ({x: it.clientX, y: it.clientY}))
+        const ranges = others.map(it => ({width: Math.abs(base.x - it.x), height: Math.abs(base.y - it.y)}))
+        return ranges
+          .filter(it => it.width > nearRange.width || it.height > nearRange.height)
+          .length == 0;
       },
     },
   ],
-  ["hScale", { backward: 2, residue: "doubleTap" }],
-  ["vScale", { backward: 2, residue: "doubleTap" }],
-  ["scale", { unique: true, backward: 1, residue: "move" }],
+  // ["hScale", { backward: 2, residue: "doubleTap" }],
+  // ["vScale", { backward: 2, residue: "doubleTap" }],
 ]);
 const actionConfig: ActionConfig = new Map(
   types.map((it) => [

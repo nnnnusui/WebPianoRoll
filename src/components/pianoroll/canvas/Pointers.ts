@@ -165,7 +165,7 @@ const Pointers = (getAction: typeof getActionInit) => {
         });
       // remove
       getAction(target.action, [target.event]).onRemove();
-      getAction(config.residue, getActionTargetMap(next).get(config.residue)!);
+      getAction(config.residue, getActionTargetMap(next).get(config.residue)!).onAdd();
 
       next.delete(targetId);
       return next;

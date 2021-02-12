@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { range0to } from "../../range";
-import ScaleController from "./controller/ScaleController";
+import ScaleState from "./state/ScaleState";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
@@ -21,7 +21,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveState(maxPos);
-  const scale = ScaleController(move, 10, { width: 2, height: 2 });
+  const scale = ScaleState(move, { width: 2, height: 2 });
   const selection = SelectionController();
   const note = NotesController();
 
@@ -40,7 +40,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
 
   const actionMap: PointerActionOverrideMap = new Map([
-    MoveAction(move),
+    MoveAction(move, scale),
     ScaleAction(scale),
   ]);
   const pointers = PointerActionConsumer(actionMap);

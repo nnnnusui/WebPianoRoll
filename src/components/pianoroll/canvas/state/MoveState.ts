@@ -3,8 +3,6 @@ import { useState, SetStateAction } from "react";
 import { Size } from "../type/Size";
 
 const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
-  const [on, setOn] = useState(false);
-  const [from, setFrom] = useState({ x: 0, y: 0 });
   const [state, setState] = useState({ x: 0, y: 0 });
 
   const fixEndExceeded = (pos: Pos, scale: Size) => ({
@@ -23,40 +21,17 @@ const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
     });
   };
 
-  const start = (viewLocal: Pos) => {
-    const global = {
-      x: viewLocal.x + state.x,
-      y: viewLocal.y + state.y,
-    };
-    setFrom(global);
-    setOn(true);
-  };
-  const middle = (viewLocal: Pos, scale: Size) => {
-    if (!on) return;
-    const vector = {
-      x: from.x - viewLocal.x,
-      y: from.y - viewLocal.y,
-    };
-    updateState(scale, vector);
-  };
-  const end = () => {
-    setFrom({ x: 0, y: 0 });
-    setOn(false);
-  };
   return {
     get: state,
-    update: (from: Pos, to: Pos) => {
+    update: (from: Pos, to: Pos, scale: Size) => {
       const vector = {
         x: from.x - to.x,
         y: from.y - to.y,
       };
-      setState(vector);
+      updateState(scale, vector);
     },
-    set: updateState,
-    start,
-    middle,
-    end,
 
+    set: updateState,
     maxPos: max,
   };
 };

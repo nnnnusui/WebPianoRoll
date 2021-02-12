@@ -6,9 +6,11 @@ import {
 } from "../PointerActionConsumer";
 import { Pos } from "../type/Pos";
 import getViewLocal from "../getViewLocal";
+import ScaleState from "../state/ScaleState";
 
 const MoveAction = (
-  state: ReturnType<typeof MoveState>
+  state: ReturnType<typeof MoveState>,
+  scale: ReturnType<typeof ScaleState>
 ): [PointerActionType, PointerActionOverride] => {
   type State = Map<number, Pos>;
   const [, setFromMap] = useState(new Map());
@@ -40,7 +42,7 @@ const MoveAction = (
         updateFromMap((prev) => {
           const from = prev.get(current.pointerId);
           if (!from) return;
-          state.update(from, getViewLocal(current));
+          state.update(from, getViewLocal(current), scale.get);
           others.forEach((it) => prev.set(it.pointerId, getGridLocal(it)));
         });
       },

@@ -2,11 +2,11 @@ import {
   PointerActionOverride,
   PointerActionType,
 } from "../PointerActionConsumer";
-import ScaleController from "../controller/ScaleController";
+import ScaleState from "../state/ScaleState";
 import getViewLocal from "../getViewLocal";
 
 const ScaleAction = (
-  state: ReturnType<typeof ScaleController>
+  state: ReturnType<typeof ScaleState>
 ): [PointerActionType, PointerActionOverride] => {
   const focusAndRange = (events: React.PointerEvent[]) => {
     const [onMove, focus] = events.map((it) => getViewLocal(it));
@@ -16,6 +16,7 @@ const ScaleAction = (
     };
     return [focus, range] as const;
   };
+
   return [
     "scale",
     {

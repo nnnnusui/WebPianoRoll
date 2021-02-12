@@ -1,14 +1,14 @@
 import { Pos } from "../type/Pos";
 import { SetStateAction, useState } from "react";
-import MoveState from "../state/MoveState";
+import MoveState from "./MoveState";
 import { Size } from "../type/Size";
 
 const min = 1;
 const stateInit = { width: min, height: min };
-const ScaleController = (
+const ScaleState = (
   move: ReturnType<typeof MoveState>,
-  max: number,
-  defaultValue: Size = stateInit
+  defaultValue: Size = stateInit,
+  max: number = Number.MAX_VALUE
 ) => {
   const maxPos = move.maxPos;
   const [state, _setState] = useState(defaultValue);
@@ -53,10 +53,7 @@ const ScaleController = (
   const fromInit = { scale: stateInit, range: { width: 0, height: 0 } };
   const [on, setOn] = useState(false);
   const [from, setFrom] = useState(fromInit);
-  const byPinch = (viewLocalFocus: Pos, range: Size) => {
-    if (on) middlePinch(viewLocalFocus, range);
-    else startPinch(range);
-  };
+
   const startPinch = (range: Size) => {
     setOn(true);
     setFrom({ scale: state, range });
@@ -89,8 +86,6 @@ const ScaleController = (
     start: startPinch,
     middle: middlePinch,
     end: endPinch,
-    byPinch,
-    endPinch,
   };
 };
-export default ScaleController;
+export default ScaleState;

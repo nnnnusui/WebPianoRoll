@@ -31,11 +31,11 @@ const MoveController = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
     setFrom(global);
     setOn(true);
   };
-  const middle = (pos: Pos, scale: Size) => {
+  const middle = (viewLocal: Pos, scale: Size) => {
     if (!on) return;
     const vector = {
-      x: from.x - pos.x,
-      y: from.y - pos.y,
+      x: from.x - viewLocal.x,
+      y: from.y - viewLocal.y,
     };
     updateState(scale, vector);
   };

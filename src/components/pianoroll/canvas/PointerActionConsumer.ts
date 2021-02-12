@@ -4,10 +4,10 @@ type Event = React.PointerEvent;
 
 type PointerActionType = string;
 type PointerAction = {
-  down: (event: Event) => void;
-  move: (event: Event) => void;
-  up: (event: Event) => void;
-  cancel: (event: Event) => void;
+  down: (events: Event[]) => void;
+  move: (events: Event[]) => void;
+  up: (events: Event[]) => void;
+  cancel: (events: Event[]) => void;
 };
 type PointerActionMap = Map<PointerActionType, PointerAction>;
 type PointerActionOverrideMap = Map<PointerActionType, Partial<PointerAction>>;
@@ -34,6 +34,18 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
     )
   );
   const [pointerMap, setPointerMap] = useState<State>(new Map());
+  const getEventsByActionType = (
+    from: State,
+    by: PointerActionType,
+    latest: Event
+  ) => [
+    latest,
+    ...Array.from(from)
+      .filter(([, { actionType }]) => actionType == by)
+      .filter(([key]) => key != latest.pointerId)
+      .map(([, { event }]) => event)
+      .reverse(),
+  ];
 
   const over = () => {};
   const enter = () => {};
@@ -43,10 +55,13 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const next = new Map(prev);
 
       const actionType = "move";
-      next.set(currentId, { event, actionType });
-
       const action = actionMap.get(actionType);
-      if (action) action.down(event);
+      if (action) {
+        const events = getEventsByActionType(next, actionType, event);
+        action.down([...events, event]);
+      }
+
+      next.set(currentId, { event, actionType });
       return next;
     });
   };
@@ -57,10 +72,13 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       if (!current) return prev;
       const next = new Map(prev);
 
-      next.set(currentId, { ...current, event });
-
       const action = actionMap.get(current.actionType);
-      if (action) action.move(event);
+      if (action) {
+        const events = getEventsByActionType(next, current.actionType, event);
+        action.move([...events, event]);
+      }
+
+      next.set(currentId, { ...current, event });
       return next;
     });
   };
@@ -72,7 +90,10 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const next = new Map(prev);
 
       const action = actionMap.get(current.actionType);
-      if (action) action.up(event);
+      if (action) {
+        const events = getEventsByActionType(next, current.actionType, event);
+        action.up([...events, event]);
+      }
 
       next.delete(currentId);
       return next;

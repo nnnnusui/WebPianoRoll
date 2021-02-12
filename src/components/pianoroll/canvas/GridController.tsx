@@ -41,8 +41,14 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     [
       "move",
       {
-        down: (event) => move.start(getViewLocal(event)),
-        move: (event) => move.middle(getViewLocal(event), scale.get),
+        down: (events) => {
+          const [event, ...others] = events;
+          move.start(getViewLocal(event));
+        },
+        move: (events) => {
+          const [event, ...others] = events;
+          move.middle(getViewLocal(event), scale.get);
+        },
         up: () => move.end(),
       },
     ],

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 
 type Event = React.PointerEvent;
 
@@ -35,6 +35,14 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
     )
   );
   const [pointerMap, setPointerMap] = useState<State>(new Map());
+  const updatePointerMap = (action: (state: State) => void) => {
+    setPointerMap((prev) => {
+      const next = new Map(prev);
+      action(next);
+      return next;
+    });
+  };
+
   const getEventsByActionType = (
     from: State,
     by: PointerActionType,
@@ -52,52 +60,45 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   const enter = () => {};
   const down = (event: Event) => {
     const currentId = event.pointerId;
-    setPointerMap((prev) => {
-      const next = new Map(prev);
-
+    updatePointerMap((state) => {
       const actionType = "move";
       const action = actionMap.get(actionType);
       if (action) {
-        const events = getEventsByActionType(next, actionType, event);
+        const events = getEventsByActionType(state, actionType, event);
         action.down(events);
       }
 
-      next.set(currentId, { event, actionType });
-      return next;
+      state.set(currentId, { event, actionType });
     });
   };
   const move = (event: Event) => {
     const currentId = event.pointerId;
-    setPointerMap((prev) => {
-      const current = prev.get(currentId);
-      if (!current) return prev;
-      const next = new Map(prev);
+    updatePointerMap((state) => {
+      const current = state.get(currentId);
+      if (!current) return;
 
       const action = actionMap.get(current.actionType);
       if (action) {
-        const events = getEventsByActionType(next, current.actionType, event);
+        const events = getEventsByActionType(state, current.actionType, event);
         action.move(events);
       }
 
-      next.set(currentId, { ...current, event });
-      return next;
+      state.set(currentId, { ...current, event });
     });
   };
   const up = (event: Event) => {
     const currentId = event.pointerId;
-    setPointerMap((prev) => {
-      const current = prev.get(currentId);
-      if (!current) return prev;
-      const next = new Map(prev);
+    updatePointerMap((state) => {
+      const current = state.get(currentId);
+      if (!current) return;
 
       const action = actionMap.get(current.actionType);
       if (action) {
-        const events = getEventsByActionType(next, current.actionType, event);
+        const events = getEventsByActionType(state, current.actionType, event);
         action.up(events);
       }
 
-      next.delete(currentId);
-      return next;
+      state.delete(currentId);
     });
   };
   const cancel = up;

@@ -10,6 +10,7 @@ import PointerActionConsumer, {
 } from "./PointerActionConsumer";
 import MoveState from "./state/MoveState";
 import MoveAction from "./pointerAction/MoveAction";
+import ScaleAction from "./pointerAction/ScaleAction";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -38,7 +39,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  const actionMap: PointerActionOverrideMap = new Map([MoveAction(move)]);
+  const actionMap: PointerActionOverrideMap = new Map([
+    MoveAction(move),
+    ScaleAction(scale),
+  ]);
   const pointers = PointerActionConsumer(actionMap);
 
   const onWheel = (event: React.WheelEvent) => {

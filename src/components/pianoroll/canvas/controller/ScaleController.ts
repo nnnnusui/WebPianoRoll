@@ -86,6 +86,9 @@ const ScaleController = (
   return {
     get: state,
     add,
+    start: startPinch,
+    middle: middlePinch,
+    end: endPinch,
     byPinch,
     endPinch,
   };

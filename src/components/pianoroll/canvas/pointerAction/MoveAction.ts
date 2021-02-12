@@ -5,6 +5,7 @@ import {
   PointerActionType,
 } from "../PointerActionConsumer";
 import { Pos } from "../type/Pos";
+import getViewLocal from "../getViewLocal";
 
 const MoveAction = (
   state: ReturnType<typeof MoveState>
@@ -16,14 +17,6 @@ const MoveAction = (
       action(prev);
       return new Map(prev);
     });
-  };
-  const getViewLocal = (event: React.MouseEvent) => {
-    const element = event.target as HTMLElement;
-    const rect = element.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
   };
   const getGridLocal = (event: React.MouseEvent) => {
     const viewLocal = getViewLocal(event);

@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 
 type Event = React.PointerEvent;
 
@@ -19,6 +19,35 @@ type PointerInfo = {
   actionType: PointerActionType;
 };
 type State = Map<PointerId, PointerInfo>;
+
+const Conditions = (() => {
+  const filterByActionTypes = (actionTypes: string[]) => (state: State) =>
+    Array.from(state).filter(([, { actionType: it }]) =>
+      actionTypes.includes(it)
+    );
+  const checkQuantity = (
+    actionTypes: string[],
+    check: (quantity: number) => boolean
+  ) => (state: State) => check(filterByActionTypes(actionTypes)(state).length);
+
+  return {
+    unique: (actionType: string) =>
+      checkQuantity([actionType], (it) => it == 0),
+    needsQuantity: (actionTypes: string[], needs: number) =>
+      checkQuantity(actionTypes, (it) => it >= needs),
+  };
+})();
+const config = new Map<string, ((state: State) => boolean)[]>([
+  ["move", []],
+  [
+    "scale",
+    [Conditions.unique("scale"), Conditions.needsQuantity(["move"], 1)],
+  ],
+]);
+const configValues = Array.from(config)
+  .sort(([, value]) => -value.length)
+  .map(([actionType, conditions]) => ({ actionType, conditions }));
+// .reduce((map, [key, value]) => map.set(value.length, [...map.get(value.length) || [], { actionType: key, conditions: value }]), new Map<number, { actionType: string, conditions: ((state: State) => boolean)[] }[]>())
 
 const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   const actionMap: PointerActionMap = new Map(
@@ -61,11 +90,15 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   const down = (event: Event) => {
     const currentId = event.pointerId;
     updatePointerMap((state) => {
-      const actionType = "move";
+      const actionType = configValues.find(
+        ({ conditions }) => conditions.filter((it) => !it(state)).length == 0
+      )?.actionType;
+      if (!actionType) return;
+
       const action = actionMap.get(actionType);
       if (action) {
         const events = getEventsByActionType(state, actionType, event);
-        action.down(events);
+        // action.down(events);
       }
 
       state.set(currentId, { event, actionType });
@@ -80,7 +113,7 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const action = actionMap.get(current.actionType);
       if (action) {
         const events = getEventsByActionType(state, current.actionType, event);
-        action.move(events);
+        // action.move(events);
       }
 
       state.set(currentId, { ...current, event });

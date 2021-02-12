@@ -20,34 +20,27 @@ type PointerInfo = {
 };
 type State = Map<PointerId, PointerInfo>;
 
-const Conditions = (() => {
-  const filterByActionTypes = (actionTypes: string[]) => (state: State) =>
-    Array.from(state).filter(([, { actionType: it }]) =>
-      actionTypes.includes(it)
-    );
-  const checkQuantity = (
-    actionTypes: string[],
-    check: (quantity: number) => boolean
-  ) => (state: State) => check(filterByActionTypes(actionTypes)(state).length);
-
-  return {
-    unique: (actionType: string) =>
-      checkQuantity([actionType], (it) => it == 0),
-    needsQuantity: (actionTypes: string[], needs: number) =>
-      checkQuantity(actionTypes, (it) => it >= needs),
-  };
-})();
-const config = new Map<string, ((state: State) => boolean)[]>([
-  ["move", []],
+type PointerActionConfigParameter = {
+  unique: boolean;
+  overwrites: PointerActionType[];
+  premise: number;
+  residue: PointerActionType;
+};
+type PointerActionConfig = Map<PointerActionType, PointerActionConfigParameter>;
+type PointerActionConfigOverride = Map<
+  PointerActionType,
+  Partial<PointerActionConfigParameter>
+>;
+const pointerActionConfig: PointerActionConfig = new Map([
+  ["move", { unique: true, overwrites: [], premise: 0, residue: "" }],
   [
     "scale",
-    [Conditions.unique("scale"), Conditions.needsQuantity(["move"], 1)],
+    { unique: true, overwrites: ["move"], premise: 1, residue: "move" },
   ],
 ]);
-const configValues = Array.from(config)
-  .sort(([, value]) => -value.length)
-  .map(([actionType, conditions]) => ({ actionType, conditions }));
-// .reduce((map, [key, value]) => map.set(value.length, [...map.get(value.length) || [], { actionType: key, conditions: value }]), new Map<number, { actionType: string, conditions: ((state: State) => boolean)[] }[]>())
+const pointerActionConfigValues = Array.from(pointerActionConfig).sort(
+  ([, { premise }]) => -premise
+);
 
 const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   const actionMap: PointerActionMap = new Map(
@@ -71,67 +64,114 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       return next;
     });
   };
+  const set = (state: State, info: PointerInfo) =>
+    state.set(info.event.pointerId, info);
 
-  const getEventsByActionType = (
+  const filterByActionTypes = (from: State, by: string[]) =>
+    Array.from(from).filter(([, { actionType: it }]) => by.includes(it));
+  const checkQuantity = (
     from: State,
-    by: PointerActionType,
-    latest: Event
-  ) => [
-    latest,
-    ...Array.from(from)
-      .filter(([, { actionType }]) => actionType == by)
-      .filter(([key]) => key != latest.pointerId)
-      .map(([, { event }]) => event)
-      .reverse(),
-  ];
+    by: string[],
+    check: (quantity: number) => boolean
+  ) => check(filterByActionTypes(from, by).length);
+  const needsQuantity = (actionTypes: string[], needs: number) => (
+    state: State
+  ) => checkQuantity(state, actionTypes, (it) => it >= needs);
+  const checkUnique = (actionType: string) => (state: State) =>
+    checkQuantity(state, [actionType], (it) => it == 0);
+
+  const getActionType = (state: State) => {
+    return pointerActionConfigValues.find(
+      ([actionType, { unique, overwrites, premise }]) => {
+        const uniqueCheckResult = unique
+          ? checkUnique(actionType)(state)
+          : true;
+        if (!uniqueCheckResult) return false;
+        return needsQuantity(overwrites, premise)(state);
+      }
+    )?.[0];
+  };
 
   const over = () => {};
   const enter = () => {};
   const down = (event: Event) => {
-    const currentId = event.pointerId;
     updatePointerMap((state) => {
-      const actionType = configValues.find(
-        ({ conditions }) => conditions.filter((it) => !it(state)).length == 0
-      )?.actionType;
+      const actionType = getActionType(state);
       if (!actionType) return;
-
       const action = actionMap.get(actionType);
-      if (action) {
-        const events = getEventsByActionType(state, actionType, event);
-        // action.down(events);
-      }
+      if (!action) return;
+      const config = pointerActionConfig.get(actionType);
+      if (!config) return;
 
-      state.set(currentId, { event, actionType });
+      const overwriteTargets = filterByActionTypes(
+        state,
+        config.overwrites
+      ).slice(-config.premise);
+      overwriteTargets.forEach(([id, prev]) => {
+        state.set(id, { ...prev, actionType });
+        const config = pointerActionConfig.get(prev.actionType);
+        if (!config) return;
+        const action = actionMap.get(prev.actionType);
+        if (!action) return;
+        action.cancel([prev.event]);
+      });
+      const overwritedEvents = overwriteTargets.map(([, { event }]) => event);
+      const events = [event, ...overwritedEvents.reverse()];
+      action.down(events);
+      set(state, { event, actionType });
     });
   };
   const move = (event: Event) => {
-    const currentId = event.pointerId;
     updatePointerMap((state) => {
-      const current = state.get(currentId);
+      const current = state.get(event.pointerId);
       if (!current) return;
+      const actionType = current.actionType;
+      const action = actionMap.get(actionType);
+      if (!action) return;
 
-      const action = actionMap.get(current.actionType);
-      if (action) {
-        const events = getEventsByActionType(state, current.actionType, event);
-        // action.move(events);
-      }
-
-      state.set(currentId, { ...current, event });
+      const events = [
+        event,
+        ...filterByActionTypes(state, [actionType])
+          .filter(([id]) => id != event.pointerId)
+          .map(([, { event }]) => event)
+          .reverse(),
+      ];
+      action.move(events);
+      set(state, { ...current, event });
     });
   };
   const up = (event: Event) => {
-    const currentId = event.pointerId;
     updatePointerMap((state) => {
-      const current = state.get(currentId);
+      const current = state.get(event.pointerId);
       if (!current) return;
+      const actionType = current.actionType;
+      const action = actionMap.get(actionType);
+      if (!action) return;
+      const config = pointerActionConfig.get(actionType);
+      if (!config) return;
 
-      const action = actionMap.get(current.actionType);
-      if (action) {
-        const events = getEventsByActionType(state, current.actionType, event);
-        action.up(events);
-      }
+      const events = [
+        event,
+        ...filterByActionTypes(state, [actionType])
+          .map(([, { event }]) => event)
+          .reverse(),
+      ];
+      action.up(events);
+      state.delete(event.pointerId);
 
-      state.delete(currentId);
+      const residueConfig = pointerActionConfig.get(actionType);
+      if (!residueConfig) return;
+      const residues = filterByActionTypes(state, [actionType]).slice(
+        -config.premise
+      );
+      if (residues.length <= 0) return;
+      residues.forEach(([id, current]) =>
+        state.set(id, { ...current, actionType: config.residue })
+      );
+      const residueAction = actionMap.get(config.residue);
+      if (!residueAction) return;
+      const residueEvents = residues.map(([, { event }]) => event).reverse();
+      residueAction.down(residueEvents);
     });
   };
   const cancel = up;

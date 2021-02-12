@@ -9,10 +9,10 @@ const ScaleAction = (
   state: ReturnType<typeof ScaleController>
 ): [PointerActionType, PointerActionOverride] => {
   const focusAndRange = (events: React.PointerEvent[]) => {
-    const [focus, otherSide] = events.reverse().map((it) => getViewLocal(it));
+    const [onMove, focus] = events.map((it) => getViewLocal(it));
     const range = {
-      width: Math.abs(otherSide.x - focus.x),
-      height: Math.abs(otherSide.y - focus.y),
+      width: Math.abs(onMove.x - focus.x),
+      height: Math.abs(onMove.y - focus.y),
     };
     return [focus, range] as const;
   };

@@ -6,6 +6,7 @@ import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
 import MoveController from "./controller/MoveController";
 import NotesController from "./controller/NotesController";
+import PointerActionConsumer from "./PointerActionConsumer";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -18,54 +19,15 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const move = MoveController(maxPos);
   const scale = ScaleController(move, 10);
   const selection = SelectionController();
-  const grid = Grid(gridSize);
-
   const note = NotesController();
 
-  const eventCache = (() => {
-    type Target = React.PointerEvent;
-    const [cache, setCache] = useState<Map<number, Target>>(
-      new Map<number, Target>()
-    );
-    const add = (event: Target) =>
-      setCache((prev) => new Map(prev.set(event.pointerId, event)));
-    const update = (event: Target) =>
-      setCache((prev) => new Map(prev.set(event.pointerId, event)));
-    const remove = (event: Target) =>
-      setCache((prev) => {
-        prev.delete(event.pointerId);
-        return new Map(prev);
-      });
-    return {
-      get: cache,
-      add,
-      update,
-      remove,
-    };
-  })();
-
+  const grid = Grid(gridSize);
   const cellSize = {
     width: (canvasSize.width / grid.size.width) * scale.get.width,
     height: (canvasSize.height / grid.size.height) * scale.get.height,
   };
-  const getCellPos = (gridLocal: Pos): Pos => {
-    return {
-      x: Math.floor(gridLocal.x / cellSize.width),
-      y: Math.floor(gridLocal.y / cellSize.height),
-    };
-  };
-  const getCellTopLeft = (cellPos: Pos): Pos => {
-    return {
-      x: cellPos.x * cellSize.width,
-      y: cellPos.y * cellSize.height,
-    };
-  };
-  const getCellBottomRight = (cellPos: Pos): Pos => {
-    return {
-      x: (cellPos.x + 1) * cellSize.width,
-      y: (cellPos.y + 1) * cellSize.height,
-    };
-  };
+
+  const pointers = PointerActionConsumer();
 
   const draw = () => {
     context.beginPath();
@@ -79,7 +41,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
   window.requestAnimationFrame(draw);
 
-  const getElementLocalMousePosFromEvent = (event: React.MouseEvent) => {
+  const getViewLocal = (event: React.MouseEvent) => {
     const element = event.target as HTMLElement;
     const rect = element.getBoundingClientRect();
     return {
@@ -87,89 +49,17 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       y: event.clientY - rect.top,
     };
   };
-  const getGridLocalPosFromViewLocalPos = (elementLocal: Pos) => {
+  const getGridLocal = (event: React.MouseEvent) => {
+    const viewLocal = getViewLocal(event);
     return {
-      x: move.get.x + elementLocal.x,
-      y: move.get.y + elementLocal.y,
+      x: move.get.x + viewLocal.x,
+      y: move.get.y + viewLocal.y,
     };
   };
 
-  const onPointerDown = (event: React.PointerEvent) => {
-    eventCache.add(event);
-    const viewLocal = getElementLocalMousePosFromEvent(event);
-    const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
-    const cellPos = getCellPos(gridLocal);
-
-    const click = {
-      left: event.button == 0,
-      middle: event.button == 1,
-      right: event.button == 2,
-    };
-    const key = {
-      ctrl: event.ctrlKey,
-    };
-    if (event.pointerType == "touch") {
-      if (!note.isAlreadyExists(cellPos)) note.start("add", cellPos);
-      else note.start("moveOrRemove", cellPos);
-    } else if (click.left && key.ctrl) {
-      selection.start(viewLocal);
-    } else if (click.left) {
-      if (!note.isAlreadyExists(cellPos)) note.start("add", cellPos);
-      else note.start("move", cellPos);
-    } else if (click.middle) {
-      move.start(viewLocal);
-    } else if (click.right) {
-      note.start("remove", cellPos);
-    }
-  };
-  const onPointerMove = (event: React.PointerEvent) => {
-    eventCache.update(event);
-    const events = Array.from(eventCache.get.values());
-    const viewLocal = getElementLocalMousePosFromEvent(event);
-    const gridLocal = getGridLocalPosFromViewLocalPos(viewLocal);
-    const cellPos = getCellPos(gridLocal);
-
-    switch (events.length) {
-      case 1:
-        move.middle(viewLocal, scale.get);
-        selection.middle(viewLocal);
-        scale.endPinch();
-        note.middle(cellPos);
-        break;
-      case 2:
-        move.end();
-        note.cancel();
-        const [otherSide] = events.filter(
-          (it) => it.pointerId != event.pointerId
-        );
-        const focus = getElementLocalMousePosFromEvent(otherSide);
-        const range = {
-          width: Math.abs(viewLocal.x - focus.x),
-          height: Math.abs(viewLocal.y - focus.y),
-        };
-        scale.byPinch(focus, range);
-        break;
-      default:
-        break;
-    }
-  };
-  const onPointerUp = (event: React.PointerEvent) => {
-    const events = Array.from(eventCache.get.values());
-    switch (events.length) {
-      case 1:
-        move.end();
-        selection.end();
-        break;
-    }
-    scale.endPinch();
-    eventCache.remove(event);
-    note.end();
-  };
-  const onPointerCancel = onPointerUp;
-  const onPointerOut = onPointerUp;
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
-    const viewLocal = getElementLocalMousePosFromEvent(event);
+    const viewLocal = getViewLocal(event);
     const scalar = 0.5;
     const step = scaleIn ? scalar : -scalar;
     scale.add(viewLocal, { width: step, height: step });
@@ -178,20 +68,17 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     <>
       <div
         className="absolute h-full w-full"
-        {...{
-          onPointerDown,
-          onPointerMove,
-          onPointerUp,
-          onPointerCancel,
-          onPointerOut,
-          onWheel,
-        }}
+        {...pointers}
+        {...{ onWheel }}
         onContextMenu={(e) => {
           e.preventDefault();
           return false;
         }}
       ></div>
-      <h1>{`debug: ${debug}`}</h1>
+      <h1>
+        {`debug: ${debug}`} _{" "}
+        {pointers.state.map(([], index) => index).join(" ")}
+      </h1>
     </>
   );
 };

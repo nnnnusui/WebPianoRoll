@@ -2,7 +2,7 @@ import { Pos } from "../type/Pos";
 import { useState, SetStateAction } from "react";
 import { Size } from "../type/Size";
 
-const MoveController = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
+const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
   const [on, setOn] = useState(false);
   const [from, setFrom] = useState({ x: 0, y: 0 });
   const [state, setState] = useState({ x: 0, y: 0 });
@@ -60,7 +60,4 @@ const MoveController = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
     maxPos: max,
   };
 };
-export default MoveController;
-
-type MoveControllerType = ReturnType<typeof MoveController>;
-export type { MoveControllerType };
+export default MoveState;

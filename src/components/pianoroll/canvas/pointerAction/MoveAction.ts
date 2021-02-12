@@ -1,5 +1,5 @@
 import { useState } from "react";
-import MoveController from "../controller/MoveController";
+import MoveState from "../state/MoveState";
 import {
   PointerActionOverride,
   PointerActionType,
@@ -7,7 +7,7 @@ import {
 import { Pos } from "../type/Pos";
 
 const MoveAction = (
-  state: ReturnType<typeof MoveController>
+  state: ReturnType<typeof MoveState>
 ): [PointerActionType, PointerActionOverride] => {
   type State = Map<number, Pos>;
   const [, setFromMap] = useState(new Map());

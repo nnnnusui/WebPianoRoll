@@ -1,12 +1,12 @@
 import { Pos } from "../type/Pos";
 import { SetStateAction, useState } from "react";
-import { MoveControllerType } from "./MoveController";
+import MoveState from "../state/MoveState";
 import { Size } from "../type/Size";
 
 const min = 1;
 const stateInit = { width: min, height: min };
 const ScaleController = (
-  move: MoveControllerType,
+  move: ReturnType<typeof MoveState>,
   max: number,
   defaultValue: Size = stateInit
 ) => {

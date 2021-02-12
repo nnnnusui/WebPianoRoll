@@ -8,7 +8,7 @@ import NotesController from "./controller/NotesController";
 import PointerActionConsumer, {
   PointerActionOverrideMap,
 } from "./PointerActionConsumer";
-import MoveController from "./controller/MoveController";
+import MoveState from "./state/MoveState";
 import MoveAction from "./pointerAction/MoveAction";
 
 type Props = {
@@ -19,7 +19,7 @@ type Props = {
 const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
-  const move = MoveController(maxPos);
+  const move = MoveState(maxPos);
   const scale = ScaleController(move, 10, { width: 2, height: 2 });
   const selection = SelectionController();
   const note = NotesController();

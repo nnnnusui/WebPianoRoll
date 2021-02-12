@@ -1,12 +1,6 @@
 import { useState } from "react";
 
-const types = [
-  "",
-  "put",
-  "move",
-  "scale",
-  "select",
-] as const;
+const types = ["", "put", "move", "scale", "select"] as const;
 type ActionType = typeof types[number];
 
 type PointerId = number;
@@ -20,6 +14,7 @@ type ActionConfigParameter = {
   backward: number;
   unique: boolean;
   residue: ActionType;
+  overwrites: ActionType[];
   mustBe: (events: React.PointerEvent[]) => boolean;
 };
 type ActionConfig = Map<ActionType, ActionConfigParameter>;
@@ -27,10 +22,12 @@ const defaultParameter: ActionConfigParameter = {
   unique: false,
   backward: 0,
   residue: "",
+  overwrites: ["", "put"],
   mustBe: (events) => {
-    events.map(it=> ({x: it.clientX, y: it.clientY}))
-      .forEach(it => console.log(`${it.x}, ${it.y}`))
-    return true
+    events
+      .map((it) => ({ x: it.clientX, y: it.clientY }))
+      .forEach((it) => console.log(`${it.x}, ${it.y}`));
+    return true;
   },
 };
 const actionConfigOverride = new Map<
@@ -41,23 +38,6 @@ const actionConfigOverride = new Map<
   ["put", {}],
   ["move", { unique: true }],
   ["scale", { unique: true, backward: 1, residue: "move" }],
-  [
-    "select",
-    {
-      backward: 1,
-      residue: "select",
-      mustBe: (events) => {
-        const nearRange = {width: 100, height: 100}
-        const [base, ...others] = events.map(it=> ({x: it.clientX, y: it.clientY}))
-        const ranges = others.map(it => ({width: Math.abs(base.x - it.x), height: Math.abs(base.y - it.y)}))
-        return ranges
-          .filter(it => it.width > nearRange.width || it.height > nearRange.height)
-          .length == 0;
-      },
-    },
-  ],
-  // ["hScale", { backward: 2, residue: "doubleTap" }],
-  // ["vScale", { backward: 2, residue: "doubleTap" }],
 ]);
 const actionConfig: ActionConfig = new Map(
   types.map((it) => [
@@ -80,14 +60,14 @@ const Pointers = () => {
     )
   );
 
-  const getPriorityLowers = (type: ActionType) => {
-    const targetPriority = types.indexOf(type);
-    return pointers.filter(
-      ([, { action: it }]) => types.indexOf(it) < targetPriority
+  const getOverwriteTargets = (type: ActionType) => {
+    const config = actionConfig.get(type)!;
+    return pointers.filter(([, { action: it }]) =>
+      config.overwrites.includes(it)
     );
   };
   const getBackwards = (type: ActionType, backward: number) => {
-    const priorityLowerPointers = getPriorityLowers(type);
+    const priorityLowerPointers = getOverwriteTargets(type);
     return priorityLowerPointers.length < backward
       ? []
       : priorityLowerPointers.slice(-backward);
@@ -96,10 +76,9 @@ const Pointers = () => {
   const trySetAction = (
     event: React.PointerEvent,
     next: State,
-    type: ActionType,
-    config: ActionConfigParameter
+    type: ActionType
   ) => {
-    const { backward, unique, mustBe } = config;
+    const { backward, unique, mustBe } = actionConfig.get(type)!;
     if (unique && actionMap.get(type)?.length != 0) return false;
     const events = [
       ...getBackwards(type, backward).map(([, value]) => value.event),
@@ -123,7 +102,7 @@ const Pointers = () => {
         .sort(([, { backward }]) => -backward)
         .reduce((hasResult, [type, parameter]) => {
           if (hasResult) return true;
-          return trySetAction(event, next, type, parameter);
+          return trySetAction(event, next, type);
         }, false);
       return next;
     });

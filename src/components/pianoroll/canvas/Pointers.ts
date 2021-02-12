@@ -113,7 +113,6 @@ const Pointers = (getAction: typeof getActionInit) => {
 
   const add = (event: React.PointerEvent) => {
     const id = event.pointerId;
-    console.log(id);
     setPointers((prev) => {
       const next = new Map(prev);
 
@@ -136,8 +135,14 @@ const Pointers = (getAction: typeof getActionInit) => {
     const id = event.pointerId;
     const current = pointerMap.get(id);
     if (!current) return;
-    const action = current.action;
-    if (action) getAction(action, [event]).onUpdate();
+    setPointers((prev) => {
+      const next = new Map(prev);
+      next.set(id, { ...current, event });
+      const action = current.action;
+      if (action)
+        getAction(action, getActionTargetMap(next).get(action)!).onUpdate();
+      return new Map(next);
+    });
   };
   const remove = (event: React.PointerEvent) => {
     const targetId = event.pointerId;

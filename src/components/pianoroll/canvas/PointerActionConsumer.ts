@@ -10,7 +10,8 @@ type PointerAction = {
   cancel: (events: Event[]) => void;
 };
 type PointerActionMap = Map<PointerActionType, PointerAction>;
-type PointerActionOverrideMap = Map<PointerActionType, Partial<PointerAction>>;
+type PointerActionOverride = Partial<PointerAction>;
+type PointerActionOverrideMap = Map<PointerActionType, PointerActionOverride>;
 
 type PointerId = number;
 type PointerInfo = {
@@ -58,7 +59,7 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const action = actionMap.get(actionType);
       if (action) {
         const events = getEventsByActionType(next, actionType, event);
-        action.down([...events, event]);
+        action.down(events);
       }
 
       next.set(currentId, { event, actionType });
@@ -75,7 +76,7 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const action = actionMap.get(current.actionType);
       if (action) {
         const events = getEventsByActionType(next, current.actionType, event);
-        action.move([...events, event]);
+        action.move(events);
       }
 
       next.set(currentId, { ...current, event });
@@ -92,7 +93,7 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const action = actionMap.get(current.actionType);
       if (action) {
         const events = getEventsByActionType(next, current.actionType, event);
-        action.up([...events, event]);
+        action.up(events);
       }
 
       next.delete(currentId);
@@ -116,4 +117,8 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   };
 };
 export default PointerActionConsumer;
-export type { PointerActionOverrideMap };
+export type {
+  PointerActionOverrideMap,
+  PointerActionType,
+  PointerActionOverride,
+};

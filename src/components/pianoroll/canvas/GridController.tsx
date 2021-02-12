@@ -9,6 +9,7 @@ import PointerActionConsumer, {
   PointerActionOverrideMap,
 } from "./PointerActionConsumer";
 import MoveController from "./controller/MoveController";
+import MoveAction from "./pointerAction/MoveAction";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -37,22 +38,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  const actionMap: PointerActionOverrideMap = new Map([
-    [
-      "move",
-      {
-        down: (events) => {
-          const [event, ...others] = events;
-          move.start(getViewLocal(event));
-        },
-        move: (events) => {
-          const [event, ...others] = events;
-          move.middle(getViewLocal(event), scale.get);
-        },
-        up: () => move.end(),
-      },
-    ],
-  ]);
+  const actionMap: PointerActionOverrideMap = new Map([MoveAction(move)]);
   const pointers = PointerActionConsumer(actionMap);
 
   const onWheel = (event: React.WheelEvent) => {
@@ -71,6 +57,14 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     grid.draw(context, move.get, cellSize);
     note.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
+    pointers.state.forEach(([, { event }]) => {
+      const viewLocal = getViewLocal(event);
+      context.fillStyle = "#f5dd67";
+      context.beginPath();
+      context.arc(viewLocal.x, viewLocal.y, 30, 0, 2 * Math.PI);
+      context.closePath();
+      context.fill();
+    });
     context.restore();
   };
   window.requestAnimationFrame(draw);

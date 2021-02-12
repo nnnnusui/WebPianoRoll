@@ -45,6 +45,13 @@ const MoveController = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
   };
   return {
     get: state,
+    update: (from: Pos, to: Pos) => {
+      const vector = {
+        x: from.x - to.x,
+        y: from.y - to.y,
+      };
+      setState(vector);
+    },
     set: updateState,
     start,
     middle,

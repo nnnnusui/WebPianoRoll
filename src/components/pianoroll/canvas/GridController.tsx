@@ -4,9 +4,12 @@ import ScaleController from "./controller/ScaleController";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
-import MoveController from "./controller/MoveController";
 import NotesController from "./controller/NotesController";
-import PointerActionConsumer from "./PointerActionConsumer";
+import PointerActionConsumer, {
+  PointerAction,
+  PointerActionType,
+} from "./PointerActionConsumer";
+import MoveController from "./controller/MoveController";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -17,7 +20,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveController(maxPos);
-  const scale = ScaleController(move, 10);
+  const scale = ScaleController(move, 10, { width: 2, height: 2 });
   const selection = SelectionController();
   const note = NotesController();
 
@@ -26,8 +29,34 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     width: (canvasSize.width / grid.size.width) * scale.get.width,
     height: (canvasSize.height / grid.size.height) * scale.get.height,
   };
+  const getViewLocal = (event: React.MouseEvent) => {
+    const element = event.target as HTMLElement;
+    const rect = element.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+  };
 
-  const pointers = PointerActionConsumer();
+  const actionMap = new Map<PointerActionType, PointerAction>([
+    [
+      "move",
+      {
+        down: (event) => move.start(getViewLocal(event)),
+        move: (event) => move.middle(getViewLocal(event), scale.get),
+        up: () => move.end(),
+      },
+    ],
+  ]);
+  const pointers = PointerActionConsumer(actionMap);
+
+  const onWheel = (event: React.WheelEvent) => {
+    const scaleIn = event.deltaY > 0;
+    const viewLocal = getViewLocal(event);
+    const scalar = 0.5;
+    const step = scaleIn ? scalar : -scalar;
+    scale.add(viewLocal, { width: step, height: step });
+  };
 
   const draw = () => {
     context.beginPath();
@@ -41,29 +70,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   };
   window.requestAnimationFrame(draw);
 
-  const getViewLocal = (event: React.MouseEvent) => {
-    const element = event.target as HTMLElement;
-    const rect = element.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-  };
-  const getGridLocal = (event: React.MouseEvent) => {
-    const viewLocal = getViewLocal(event);
-    return {
-      x: move.get.x + viewLocal.x,
-      y: move.get.y + viewLocal.y,
-    };
-  };
-
-  const onWheel = (event: React.WheelEvent) => {
-    const scaleIn = event.deltaY > 0;
-    const viewLocal = getViewLocal(event);
-    const scalar = 0.5;
-    const step = scaleIn ? scalar : -scalar;
-    scale.add(viewLocal, { width: step, height: step });
-  };
   return (
     <>
       <div
@@ -77,7 +83,9 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ></div>
       <h1>
         {`debug: ${debug}`} _{" "}
-        {pointers.state.map(([], index) => index).join(" ")}
+        {pointers.state
+          .map(([, { actionType }], index) => `${index}: ${actionType}`)
+          .join(", ")}
       </h1>
     </>
   );

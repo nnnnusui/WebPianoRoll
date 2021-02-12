@@ -1,7 +1,7 @@
 import { useState } from "react";
 import NotesController from "./controller/NotesController";
 
-const types = ["", "move", "put", "scale", "select"] as const;
+const types = ["", "put", "move", "scale", "select"] as const;
 export type ActionType = typeof types[number];
 
 type PointerId = number;
@@ -102,7 +102,7 @@ const Pointers = (getAction: typeof getActionInit) => {
     ];
     if (events.length <= backward) return false;
     if (!mustBe(events)) return false;
-    events.forEach((it) =>
+    events.forEach((it) => // cancel
       next.set(it.pointerId, {
         action: type,
         event: next.get(it.pointerId)?.event || event,
@@ -115,8 +115,6 @@ const Pointers = (getAction: typeof getActionInit) => {
     const id = event.pointerId;
     setPointers((prev) => {
       const next = new Map(prev);
-
-      // store
       Array.from(actionConfig)
         .sort(([, { backward }]) => -backward)
         .reduce((hasResult, [type, parameter]) => {
@@ -124,9 +122,8 @@ const Pointers = (getAction: typeof getActionInit) => {
           return trySetAction(event, next, type);
         }, false);
 
-      // consume
       const action = next.get(id)?.action;
-      if (action)
+      if (action) // start
         getAction(action, getActionTargetMap(next).get(action)!).onAdd();
       return next;
     });
@@ -138,9 +135,14 @@ const Pointers = (getAction: typeof getActionInit) => {
     setPointers((prev) => {
       const next = new Map(prev);
       next.set(id, { ...current, event });
+
       const action = current.action;
-      if (action)
-        getAction(action, getActionTargetMap(next).get(action)!).onUpdate();
+      if (action) { // middle
+        const others = getActionTargetMap(next)
+          .get(action)!
+          .filter((it) => it.pointerId != id);
+        getAction(action, [...others, event]).onUpdate();
+      }
       return new Map(next);
     });
   };
@@ -158,10 +160,13 @@ const Pointers = (getAction: typeof getActionInit) => {
         .get(target.action)
         ?.filter((it) => it.pointerId != targetId)
         .slice(config.backward * -1)
-        .forEach((it) =>
-          next.set(it.pointerId, { action: config.residue, event: it })
-        );
+        .forEach((it) => {
+          next.set(it.pointerId, { action: config.residue, event: it });
+        });
+      // remove
       getAction(target.action, [target.event]).onRemove();
+      getAction(config.residue, getActionTargetMap(next).get(config.residue)!);
+
       next.delete(targetId);
       return next;
     });

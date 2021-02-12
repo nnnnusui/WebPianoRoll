@@ -79,12 +79,12 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       }
       case "scale": {
         const focusAndRange = (events: React.PointerEvent[]) => {
-          const [focus, otherSide] = events
+          const [onMove, focus] = events
             .reverse()
             .map((it) => getViewlocal(it));
           const range = {
-            width: Math.abs(otherSide.x - focus.x),
-            height: Math.abs(otherSide.y - focus.y),
+            width: Math.abs(onMove.x - focus.x),
+            height: Math.abs(onMove.y - focus.y),
           };
           return [focus, range] as const;
         };
@@ -112,14 +112,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     }
   };
 
-  // new Map<string, (event: React.PointerEvent) => void>([
-  //   // ["note", (event: React.PointerEvent) => note.start("add", )],
-  //   // ["move", {
-  //   //   onDown: (event) => move.start(getViewlocal(event)),
-  //   //   onMove: (event) => move.middle(getViewlocal(event)),
-  //   // }],
-  //   ["scale", (event) => scale.start()]
-  // ])
   const pointers = Pointers(action);
 
   /* 0 -> 1: put
@@ -141,7 +133,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 
     grid.draw(context, move.get, cellSize);
     note.draw(context, move.get, cellSize);
-    // selection.draw(context, move.get);
     context.restore();
   };
   window.requestAnimationFrame(draw);
@@ -171,6 +162,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           onWheel,
         }}
         onContextMenu={(e) => {
+          e.preventDefault();
+          return false;
+        }}
+        onDragStart={(e) => {
           e.preventDefault();
           return false;
         }}

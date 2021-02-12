@@ -7,8 +7,8 @@ const min = 1;
 const stateInit = { width: min, height: min };
 const ScaleController = (
   move: MoveControllerType,
-  max: number,
-  defaultValue: Size = stateInit
+  defaultValue: Size = stateInit,
+  max: number = Number.MAX_VALUE
 ) => {
   const maxPos = move.maxPos;
   const [state, _setState] = useState(defaultValue);
@@ -88,6 +88,9 @@ const ScaleController = (
     add,
     byPinch,
     endPinch,
+    start: startPinch,
+    middle: middlePinch,
+    end: endPinch,
   };
 };
 export default ScaleController;

@@ -6,8 +6,7 @@ import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
 import NotesController from "./controller/NotesController";
 import PointerActionConsumer, {
-  PointerAction,
-  PointerActionType,
+  PointerActionOverrideMap,
 } from "./PointerActionConsumer";
 import MoveController from "./controller/MoveController";
 
@@ -38,7 +37,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  const actionMap = new Map<PointerActionType, PointerAction>([
+  const actionMap: PointerActionOverrideMap = new Map([
     [
       "move",
       {
@@ -77,6 +76,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         {...pointers}
         {...{ onWheel }}
         onContextMenu={(e) => {
+          e.preventDefault();
+          return false;
+        }}
+        onDragStart={(e) => {
           e.preventDefault();
           return false;
         }}

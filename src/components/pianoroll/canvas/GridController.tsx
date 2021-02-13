@@ -12,6 +12,7 @@ import MoveAction from "./pointerAction/MoveAction";
 import ScaleAction from "./pointerAction/ScaleAction";
 import NoteAction from "./pointerAction/NoteAction";
 import NoteState from "./state/NoteState";
+import NoteDrawer from "./drawer/NoteDrawer";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -24,13 +25,20 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const move = MoveState(maxPos);
   const scale = ScaleState(move, { width: 2, height: 2 });
   const selection = SelectionController();
-  const note = NoteState();
 
   const grid = Grid(gridSize);
   const cellSize = {
     width: (canvasSize.width / grid.size.width) * scale.get.width,
     height: (canvasSize.height / grid.size.height) * scale.get.height,
   };
+
+  const note = (() => {
+    const state = NoteState();
+    const action = NoteAction(state, move, cellSize);
+    const draw = NoteDrawer(state);
+    return { state, action, draw };
+  })();
+
   const getViewLocal = (event: React.MouseEvent) => {
     const element = event.target as HTMLElement;
     const rect = element.getBoundingClientRect();
@@ -43,7 +51,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const actionMap: PointerActionOverrideMap = new Map([
     MoveAction(move, scale),
     ScaleAction(scale),
-    NoteAction(note, move, cellSize),
+    note.action,
   ]);
   const pointers = PointerActionConsumer(actionMap);
 

@@ -73,38 +73,16 @@ const NoteState = () => {
     );
   };
 
-  const draw = (
-    context: CanvasRenderingContext2D,
-    move: Pos,
-    cellSize: Size
-  ) => {
-    if (roll == null) return;
-    notes.get(roll.id)?.forEach(({ data }) => {
-      const pos = getPosFromNoteData(data);
-      drawNote(context, move, cellSize, pos, data.length);
-    });
-  };
-  const drawNote = (
-    context: CanvasRenderingContext2D,
-    move: Pos,
-    cellSize: Size,
-    note: Pos,
-    length: number
-  ) => {
-    const start = {
-      x: note.x * cellSize.width - move.x,
-      y: note.y * cellSize.height - move.y,
-    };
-    const size = {
-      width: cellSize.width * length,
-      height: cellSize.height,
-    };
-    context.fillStyle = "orange";
-    context.lineWidth = 2;
-    context.fillRect(start.x, start.y, size.width, size.height);
-    context.strokeRect(start.x, start.y, size.width, size.height);
-  };
+  const get = (() => {
+    if (roll == null) return [];
+    const values = notes.get(roll.id)?.values();
+    if (values == null) return [];
+    return Array.from(values).map(({ data }) => ({
+      pos: getPosFromNoteData(data),
+      length: data.length,
+    }));
+  })();
 
-  return { draw, add, move, remove, getAlreadyExists };
+  return { get, add, move, remove, getAlreadyExists };
 };
 export default NoteState;

@@ -47,10 +47,14 @@ const pointerActionConfigDefault: PointerActionConfigValue[] = [
     parameter: { unique: true, overwrites: [], premise: 0, residue: "" },
   },
   {
+    type: "note",
+    parameter: { unique: false, overwrites: [], premise: 0, residue: "" },
+  },
+  {
     type: "scale",
     parameter: {
       unique: true,
-      overwrites: ["move"],
+      overwrites: ["move", "note"],
       premise: 1,
       residue: "move",
     },
@@ -62,9 +66,9 @@ const pointerActionConfig: PointerActionConfig = [
   ...pointerActionConfigDefault,
 ].reduce((map, it) => map.set(it.type, it.parameter), new Map());
 
-const pointerActionConfigValues = Array.from(pointerActionConfig).sort(
-  ([, { premise }]) => -premise
-);
+const pointerActionConfigValues = Array.from(pointerActionConfig)
+  .reverse()
+  .sort(([, { premise }]) => -premise);
 /* end: ActionConfig */
 
 const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {

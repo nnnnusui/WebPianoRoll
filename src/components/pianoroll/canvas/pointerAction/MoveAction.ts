@@ -7,12 +7,12 @@ import { Pos } from "../type/Pos";
 import getViewLocal from "../getViewLocal";
 import ScaleState from "../state/ScaleState";
 import useMapState from "../useMapState";
+import PointerId from "../type/PointerId";
 
 const MoveAction = (
   state: ReturnType<typeof MoveState>,
   scale: ReturnType<typeof ScaleState>
 ): [PointerActionType, PointerActionOverride] => {
-  type PointerId = number;
   const fromMap = useMapState<PointerId, Pos>();
 
   return [

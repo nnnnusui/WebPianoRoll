@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PointerId from "./type/PointerId";
 
 type Event = React.PointerEvent;
 
@@ -8,12 +9,12 @@ type PointerAction = {
   move: (events: Event[]) => void;
   up: (events: Event[]) => void;
   cancel: (events: Event[]) => void;
+  draw: (context: CanvasRenderingContext2D) => void;
 };
 type PointerActionMap = Map<PointerActionType, PointerAction>;
 type PointerActionOverride = Partial<PointerAction>;
 type PointerActionOverrideMap = Map<PointerActionType, PointerActionOverride>;
 
-type PointerId = number;
 type PointerInfo = {
   event: Event;
   actionType: PointerActionType;
@@ -81,6 +82,7 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
           move: value.move || (() => {}),
           up: value.up || (() => {}),
           cancel: value.cancel || value.up || (() => {}),
+          draw: value.draw || (() => {}),
         },
       ]
     )

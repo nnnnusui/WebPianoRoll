@@ -4,20 +4,23 @@ import {
 } from "../PointerActionConsumer";
 import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
+import PointerId from "../type/PointerId";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
 import useMapState from "../useMapState";
 
 const NoteAction = (
-  note: ReturnType<typeof NoteState>,
+  state: ReturnType<typeof NoteState>,
   move: ReturnType<typeof MoveState>,
   cellSize: Size
 ): [PointerActionType, PointerActionOverride] => {
-  type PointerId = number;
+  type NoteId = number;
   type Mode = "add" | "remove" | "move" | "moveOrRemove";
   const modeMap = useMapState<PointerId, Mode>();
   const fromMap = useMapState<PointerId, Pos>();
   const toMap = useMapState<PointerId, Pos>();
+
+  const onActionMap = useMapState<PointerId, NoteId>([]);
 
   const getCellPos = (gridLocal: Pos): Pos => {
     return {
@@ -37,7 +40,7 @@ const NoteAction = (
         const xDiff = to.x - from.x;
         const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
         const length = Math.abs(xDiff) + 1;
-        note.add(pos, length);
+        state.add(pos, length);
         break;
       }
       case "move": {
@@ -45,12 +48,12 @@ const NoteAction = (
           x: to.x - from.x,
           y: to.y - from.y,
         };
-        note.move(from, vector);
+        state.move(from, vector);
         break;
       }
       case "remove":
       case "moveOrRemove": {
-        note.remove(to);
+        state.remove(to);
         break;
       }
       default:
@@ -65,11 +68,15 @@ const NoteAction = (
         const [event] = events;
         const id = event.pointerId;
         const cell = getCellPos(move.getGridLocal(event));
-        const mode = note.isAlreadyExists(cell) ? "moveOrRemove" : "add";
-        console.log(note.isAlreadyExists(cell));
+        const alreadyExists = state.getAlreadyExists(cell);
+        const mode = alreadyExists.length <= 0 ? "add" : "moveOrRemove";
         modeMap.set(id, mode);
         fromMap.set(id, cell);
         toMap.set(id, cell);
+
+        if (alreadyExists.length <= 0) return;
+        const [note] = alreadyExists;
+        onActionMap.set(id, note.data.id);
       },
       move: (events) => {
         const [event] = events;
@@ -89,6 +96,7 @@ const NoteAction = (
         modeMap.delete(id);
         fromMap.delete(id);
         toMap.delete(id);
+        onActionMap.delete(id);
       },
       cancel: (events) => {
         const [event] = events;
@@ -96,6 +104,7 @@ const NoteAction = (
         modeMap.delete(id);
         fromMap.delete(id);
         toMap.delete(id);
+        onActionMap.delete(id);
       },
     },
   ];

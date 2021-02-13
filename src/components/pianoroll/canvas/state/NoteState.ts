@@ -38,7 +38,6 @@ const NoteState = () => {
       return include.x && include.y;
     });
   };
-  const isAlreadyExists = (pos: Pos) => getAlreadyExists(pos).length > 0;
 
   const add = (pos: Pos, length: number) => {
     if (roll == null) return;
@@ -106,6 +105,6 @@ const NoteState = () => {
     context.strokeRect(start.x, start.y, size.width, size.height);
   };
 
-  return { draw, add, move, remove, isAlreadyExists };
+  return { draw, add, move, remove, getAlreadyExists };
 };
 export default NoteState;

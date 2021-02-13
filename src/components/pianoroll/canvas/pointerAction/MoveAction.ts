@@ -20,13 +20,6 @@ const MoveAction = (
       return new Map(prev);
     });
   };
-  const getGridLocal = (event: React.MouseEvent) => {
-    const viewLocal = getViewLocal(event);
-    return {
-      x: state.get.x + viewLocal.x,
-      y: state.get.y + viewLocal.y,
-    };
-  };
 
   return [
     "move",
@@ -34,7 +27,7 @@ const MoveAction = (
       down: (events) => {
         const [current] = events;
         updateFromMap((prev) =>
-          prev.set(current.pointerId, getGridLocal(current))
+          prev.set(current.pointerId, state.getGridLocal(current))
         );
       },
       move: (events) => {
@@ -48,7 +41,9 @@ const MoveAction = (
             y: from.y - to.y,
           };
           state.set(scale.get, vector);
-          others.forEach((it) => prev.set(it.pointerId, getGridLocal(it)));
+          others.forEach((it) =>
+            prev.set(it.pointerId, state.getGridLocal(it))
+          );
         });
       },
       up: (events) => {

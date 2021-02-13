@@ -1,6 +1,7 @@
 import { Pos } from "../type/Pos";
 import { useState, SetStateAction } from "react";
 import { Size } from "../type/Size";
+import getViewLocal from "../getViewLocal";
 
 const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
   const [state, _setState] = useState({ x: 0, y: 0 });
@@ -19,10 +20,19 @@ const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
     y: Math.min(max.y * scale.height, pos.y + max.y) - max.y,
   });
 
+  const getGridLocal = (event: React.MouseEvent) => {
+    const viewLocal = getViewLocal(event);
+    return {
+      x: state.x + viewLocal.x,
+      y: state.y + viewLocal.y,
+    };
+  };
+
   return {
     maxPos: max,
     get: state,
     set: setState,
+    getGridLocal,
   };
 };
 export default MoveState;

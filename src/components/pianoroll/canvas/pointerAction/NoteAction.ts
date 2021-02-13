@@ -17,7 +17,7 @@ const NoteAction = (
   const fromMap = useMapState<PointerId, Pos>();
   const toMap = useMapState<PointerId, Pos>();
 
-  const onActionMap = useMapState<PointerId, NoteId>([]);
+  const onActionMap = useMapState<PointerId, NoteId | null>([]);
 
   const getCellPos = (gridLocal: Pos): Pos => {
     return {
@@ -102,9 +102,8 @@ const NoteAction = (
       fromMap.set(id, cell);
       toMap.set(id, cell);
 
-      if (alreadyExists.length <= 0) return;
-      const [note] = alreadyExists;
-      onActionMap.set(id, note.id);
+      const noteId = alreadyExists.length <= 0 ? null : alreadyExists[0].id
+      onActionMap.set(id, noteId);
     },
     move: (events) => {
       const [event] = events;

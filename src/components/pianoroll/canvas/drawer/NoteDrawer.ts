@@ -12,16 +12,18 @@ const NoteDrawer = (
     move: Pos,
     cellSize: Size
   ) => {
+    
     const idPair = Array.from(action.onActionMap.state);
+    const pointerIds = idPair.map(([pointerId]) => pointerId)
+    const noteIds = idPair.map(([,noteId]) => noteId)
+    pointerIds.forEach(id => {
+      const applied = action.getApplied(id)
+      if (!applied) return;
+      drawNote(context, move, cellSize, applied.pos, applied.length, 0.5)
+    })
     state.getAll().forEach((it) => {
-      const usingPointer = idPair.find(([, noteId]) => noteId == it.id)?.[0];
-      if (!usingPointer) {
-        drawNote(context, move, cellSize, it.pos, it.length);
-        return;
-      }
-      const actionResult = action.getApplied(usingPointer);
-      if (!actionResult) return;
-      drawNote(context, move, cellSize, actionResult.pos, actionResult.length);
+      if (noteIds.includes(it.id)) return;
+      drawNote(context, move, cellSize, it.pos, it.length);
     });
   };
   const drawNote = (
@@ -29,7 +31,8 @@ const NoteDrawer = (
     move: Pos,
     cellSize: Size,
     pos: Pos,
-    length: number
+    length: number,
+    alpha: number = 1.0,
   ) => {
     const start = {
       x: pos.x * cellSize.width - move.x,
@@ -39,6 +42,7 @@ const NoteDrawer = (
       width: cellSize.width * length,
       height: cellSize.height,
     };
+    context.globalAlpha = alpha;
     context.fillStyle = "orange";
     context.lineWidth = 2;
     context.fillRect(start.x, start.y, size.width, size.height);

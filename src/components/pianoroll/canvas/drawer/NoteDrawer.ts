@@ -12,15 +12,14 @@ const NoteDrawer = (
     move: Pos,
     cellSize: Size
   ) => {
-    
     const idPair = Array.from(action.onActionMap.state);
-    const pointerIds = idPair.map(([pointerId]) => pointerId)
-    const noteIds = idPair.map(([,noteId]) => noteId)
-    pointerIds.forEach(id => {
-      const applied = action.getApplied(id)
+    const pointerIds = idPair.map(([pointerId]) => pointerId);
+    const noteIds = idPair.map(([, noteId]) => noteId);
+    pointerIds.forEach((id) => {
+      const applied = action.getApplied(id);
       if (!applied) return;
-      drawNote(context, move, cellSize, applied.pos, applied.length, 0.5)
-    })
+      drawNote(context, move, cellSize, applied.pos, applied.length, 0.5);
+    });
     state.getAll().forEach((it) => {
       if (noteIds.includes(it.id)) return;
       drawNote(context, move, cellSize, it.pos, it.length);
@@ -32,7 +31,7 @@ const NoteDrawer = (
     cellSize: Size,
     pos: Pos,
     length: number,
-    alpha: number = 1.0,
+    alpha = 1.0
   ) => {
     const start = {
       x: pos.x * cellSize.width - move.x,

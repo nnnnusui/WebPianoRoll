@@ -1,24 +1,43 @@
 import { useState } from "react";
+import Context from "../../context/Context";
+import { NoteRestData } from "../../rest/Note";
 import { Pos } from "../type/Pos";
 import useMapState from "../useMapState";
 
 const NoteState = () => {
+  const roll = Context.roll.selected()?.data;
+  const notes = Context.notes.State();
+  const notesAction = Context.notes.Dispatch();
+
+  const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
+    const offset = pos.x;
+    const octave = roll!.maxOctave - Math.floor(pos.y / roll!.maxPitch);
+    const pitch = roll!.maxPitch - (pos.y % roll!.maxPitch) - 1;
+    return { offset, octave, pitch };
+  };
+  const getPosFromNoteData = (data: NoteRestData) => ({
+    x: data.offset,
+    y:
+      (roll!.maxOctave - data.octave) * roll!.maxPitch +
+      (roll!.maxPitch - data.pitch - 1),
+  });
+
   type NoteId = number;
   type Note = {
     pos: Pos;
     length: number;
   };
-  const [id, setId] = useState<NoteId>(0);
-  const autoIncrement = (action: (next: NoteId) => void) =>
-    setId((prev) => {
-      const next = prev + 1;
-      action(next);
-      return next;
-    });
 
-  const noteMap = useMapState<NoteId, Note>();
-  const getAll = () =>
-    Array.from(noteMap.state).map(([id, note]) => ({ ...note, id }));
+  const getAll = () => {
+    if (!roll) return [];
+    const values = notes.get(roll.id)?.values();
+    if (!values) return [];
+    return Array.from(values).map(({ data }) => ({
+      id: data.id,
+      pos: getPosFromNoteData(data),
+      length: data.length,
+    }));
+  };
 
   const getAlreadyExists = (pos: Pos) => {
     return getAll()
@@ -37,8 +56,39 @@ const NoteState = () => {
   };
 
   return {
-    ...noteMap,
-    add: (note: Note) => autoIncrement((next) => noteMap.set(next, note)),
+    get: (noteId: NoteId) => {
+      const data = notes.get(roll!.id)?.get(noteId)?.data;
+      if (!data) return;
+      return {
+        id: data.id,
+        pos: getPosFromNoteData(data),
+        length: data.length,
+      };
+    },
+    add: (note: Note) => {
+      const request = {
+        ...getNoteRestDataFromPos(note.pos)!,
+        length: note.length,
+        childRollId: null,
+      };
+      notesAction({ type: "create", rollId: roll!.id, request });
+    },
+    set: (noteId: NoteId, note: Note) => {
+      const request = {
+        id: noteId,
+        ...getNoteRestDataFromPos(note.pos)!,
+        length: note.length,
+        childRollId: null,
+      };
+      notesAction({ type: "update", rollId: roll!.id, request });
+    },
+    delete: (noteId: NoteId) => {
+      notesAction({
+        type: "delete",
+        rollId: roll!.id,
+        request: { id: noteId },
+      });
+    },
     getAll,
     getAlreadyExists,
   };

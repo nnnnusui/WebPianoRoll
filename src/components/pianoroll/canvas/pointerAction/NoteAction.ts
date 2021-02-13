@@ -102,7 +102,7 @@ const NoteAction = (
       fromMap.set(id, cell);
       toMap.set(id, cell);
 
-      const noteId = alreadyExists.length <= 0 ? null : alreadyExists[0].id
+      const noteId = alreadyExists.length <= 0 ? null : alreadyExists[0].id;
       onActionMap.set(id, noteId);
     },
     move: (events) => {

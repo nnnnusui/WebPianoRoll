@@ -1,7 +1,4 @@
-import {
-  PointerActionType,
-  PointerActionOverride,
-} from "../PointerActionConsumer";
+import { PointerActionOverride } from "../PointerActionConsumer";
 import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
 import PointerId from "../type/PointerId";
@@ -13,7 +10,7 @@ const NoteAction = (
   state: ReturnType<typeof NoteState>,
   move: ReturnType<typeof MoveState>,
   cellSize: Size
-): [PointerActionType, PointerActionOverride] => {
+): PointerActionOverride => {
   type NoteId = number;
   type Mode = "add" | "remove" | "move" | "moveOrRemove";
   const modeMap = useMapState<PointerId, Mode>();
@@ -61,52 +58,50 @@ const NoteAction = (
     }
   };
 
-  return [
-    "note",
-    {
-      down: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        const cell = getCellPos(move.getGridLocal(event));
-        const alreadyExists = state.getAlreadyExists(cell);
-        const mode = alreadyExists.length <= 0 ? "add" : "moveOrRemove";
-        modeMap.set(id, mode);
-        fromMap.set(id, cell);
-        toMap.set(id, cell);
+  return {
+    type: "note",
+    down: (events) => {
+      const [event] = events;
+      const id = event.pointerId;
+      const cell = getCellPos(move.getGridLocal(event));
+      const alreadyExists = state.getAlreadyExists(cell);
+      const mode = alreadyExists.length <= 0 ? "add" : "moveOrRemove";
+      modeMap.set(id, mode);
+      fromMap.set(id, cell);
+      toMap.set(id, cell);
 
-        if (alreadyExists.length <= 0) return;
-        const [note] = alreadyExists;
-        onActionMap.set(id, note.data.id);
-      },
-      move: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        const cell = getCellPos(move.getGridLocal(event));
-        toMap.set(id, cell);
-
-        if (modeMap.get(id) != "moveOrRemove") return;
-        const from = fromMap.get(id);
-        const to = toMap.get(id);
-        if (from?.x != to?.x || from?.y != to?.y) modeMap.set(id, "move");
-      },
-      up: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        apply(id);
-        modeMap.delete(id);
-        fromMap.delete(id);
-        toMap.delete(id);
-        onActionMap.delete(id);
-      },
-      cancel: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        modeMap.delete(id);
-        fromMap.delete(id);
-        toMap.delete(id);
-        onActionMap.delete(id);
-      },
+      if (alreadyExists.length <= 0) return;
+      const [note] = alreadyExists;
+      onActionMap.set(id, note.data.id);
     },
-  ];
+    move: (events) => {
+      const [event] = events;
+      const id = event.pointerId;
+      const cell = getCellPos(move.getGridLocal(event));
+      toMap.set(id, cell);
+
+      if (modeMap.get(id) != "moveOrRemove") return;
+      const from = fromMap.get(id);
+      const to = toMap.get(id);
+      if (from?.x != to?.x || from?.y != to?.y) modeMap.set(id, "move");
+    },
+    up: (events) => {
+      const [event] = events;
+      const id = event.pointerId;
+      apply(id);
+      modeMap.delete(id);
+      fromMap.delete(id);
+      toMap.delete(id);
+      onActionMap.delete(id);
+    },
+    cancel: (events) => {
+      const [event] = events;
+      const id = event.pointerId;
+      modeMap.delete(id);
+      fromMap.delete(id);
+      toMap.delete(id);
+      onActionMap.delete(id);
+    },
+  };
 };
 export default NoteAction;

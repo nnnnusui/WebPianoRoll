@@ -12,8 +12,9 @@ type PointerAction = {
   draw: (context: CanvasRenderingContext2D) => void;
 };
 type PointerActionMap = Map<PointerActionType, PointerAction>;
-type PointerActionOverride = Partial<PointerAction>;
-type PointerActionOverrideMap = Map<PointerActionType, PointerActionOverride>;
+type PointerActionOverride = {
+  type: PointerActionType;
+} & Partial<PointerAction>;
 
 type PointerInfo = {
   event: Event;
@@ -72,20 +73,18 @@ const pointerActionConfigValues = Array.from(pointerActionConfig)
   .sort(([, { premise }]) => -premise);
 /* end: ActionConfig */
 
-const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
+const PointerActionConsumer = (actionMapOverride: PointerActionOverride[]) => {
   const actionMap: PointerActionMap = new Map(
-    Array.from(actionMapOverride).map<[PointerActionType, PointerAction]>(
-      ([key, value]) => [
-        key,
-        {
-          down: value.down || (() => {}),
-          move: value.move || (() => {}),
-          up: value.up || (() => {}),
-          cancel: value.cancel || value.up || (() => {}),
-          draw: value.draw || (() => {}),
-        },
-      ]
-    )
+    actionMapOverride.map<[PointerActionType, PointerAction]>((it) => [
+      it.type,
+      {
+        down: it.down || (() => {}),
+        move: it.move || (() => {}),
+        up: it.up || (() => {}),
+        cancel: it.cancel || it.up || (() => {}),
+        draw: it.draw || (() => {}),
+      },
+    ])
   );
   const [pointerMap, setPointerMap] = useState<State>(new Map());
   const updatePointerMap = (action: (state: State) => void) => {
@@ -236,8 +235,4 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   };
 };
 export default PointerActionConsumer;
-export type {
-  PointerActionOverrideMap,
-  PointerActionType,
-  PointerActionOverride,
-};
+export type { PointerActionType, PointerActionOverride };

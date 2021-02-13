@@ -1,12 +1,15 @@
 import Context from "../../context/Context";
 import { NoteRestData } from "../../rest/Note";
 import { Pos } from "../type/Pos";
-import { Size } from "../type/Size";
+import useMapState from "../useMapState";
 
 const NoteState = () => {
   const roll = Context.roll.selected()?.data;
   const notes = Context.notes.State();
   const notesAction = Context.notes.Dispatch();
+
+  type NoteId = number;
+  const onActionMap = useMapState<NoteId>();
 
   const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
     const offset = pos.x;
@@ -77,12 +80,17 @@ const NoteState = () => {
     if (roll == null) return [];
     const values = notes.get(roll.id)?.values();
     if (values == null) return [];
-    return Array.from(values).map(({ data }) => ({
-      pos: getPosFromNoteData(data),
-      length: data.length,
-    }));
+    return Array.from(values);
   })();
 
-  return { get, add, move, remove, getAlreadyExists };
+  return {
+    get,
+    add,
+    move,
+    remove,
+    getAlreadyExists,
+    getPosFromNoteData,
+    onActionMap,
+  };
 };
 export default NoteState;

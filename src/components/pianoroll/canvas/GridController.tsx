@@ -4,9 +4,7 @@ import ScaleState from "./state/ScaleState";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
-import PointerActionConsumer, {
-  PointerActionOverrideMap,
-} from "./PointerActionConsumer";
+import PointerActionConsumer from "./PointerActionConsumer";
 import MoveState from "./state/MoveState";
 import MoveAction from "./pointerAction/MoveAction";
 import ScaleAction from "./pointerAction/ScaleAction";
@@ -35,7 +33,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const note = (() => {
     const state = NoteState();
     const action = NoteAction(state, move, cellSize);
-    const draw = NoteDrawer(state);
+    const draw = NoteDrawer(state, action);
     return { state, action, draw };
   })();
 
@@ -48,12 +46,11 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  const actionMap: PointerActionOverrideMap = new Map([
+  const pointers = PointerActionConsumer([
     MoveAction(move, scale),
     ScaleAction(scale),
     note.action,
   ]);
-  const pointers = PointerActionConsumer(actionMap);
 
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;

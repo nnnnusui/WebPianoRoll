@@ -1,16 +1,23 @@
+import NoteAction from "../pointerAction/NoteAction";
 import NoteState from "../state/NoteState";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
 
-const NoteDrawer = (state: ReturnType<typeof NoteState>) => {
+const NoteDrawer = (
+  state: ReturnType<typeof NoteState>,
+  action: ReturnType<typeof NoteAction>
+) => {
   const draw = (
     context: CanvasRenderingContext2D,
     move: Pos,
     cellSize: Size
   ) => {
-    state.get.forEach((it) =>
-      drawNote(context, move, cellSize, it.pos, it.length)
-    );
+    state.get.forEach(({ data }) => {
+      action;
+      const pos = state.getPosFromNoteData(data);
+
+      drawNote(context, move, cellSize, pos, data.length);
+    });
   };
   const drawNote = (
     context: CanvasRenderingContext2D,

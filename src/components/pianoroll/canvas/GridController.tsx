@@ -4,7 +4,6 @@ import ScaleState from "./state/ScaleState";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
-import NotesController from "./controller/NotesController";
 import PointerActionConsumer, {
   PointerActionOverrideMap,
 } from "./PointerActionConsumer";
@@ -12,6 +11,7 @@ import MoveState from "./state/MoveState";
 import MoveAction from "./pointerAction/MoveAction";
 import ScaleAction from "./pointerAction/ScaleAction";
 import NoteAction from "./pointerAction/NoteAction";
+import NoteState from "./state/NoteState";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -24,7 +24,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const move = MoveState(maxPos);
   const scale = ScaleState(move, { width: 2, height: 2 });
   const selection = SelectionController();
-  const note = NotesController();
+  const note = NoteState();
 
   const grid = Grid(gridSize);
   const cellSize = {

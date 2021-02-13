@@ -50,29 +50,6 @@ const ScaleState = (
     height: Math.min(max, target.height),
   });
 
-  const fromInit = { scale: stateInit, range: { width: 0, height: 0 } };
-  const [on, setOn] = useState(false);
-  const [from, setFrom] = useState(fromInit);
-
-  const startPinch = (range: Size) => {
-    setOn(true);
-    setFrom({ scale: state, range });
-  };
-  const middlePinch = (viewLocalFocus: Pos, range: Size) => {
-    if (range.width == 0 || range.height == 0) return;
-    const sizeRatio = {
-      width: range.width / from.range.width,
-      height: range.height / from.range.height,
-    };
-    setState(viewLocalFocus, {
-      width: from.scale.width * sizeRatio.width,
-      height: from.scale.height * sizeRatio.height,
-    });
-  };
-  const endPinch = () => {
-    setOn(false);
-  };
-
   const add = (viewLocalFocus: Pos, step: Size) => {
     setState(viewLocalFocus, (prev) => ({
       width: prev.width + step.width,
@@ -82,10 +59,8 @@ const ScaleState = (
 
   return {
     get: state,
+    set: setState,
     add,
-    start: startPinch,
-    middle: middlePinch,
-    end: endPinch,
   };
 };
 export default ScaleState;

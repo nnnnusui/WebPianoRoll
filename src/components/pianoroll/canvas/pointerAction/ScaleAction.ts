@@ -4,10 +4,15 @@ import {
 } from "../PointerActionConsumer";
 import ScaleState from "../state/ScaleState";
 import getViewLocal from "../getViewLocal";
+import { useState } from "react";
 
 const ScaleAction = (
   state: ReturnType<typeof ScaleState>
 ): [PointerActionType, PointerActionOverride] => {
+  const scaleInit = { width: 1, height: 1 };
+  const fromInit = { scale: scaleInit, range: { width: 0, height: 0 } };
+  const [from, setFrom] = useState(fromInit);
+
   const focusAndRange = (events: React.PointerEvent[]) => {
     const [onMove, focus] = events.map((it) => getViewLocal(it));
     const range = {
@@ -22,14 +27,19 @@ const ScaleAction = (
     {
       down: (events) => {
         const [, range] = focusAndRange(events);
-        state.start(range);
+        setFrom({ scale: state.get, range });
       },
       move: (events) => {
         const [focus, range] = focusAndRange(events);
-        state.middle(focus, range);
-      },
-      up: () => {
-        state.end();
+        if (range.width == 0 || range.height == 0) return;
+        const sizeRatio = {
+          width: range.width / from.range.width,
+          height: range.height / from.range.height,
+        };
+        state.set(focus, {
+          width: from.scale.width * sizeRatio.width,
+          height: from.scale.height * sizeRatio.height,
+        });
       },
     },
   ];

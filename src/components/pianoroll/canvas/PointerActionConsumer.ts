@@ -20,27 +20,52 @@ type PointerInfo = {
 };
 type State = Map<PointerId, PointerInfo>;
 
+/* start: ActionConfig */
 type PointerActionConfigParameter = {
   unique: boolean;
   overwrites: PointerActionType[];
   premise: number;
   residue: PointerActionType;
 };
+type PointerActionConfigValue = {
+  type: PointerActionType;
+  parameter: PointerActionConfigParameter;
+};
 type PointerActionConfig = Map<PointerActionType, PointerActionConfigParameter>;
-type PointerActionConfigOverride = Map<
-  PointerActionType,
-  Partial<PointerActionConfigParameter>
->;
-const pointerActionConfig: PointerActionConfig = new Map([
-  ["move", { unique: true, overwrites: [], premise: 0, residue: "" }],
-  [
-    "scale",
-    { unique: true, overwrites: ["move"], premise: 1, residue: "move" },
-  ],
-]);
+const dummyAction: PointerActionConfigValue = {
+  type: "dummy",
+  parameter: { unique: false, overwrites: [], premise: 0, residue: "" },
+};
+const parameterOverride = (to: PointerActionConfigParameter) => ({
+  ...to,
+  overwrites: ["dummy", ...to.overwrites],
+});
+
+const pointerActionConfigDefault: PointerActionConfigValue[] = [
+  {
+    type: "move",
+    parameter: { unique: true, overwrites: [], premise: 0, residue: "" },
+  },
+  {
+    type: "scale",
+    parameter: {
+      unique: true,
+      overwrites: ["move"],
+      premise: 1,
+      residue: "move",
+    },
+  },
+].map((it) => ({ ...it, parameter: parameterOverride(it.parameter) }));
+
+const pointerActionConfig: PointerActionConfig = [
+  dummyAction,
+  ...pointerActionConfigDefault,
+].reduce((map, it) => map.set(it.type, it.parameter), new Map());
+
 const pointerActionConfigValues = Array.from(pointerActionConfig).sort(
   ([, { premise }]) => -premise
 );
+/* end: ActionConfig */
 
 const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   const actionMap: PointerActionMap = new Map(
@@ -102,8 +127,6 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
     updatePointerMap((state) => {
       const actionType = getActionType(state);
       if (!actionType) return;
-      const action = actionMap.get(actionType);
-      if (!action) return;
       const config = pointerActionConfig.get(actionType);
       if (!config) return;
 
@@ -121,7 +144,10 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       });
       const overwritedEvents = overwriteTargets.map(([, { event }]) => event);
       const events = [event, ...overwritedEvents.reverse()];
-      action.down(events);
+
+      const action = actionMap.get(actionType);
+      if (action) action.down(events);
+
       set(state, { event, actionType });
     });
   };
@@ -130,8 +156,6 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const current = state.get(event.pointerId);
       if (!current) return;
       const actionType = current.actionType;
-      const action = actionMap.get(actionType);
-      if (!action) return;
 
       const events = [
         event,
@@ -140,7 +164,10 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
           .map(([, { event }]) => event)
           .reverse(),
       ];
-      action.move(events);
+
+      const action = actionMap.get(actionType);
+      if (action) action.move(events);
+
       set(state, { ...current, event });
     });
   };
@@ -149,8 +176,6 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       const current = state.get(event.pointerId);
       if (!current) return;
       const actionType = current.actionType;
-      const action = actionMap.get(actionType);
-      if (!action) return;
       const config = pointerActionConfig.get(actionType);
       if (!config) return;
 
@@ -160,7 +185,10 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
           .map(([, { event }]) => event)
           .reverse(),
       ];
-      action.up(events);
+
+      const action = actionMap.get(actionType);
+      if (action) action.up(events);
+
       state.delete(event.pointerId);
 
       const residues = filterByActionTypes(state, [actionType]).slice(

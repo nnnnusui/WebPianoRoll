@@ -2,19 +2,20 @@ import { useState } from "react";
 
 function useMapState<Key, Value = undefined>(init: [Key, Value][] = []) {
   type State = Map<Key, Value>;
-  const [state, _setState] = useState<State>(new Map(init));
-  const setState = (action: (prev: State) => void) => {
-    _setState((prev) => {
+  const [state, setState] = useState<State>(new Map(init));
+  const use = (action: (prev: State) => void) => {
+    setState((prev) => {
       action(prev);
       return new Map(prev);
     });
   };
+
   return {
-    get: state,
-    set: setState,
-    update: (key: Key, value: Value) =>
-      setState((prev) => prev.set(key, value)),
-    remove: (key: Key) => setState((prev) => prev.delete(key)),
+    state,
+    use,
+    get: (key: Key) => state.get(key),
+    set: (key: Key, value: Value) => use((prev) => prev.set(key, value)),
+    delete: (key: Key) => use((prev) => prev.delete(key)),
   };
 }
 export default useMapState;

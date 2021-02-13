@@ -20,11 +20,11 @@ const MoveAction = (
     {
       down: (events) => {
         const [event] = events;
-        fromMap.update(event.pointerId, state.getGridLocal(event));
+        fromMap.set(event.pointerId, state.getGridLocal(event));
       },
       move: (events) => {
         const [current, ...others] = events;
-        fromMap.set((prev) => {
+        fromMap.use((prev) => {
           const from = prev.get(current.pointerId);
           if (!from) return;
           const to = getViewLocal(current);
@@ -40,7 +40,7 @@ const MoveAction = (
       },
       up: (events) => {
         const [current] = events;
-        fromMap.remove(current.pointerId);
+        fromMap.delete(current.pointerId);
       },
     },
   ];

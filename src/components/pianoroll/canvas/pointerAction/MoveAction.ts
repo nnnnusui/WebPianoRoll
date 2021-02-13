@@ -1,4 +1,3 @@
-import { useState } from "react";
 import MoveState from "../state/MoveState";
 import {
   PointerActionOverride,
@@ -7,32 +6,25 @@ import {
 import { Pos } from "../type/Pos";
 import getViewLocal from "../getViewLocal";
 import ScaleState from "../state/ScaleState";
+import useMapState from "../useMapState";
 
 const MoveAction = (
   state: ReturnType<typeof MoveState>,
   scale: ReturnType<typeof ScaleState>
 ): [PointerActionType, PointerActionOverride] => {
-  type State = Map<number, Pos>;
-  const [, setFromMap] = useState(new Map());
-  const updateFromMap = (action: (prev: State) => void) => {
-    setFromMap((prev) => {
-      action(prev);
-      return new Map(prev);
-    });
-  };
+  type PointerId = number;
+  const fromMap = useMapState<PointerId, Pos>();
 
   return [
     "move",
     {
       down: (events) => {
-        const [current] = events;
-        updateFromMap((prev) =>
-          prev.set(current.pointerId, state.getGridLocal(current))
-        );
+        const [event] = events;
+        fromMap.update(event.pointerId, state.getGridLocal(event));
       },
       move: (events) => {
         const [current, ...others] = events;
-        updateFromMap((prev) => {
+        fromMap.set((prev) => {
           const from = prev.get(current.pointerId);
           if (!from) return;
           const to = getViewLocal(current);
@@ -48,7 +40,7 @@ const MoveAction = (
       },
       up: (events) => {
         const [current] = events;
-        updateFromMap((prev) => prev.delete(current.pointerId));
+        fromMap.remove(current.pointerId);
       },
     },
   ];

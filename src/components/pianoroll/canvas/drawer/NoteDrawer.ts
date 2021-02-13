@@ -12,11 +12,16 @@ const NoteDrawer = (
     move: Pos,
     cellSize: Size
   ) => {
-    state.get.forEach(({ data }) => {
-      action;
-      const pos = state.getPosFromNoteData(data);
-
-      drawNote(context, move, cellSize, pos, data.length);
+    const idPair = Array.from(action.onActionMap.state);
+    state.getAll().forEach((it) => {
+      const usingPointer = idPair.find(([, noteId]) => noteId == it.id)?.[0];
+      if (!usingPointer) {
+        drawNote(context, move, cellSize, it.pos, it.length);
+        return;
+      }
+      const actionResult = action.getApplied(usingPointer);
+      if (!actionResult) return;
+      drawNote(context, move, cellSize, actionResult.pos, actionResult.length);
     });
   };
   const drawNote = (

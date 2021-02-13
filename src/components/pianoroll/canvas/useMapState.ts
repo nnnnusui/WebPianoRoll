@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
 
 function useMapState<Key, Value = undefined>(init: [Key, Value][] = []) {
   type State = Map<Key, Value>;
@@ -10,11 +10,18 @@ function useMapState<Key, Value = undefined>(init: [Key, Value][] = []) {
     });
   };
 
+  const set = (key: Key, action: SetStateAction<Value>) =>
+    use((prev) => {
+      const value =
+        action instanceof Function ? action(prev.get(key)!) : action;
+      prev.set(key, value);
+    });
+
   return {
     state,
     use,
     get: (key: Key) => state.get(key),
-    set: (key: Key, value: Value) => use((prev) => prev.set(key, value)),
+    set,
     delete: (key: Key) => use((prev) => prev.delete(key)),
   };
 }

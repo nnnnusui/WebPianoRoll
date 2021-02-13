@@ -10,7 +10,7 @@ const NoteAction = (
   state: ReturnType<typeof NoteState>,
   move: ReturnType<typeof MoveState>,
   cellSize: Size
-): PointerActionOverride => {
+) => {
   type NoteId = number;
   type Mode = "add" | "remove" | "move" | "moveOrRemove";
   const modeMap = useMapState<PointerId, Mode>();
@@ -26,7 +26,7 @@ const NoteAction = (
     };
   };
 
-  const apply = (id: PointerId) => {
+  const getApplied = (id: PointerId) => {
     const mode = modeMap.get(id);
     const from = fromMap.get(id);
     const to = toMap.get(id);
@@ -37,20 +37,52 @@ const NoteAction = (
         const xDiff = to.x - from.x;
         const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
         const length = Math.abs(xDiff) + 1;
-        state.add(pos, length);
-        break;
+        return { pos, length };
       }
       case "move": {
+        const noteId = onActionMap.get(id)!;
+        const target = state.get(noteId)!;
         const vector = {
           x: to.x - from.x,
           y: to.y - from.y,
         };
-        state.move(from, vector);
+        const moved = {
+          ...target,
+          pos: {
+            x: target.pos.x + vector.x,
+            y: target.pos.y + vector.y,
+          },
+        };
+        return moved;
+      }
+      case "remove":
+      case "moveOrRemove": {
+        return state.get(onActionMap.get(id)!);
+      }
+      default:
+        break;
+    }
+  };
+  const apply = (id: PointerId) => {
+    const mode = modeMap.get(id);
+    const applied = getApplied(id);
+    if (!mode || !applied) return;
+
+    switch (mode) {
+      case "add":
+        state.add(applied);
+        break;
+      case "move": {
+        const noteId = onActionMap.get(id);
+        if (!noteId) return;
+        state.set(noteId, applied);
         break;
       }
       case "remove":
       case "moveOrRemove": {
-        state.remove(to);
+        const noteId = onActionMap.get(id);
+        if (!noteId) return;
+        state.delete(noteId);
         break;
       }
       default:
@@ -58,7 +90,7 @@ const NoteAction = (
     }
   };
 
-  return {
+  const override: PointerActionOverride = {
     type: "note",
     down: (events) => {
       const [event] = events;
@@ -72,7 +104,7 @@ const NoteAction = (
 
       if (alreadyExists.length <= 0) return;
       const [note] = alreadyExists;
-      onActionMap.set(id, note.data.id);
+      onActionMap.set(id, note.id);
     },
     move: (events) => {
       const [event] = events;
@@ -103,5 +135,6 @@ const NoteAction = (
       onActionMap.delete(id);
     },
   };
+  return { override, getApplied, onActionMap };
 };
 export default NoteAction;

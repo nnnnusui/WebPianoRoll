@@ -49,7 +49,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const pointers = PointerActionConsumer([
     MoveAction(move, scale),
     ScaleAction(scale),
-    note.action,
+    note.action.override,
   ]);
 
   const onWheel = (event: React.WheelEvent) => {

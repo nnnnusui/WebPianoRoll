@@ -25,7 +25,7 @@ const Grid: React.FC<Props> = () => {
   };
 
   return (
-    <>
+    <div className="relative h-full w-full">
       <ResizeListener setSize={setCanvasSize} />
       <canvas
         className="pointer-events-none absolute h-full w-full"
@@ -33,7 +33,7 @@ const Grid: React.FC<Props> = () => {
         {...canvasSize}
       ></canvas>
       {forward() || <></>}
-    </>
+    </div>
   );
 };
 export default Grid;

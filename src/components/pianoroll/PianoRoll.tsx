@@ -2,8 +2,8 @@ import React, { ReactElement, useState, useEffect } from "react";
 import Rest from "./rest/Rest";
 import Context from "./context/Context";
 import RollController from "./controller/RollController";
-import View from "./View";
 import AudioController from "./controller/AudioController";
+import Grid from "./canvas/Grid";
 
 const PianoRoll: React.FC = (): ReactElement => {
   const url = Init();
@@ -19,7 +19,7 @@ const PianoRoll: React.FC = (): ReactElement => {
           <hr className="border-gray-400 mt-1.5 mb-1" />
           <RollController />
         </div>
-        <View />
+        <Grid />
       </Context.Provider>
     </div>
   );

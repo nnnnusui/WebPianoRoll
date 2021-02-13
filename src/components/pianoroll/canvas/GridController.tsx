@@ -63,8 +63,10 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const draw = () => {
     context.beginPath();
     context.clearRect(0, 0, canvasSize.width, canvasSize.height);
+    context.fill();
     context.save();
 
+    context.strokeStyle = "#666666";
     grid.draw(context, move.get, cellSize);
     note.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
@@ -116,50 +118,32 @@ const Grid = (size: Size) => {
       width: cellSize.width * size.width,
       height: cellSize.height * size.height,
     };
-    range0to(size.width + 1)
-      .map((index) => index * cellSize.width)
-      .map((it) => it - move.x)
-      .forEach((it) => {
-        context.moveTo(it, 0);
-        context.lineTo(it, max.height);
-      });
-    range0to(size.height + 1)
-      .map((index) => index * cellSize.height)
-      .map((it) => it - move.y)
-      .forEach((it) => {
-        context.moveTo(0, it);
-        context.lineTo(max.width, it);
-      });
-    context.strokeStyle = "black";
+    const beatDenominator = 4;
+    const beatNumerator = 4;
+    const lineInterval = beatDenominator;
+    const barInterval = beatDenominator * beatNumerator;
+    range0to(size.width + 1).forEach((index) => {
+      if (index % lineInterval != 0) return;
+      const gridLocal = index * cellSize.width;
+      const viewLocal = gridLocal - move.x;
+      context.moveTo(viewLocal, 0);
+      context.lineTo(viewLocal, max.height);
+      if (index % barInterval != 0) return;
+      if (index % (barInterval * 2) < 16) context.fillStyle = "#222222";
+      else context.fillStyle = "#303030";
+      context.fillRect(viewLocal, 0, cellSize.width * 16, max.height);
+    });
+    context.fillStyle = "#331111";
+    range0to(size.height + 1).forEach((index) => {
+      const gridLocal = index * cellSize.height;
+      const viewLocal = gridLocal - move.y;
+      const it = viewLocal;
+      context.moveTo(0, it);
+      context.lineTo(max.width, it);
+      if (index % 12 != 11) return;
+      context.fillRect(0, viewLocal, max.width, cellSize.height);
+    });
     context.stroke();
-    drawCoordinatesText(context, move, cellSize);
-  };
-  const drawCoordinatesText = (
-    context: CanvasRenderingContext2D,
-    move: Pos,
-    cellSize: Size
-  ) => {
-    const padding = {
-      x: (cellSize.width / 10) * -1,
-      y: (cellSize.height / 10) * -1,
-    };
-
-    range0to(size.width + 1)
-      .flatMap((column) =>
-        range0to(size.height + 1).map((row) => [row, column])
-      )
-      .forEach(([row, column]) => {
-        const start = {
-          x: column * cellSize.width - move.x - padding.x,
-          y: row * cellSize.height - move.y - padding.y,
-        };
-        context.fillText(
-          `x: ${column}, y: ${row}`,
-          start.x,
-          start.y,
-          cellSize.width
-        );
-      });
   };
   return { size, draw };
 };

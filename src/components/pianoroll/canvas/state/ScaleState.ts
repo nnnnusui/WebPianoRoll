@@ -17,6 +17,7 @@ const ScaleState = (
       const mayBeNext = typeof action === "function" ? action(prev) : action;
       const next = fixLowerLimit(fixHigherLimit(mayBeNext));
 
+      // find `moveVector` calculation. and apply to MoveState.
       const focus = {
         x: move.get.x + viewLocalFocus.x,
         y: move.get.y + viewLocalFocus.y,

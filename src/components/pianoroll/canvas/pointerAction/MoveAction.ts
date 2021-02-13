@@ -42,7 +42,12 @@ const MoveAction = (
         updateFromMap((prev) => {
           const from = prev.get(current.pointerId);
           if (!from) return;
-          state.update(from, getViewLocal(current), scale.get);
+          const to = getViewLocal(current);
+          const vector = {
+            x: from.x - to.x,
+            y: from.y - to.y,
+          };
+          state.set(scale.get, vector);
           others.forEach((it) => prev.set(it.pointerId, getGridLocal(it)));
         });
       },

@@ -80,15 +80,19 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
   const checkUnique = (actionType: string) => (state: State) =>
     checkQuantity(state, [actionType], (it) => it == 0);
 
+  const checkConfigParameters = (
+    state: State,
+    actionType: PointerActionType,
+    parameter: PointerActionConfigParameter
+  ) => {
+    const { unique, overwrites, premise } = parameter;
+    const uniqueCheckResult = unique ? checkUnique(actionType)(state) : true;
+    if (!uniqueCheckResult) return false;
+    return needsQuantity(overwrites, premise)(state);
+  };
   const getActionType = (state: State) => {
-    return pointerActionConfigValues.find(
-      ([actionType, { unique, overwrites, premise }]) => {
-        const uniqueCheckResult = unique
-          ? checkUnique(actionType)(state)
-          : true;
-        if (!uniqueCheckResult) return false;
-        return needsQuantity(overwrites, premise)(state);
-      }
+    return pointerActionConfigValues.find(([actionType, parameter]) =>
+      checkConfigParameters(state, actionType, parameter)
     )?.[0];
   };
 
@@ -159,15 +163,22 @@ const PointerActionConsumer = (actionMapOverride: PointerActionOverrideMap) => {
       action.up(events);
       state.delete(event.pointerId);
 
-      const residueConfig = pointerActionConfig.get(actionType);
-      if (!residueConfig) return;
       const residues = filterByActionTypes(state, [actionType]).slice(
         -config.premise
       );
       if (residues.length <= 0) return;
-      residues.forEach(([id, current]) =>
-        state.set(id, { ...current, actionType: config.residue })
+      const residueConfig = pointerActionConfig.get(config.residue);
+      if (!residueConfig) return;
+      const setAllowed = checkConfigParameters(
+        state,
+        config.residue,
+        residueConfig
       );
+      residues.forEach(([id, current]) => {
+        if (setAllowed)
+          state.set(id, { ...current, actionType: config.residue });
+        else state.delete(id);
+      });
       const residueAction = actionMap.get(config.residue);
       if (!residueAction) return;
       const residueEvents = residues.map(([, { event }]) => event).reverse();

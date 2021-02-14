@@ -108,7 +108,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           return false;
         }}
       ></div>
-      <h1>
+      <h1 className="absolute text-white">
         {`debug: ${debug}`} _{" "}
         {pointers.state
           .map(([, { actionType }], index) => `${index}: ${actionType}`)

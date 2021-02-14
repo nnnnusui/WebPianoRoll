@@ -10,20 +10,22 @@ function useMapState<Key, Value = null>(init: [Key, Value][] = []) {
     });
   };
 
-  const set = (key: Key, action: SetStateAction<Value | void>) =>
-    use((prev) => {
-      const before = prev.get(key);
-      const value = action instanceof Function ? action(before) : action;
-      if (value == undefined) return;
-      prev.set(key, value);
-    });
-
   return {
     state,
     use,
     get: (key: Key) => state.get(key),
-    set,
-    delete: (key: Key) => use((prev) => prev.delete(key)),
+    set: (key: Key, action: SetStateAction<Value | void>) =>
+      use((prev) => {
+        const before = prev.get(key);
+        const value = action instanceof Function ? action(before) : action;
+        if (value == undefined) return;
+        prev.set(key, value);
+      }),
+    delete: (key: Key, action?: (value: Value) => void) => {
+      const value = state.get(key);
+      if (action && value) action(value);
+      use((prev) => prev.delete(key));
+    },
   };
 }
 export default useMapState;

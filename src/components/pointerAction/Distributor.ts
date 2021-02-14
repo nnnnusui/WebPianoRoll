@@ -10,7 +10,9 @@ const Distributor = (
   settings: ReturnType<typeof PointerActionSettings>
 ) => {
   const filteredByActionTypes = (by: ActionType[]) =>
-    Array.from(state.state).filter(([, { action: { type } }]) => by.includes(type));
+    Array.from(state.state).filter(([, { action: { type } }]) =>
+      by.includes(type)
+    );
 
   const isUnique = (it: ActionType) =>
     Array.from(state.state.values())
@@ -29,6 +31,11 @@ const Distributor = (
       })
       .find((it) => it);
 
+  const getEvents = (
+    latest: Event,
+    from: ReturnType<typeof filteredByActionTypes>
+  ) => [latest, ...from.map(([, { event }]) => event).reverse()];
+
   return {
     listeners: {
       onPointerOver: () => {},
@@ -39,22 +46,35 @@ const Distributor = (
         const executor = PointerActionExecutor.toRequired(
           DummyAction().executor
         );
-        const events = finded.overwriteTargets.map(([,{event}]) => event).reverse()
-        executor.down([event, ...events])
         const action = { ...finded, executor };
+        finded.overwriteTargets.forEach(([id, prev]) =>
+          state.set(id, { ...prev, action })
+        );
+        action.executor.down(getEvents(event, finded.overwriteTargets));
         state.set(event.pointerId, { event, action });
       },
       onPointerMove: (event: Event) => {
         state.set(event.pointerId, (prev) => {
           if (!prev) return;
+          prev.action.executor.move(
+            getEvents(event, filteredByActionTypes([prev.action.type]))
+          );
           return { ...prev, event };
         });
       },
       onPointerUp: (event: Event) => {
-        state.delete(event.pointerId);
+        state.delete(event.pointerId, (prev) =>
+          prev.action.executor.up(
+            getEvents(event, filteredByActionTypes([prev.action.type]))
+          )
+        );
       },
       onPointerCancel: (event: Event) => {
-        state.delete(event.pointerId);
+        state.delete(event.pointerId, (prev) =>
+          prev.action.executor.cancel(
+            getEvents(event, filteredByActionTypes([prev.action.type]))
+          )
+        );
       },
       onPointerOut: () => {},
       onPointerLeave: () => {},

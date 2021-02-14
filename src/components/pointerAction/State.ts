@@ -17,5 +17,6 @@ type Info = {
 const State = () => {
   return useMapState<PointerId, Info>();
 };
+type PointerActionState = Map<PointerId, Info>;
 const PointerActionState = State;
 export default PointerActionState;

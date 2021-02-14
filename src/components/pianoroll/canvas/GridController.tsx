@@ -50,24 +50,21 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  // const pointers = PointerActionConsumer(
-  //   PointerActionConfig([
-  //     { type: "move", parameter: {} },
-  //     { type: "note", parameter: { unique: false } },
-  //     {
-  //       type: "scale",
-  //       parameter: {
-  //         premise: 1,
-  //         overwrites: ["move", "note"],
-  //         residue: "move",
-  //       },
-  //     },
-  //   ]),
   //   [MoveAction(move, scale), ScaleAction(scale), note.action.override]
-  // );
   const pointer = (() => {
     const state = PointerActionState();
-    const settings = PointerActionSettings([]);
+    const settings = PointerActionSettings([
+      { type: "move", conditions: {} },
+      { type: "note", conditions: { unique: false } },
+      {
+        type: "scale",
+        conditions: {
+          premise: 1,
+          overwrites: ["move", "note"],
+          residue: "move",
+        },
+      },
+    ]);
     const distributor = PointerActionDistributor(state, settings);
     return {
       ...distributor,

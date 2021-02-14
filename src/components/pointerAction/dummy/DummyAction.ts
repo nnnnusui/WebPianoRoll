@@ -1,7 +1,6 @@
 import { PointerActionExecutorOverride } from "../Executor";
 
-const DummyAction = () => {
-  const executor: PointerActionExecutorOverride = {};
-  return { executor };
+const DummyAction = (): PointerActionExecutorOverride => {
+  return { type: "dummy", executor: {} };
 };
 export default DummyAction;

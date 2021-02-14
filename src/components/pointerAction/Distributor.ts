@@ -1,5 +1,4 @@
-import DummyAction from "./dummy/DummyAction";
-import PointerActionExecutor from "./Executor";
+import PointerActionExecutor, { PointerActionExecutorMap } from "./Executor";
 import PointerActionSettings, { PointerActionConditions } from "./Settings";
 import PointerActionState from "./State";
 import ActionType from "./type/ActionType";
@@ -7,7 +6,8 @@ import Event from "./type/Event";
 
 const Distributor = (
   state: ReturnType<typeof PointerActionState>,
-  settings: ReturnType<typeof PointerActionSettings>
+  settings: ReturnType<typeof PointerActionSettings>,
+  executorMap: PointerActionExecutorMap
 ) => {
   const filteredByActionTypes = (by: ActionType[]) =>
     Array.from(state.state).filter(([, { action: { type } }]) =>
@@ -29,7 +29,7 @@ const Distributor = (
     const overwriteTargets = mayBeOverwrites.slice(-premise);
     return { type, conditions, overwriteTargets };
   };
-  
+
   const findAction = () =>
     Array.from(settings)
       .reverse()
@@ -46,7 +46,13 @@ const Distributor = (
   const getEvents = (
     latest: Event,
     from: ReturnType<typeof filteredByActionTypes>
-  ) => [latest, ...from.map(([, { event }]) => event).reverse()];
+  ) => [
+    latest,
+    ...from
+      .map(([, { event }]) => event)
+      .filter((it) => it.pointerId != latest.pointerId)
+      .reverse(),
+  ];
 
   const execute = (
     it: ReturnType<typeof state.get>,
@@ -56,6 +62,7 @@ const Distributor = (
     it.action.executor[executionName](
       getEvents(it.event, filteredByActionTypes([it.action.type]))
     );
+    return it;
   };
 
   const applyResidue = (from: ReturnType<typeof state.get>) => {
@@ -75,7 +82,7 @@ const Distributor = (
       else state.delete(id);
     });
     if (!residual) return;
-    const executor = PointerActionExecutor.toRequired(DummyAction().executor);
+    const executor = executorMap.get(residue);
     executor.down(targets.map(([, { event }]) => event).reverse());
   };
 
@@ -86,9 +93,7 @@ const Distributor = (
       onPointerDown: (event: Event) => {
         const finded = findAction();
         if (!finded) return;
-        const executor = PointerActionExecutor.toRequired(
-          DummyAction().executor
-        );
+        const executor = executorMap.get(finded.type);
         const action = { ...finded, executor };
         finded.overwriteTargets.forEach(([id, prev]) =>
           state.set(id, { ...prev, action })
@@ -99,19 +104,20 @@ const Distributor = (
       onPointerMove: (event: Event) => {
         state.set(event.pointerId, (prev) => {
           if (!prev) return;
-          execute(prev, "move");
-          return { ...prev, event };
+          return execute({ ...prev, event }, "move");
         });
       },
       onPointerUp: (event: Event) =>
         state.delete(event.pointerId, (prev) => {
-          execute(prev, "up");
-          applyResidue(prev);
+          const next = { ...prev, event };
+          execute(next, "up");
+          applyResidue(next);
         }),
       onPointerCancel: (event: Event) =>
         state.delete(event.pointerId, (prev) => {
-          execute(prev, "cancel");
-          applyResidue(prev);
+          const next = { ...prev, event };
+          execute(next, "cancel");
+          applyResidue(next);
         }),
       onPointerOut: () => {},
       onPointerLeave: () => {},

@@ -15,6 +15,7 @@ import PointerActionConfig from "./PointerActionConfig";
 import PointerActionDistributor from "../../pointerAction/Distributor";
 import PointerActionState from "../../pointerAction/State";
 import PointerActionSettings from "../../pointerAction/Settings";
+import PointerActionExecutor from "../../pointerAction/Executor";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -50,7 +51,6 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  //   [MoveAction(move, scale), ScaleAction(scale), note.action.override]
   const pointer = (() => {
     const state = PointerActionState();
     const settings = PointerActionSettings([
@@ -65,7 +65,12 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
         },
       },
     ]);
-    const distributor = PointerActionDistributor(state, settings);
+    const executorMap = PointerActionExecutor.getMap([
+      MoveAction(move, scale),
+      ScaleAction(scale),
+      note.action,
+    ]);
+    const distributor = PointerActionDistributor(state, settings, executorMap);
     return {
       ...distributor,
       ...state,
@@ -117,8 +122,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           return false;
         }}
       ></div>
-      <h1 className="absolute text-white">
-        {`debug: ${debug}`} _{" "}
+      <h1 className="absolute">
+        {`debug: ${scale.get.width}`} _
         {Array.from(pointer.state)
           .map(([, { action }], index) => `${index}: ${action.type}`)
           .join(", ")}

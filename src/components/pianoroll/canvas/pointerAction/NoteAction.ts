@@ -1,4 +1,4 @@
-import { PointerActionOverride } from "../PointerActionConsumer";
+import { PointerActionExecutorOverride } from "../../../pointerAction/Executor";
 import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
 import PointerId from "../type/PointerId";
@@ -90,50 +90,55 @@ const NoteAction = (
     }
   };
 
-  const override: PointerActionOverride = {
+  const override: PointerActionExecutorOverride = {
     type: "note",
-    down: (events) => {
-      const [event] = events;
-      const id = event.pointerId;
-      const cell = getCellPos(move.getGridLocal(event));
-      const alreadyExists = state.getAlreadyExists(cell);
-      const mode = alreadyExists.length <= 0 ? "add" : "moveOrRemove";
-      modeMap.set(id, mode);
-      fromMap.set(id, cell);
-      toMap.set(id, cell);
+    executor: {
+      down: (events) => {
+        const [event] = events;
+        const id = event.pointerId;
+        const cell = getCellPos(move.getGridLocal(event));
+        const alreadyExists = state.getAlreadyExists(cell);
+        const mode = alreadyExists.length <= 0 ? "add" : "moveOrRemove";
+        modeMap.set(id, mode);
+        fromMap.set(id, cell);
+        toMap.set(id, cell);
 
-      const noteId = alreadyExists.length <= 0 ? null : alreadyExists[0].id;
-      onActionMap.set(id, noteId);
-    },
-    move: (events) => {
-      const [event] = events;
-      const id = event.pointerId;
-      const cell = getCellPos(move.getGridLocal(event));
-      toMap.set(id, cell);
+        const noteId = alreadyExists.length <= 0 ? null : alreadyExists[0].id;
+        onActionMap.set(id, noteId);
+      },
+      move: (events) => {
+        const [event] = events;
+        const id = event.pointerId;
+        const cell = getCellPos(move.getGridLocal(event));
+        toMap.set(id, cell);
 
-      if (modeMap.get(id) != "moveOrRemove") return;
-      const from = fromMap.get(id);
-      const to = toMap.get(id);
-      if (from?.x != to?.x || from?.y != to?.y) modeMap.set(id, "move");
-    },
-    up: (events) => {
-      const [event] = events;
-      const id = event.pointerId;
-      apply(id);
-      modeMap.delete(id);
-      fromMap.delete(id);
-      toMap.delete(id);
-      onActionMap.delete(id);
-    },
-    cancel: (events) => {
-      const [event] = events;
-      const id = event.pointerId;
-      modeMap.delete(id);
-      fromMap.delete(id);
-      toMap.delete(id);
-      onActionMap.delete(id);
+        if (modeMap.get(id) != "moveOrRemove") return;
+        const from = fromMap.get(id);
+        const to = cell;
+        if (from?.x != to?.x || from?.y != to?.y) {
+          console.log(id);
+          modeMap.set(id, "move");
+        }
+      },
+      up: (events) => {
+        const [event] = events;
+        const id = event.pointerId;
+        apply(id);
+        modeMap.delete(id);
+        fromMap.delete(id);
+        toMap.delete(id);
+        onActionMap.delete(id);
+      },
+      cancel: (events) => {
+        const [event] = events;
+        const id = event.pointerId;
+        modeMap.delete(id);
+        fromMap.delete(id);
+        toMap.delete(id);
+        onActionMap.delete(id);
+      },
     },
   };
-  return { override, getApplied, onActionMap };
+  return { ...override, getApplied, onActionMap };
 };
 export default NoteAction;

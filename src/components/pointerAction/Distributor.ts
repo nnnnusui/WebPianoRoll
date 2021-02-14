@@ -1,6 +1,6 @@
 import DummyAction from "./dummy/DummyAction";
 import PointerActionExecutor from "./Executor";
-import PointerActionSettings from "./Settings";
+import PointerActionSettings, { PointerActionConditions } from "./Settings";
 import PointerActionState from "./State";
 import ActionType from "./type/ActionType";
 import Event from "./type/Event";
@@ -18,6 +18,18 @@ const Distributor = (
     Array.from(state.state.values())
       .map(({ action: { type } }) => type)
       .includes(it);
+  const checkCondirions = (
+    type: ActionType,
+    conditions: PointerActionConditions
+  ) => {
+    const { unique, overwrites, premise } = conditions;
+    if (unique && isUnique(type)) return;
+    const mayBeOverwrites = filteredByActionTypes(overwrites);
+    if (mayBeOverwrites.length < premise) return;
+    const overwriteTargets = mayBeOverwrites.slice(-premise);
+    return { type, conditions, overwriteTargets };
+  };
+  
   const findAction = () =>
     Array.from(settings)
       .reverse()
@@ -46,6 +58,27 @@ const Distributor = (
     );
   };
 
+  const applyResidue = (from: ReturnType<typeof state.get>) => {
+    if (!from) return;
+    const before = from.action.type;
+    const { residue, premise } = from.action.conditions;
+    const conditions = settings.get(residue);
+    if (!conditions) return;
+    const [, ...targets] = filteredByActionTypes([before])
+      .slice(-(premise + 1))
+      .reverse();
+    const residual = !!checkCondirions(residue, conditions);
+
+    targets.forEach(([id, it]) => {
+      if (residual)
+        state.set(id, { ...it, action: { ...it.action, type: residue } });
+      else state.delete(id);
+    });
+    if (!residual) return;
+    const executor = PointerActionExecutor.toRequired(DummyAction().executor);
+    executor.down(targets.map(([, { event }]) => event).reverse());
+  };
+
   return {
     listeners: {
       onPointerOver: () => {},
@@ -71,9 +104,15 @@ const Distributor = (
         });
       },
       onPointerUp: (event: Event) =>
-        state.delete(event.pointerId, (prev) => execute(prev, "up")),
+        state.delete(event.pointerId, (prev) => {
+          execute(prev, "up");
+          applyResidue(prev);
+        }),
       onPointerCancel: (event: Event) =>
-        state.delete(event.pointerId, (prev) => execute(prev, "cancel")),
+        state.delete(event.pointerId, (prev) => {
+          execute(prev, "cancel");
+          applyResidue(prev);
+        }),
       onPointerOut: () => {},
       onPointerLeave: () => {},
     },

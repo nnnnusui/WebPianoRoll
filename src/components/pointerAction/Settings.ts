@@ -1,12 +1,12 @@
 import ActionType from "./type/ActionType";
 
-type Parameter = {
+type Conditions = {
   unique: boolean;
   premise: number;
   overwrites: ActionType[];
   residue: ActionType;
 };
-const defaultParameter: Parameter = {
+const defaultConditions: Conditions = {
   unique: true,
   premise: 0,
   overwrites: [],
@@ -15,28 +15,30 @@ const defaultParameter: Parameter = {
 
 type Override = {
   type: ActionType;
-  parameter: Partial<Parameter>;
+  conditions: Partial<Conditions>;
 };
 const dummy = {
   type: "dummy",
-  parameter: { unique: false },
+  conditions: { unique: false },
 };
 const applyDummy = (overrides: Override[]) => [
   dummy,
-  ...overrides.map(({ type, parameter }) => ({
+  ...overrides.map(({ type, conditions }) => ({
     type,
-    parameter: {
-      ...parameter,
-      overwrites: ["dummy", ...(parameter.overwrites || [])],
+    conditions: {
+      ...conditions,
+      overwrites: ["dummy", ...(conditions.overwrites || [])],
     },
   })),
 ];
 
-const Settings = (overrides: Override[]): Map<ActionType, Parameter> =>
+const Settings = (overrides: Override[]): Map<ActionType, Conditions> =>
   applyDummy(overrides).reduce(
-    (map, { type, parameter }) =>
-      map.set(type, { ...(map.get(type) || defaultParameter), ...parameter }),
+    (map, { type, conditions }) =>
+      map.set(type, { ...(map.get(type) || defaultConditions), ...conditions }),
     new Map()
   );
 const PointerActionSettings = Settings;
+type PointerActionConditions = Conditions;
 export default PointerActionSettings;
+export type { PointerActionConditions };

@@ -1,10 +1,11 @@
 import Event from "./type/Event";
 
+type Execution = (events: Event[]) => void;
 type Executor = {
-  down: (events: Event[]) => void;
-  move: (events: Event[]) => void;
-  up: (events: Event[]) => void;
-  cancel: (events: Event[]) => void;
+  down: Execution;
+  move: Execution;
+  up: Execution;
+  cancel: Execution;
 };
 type Override = Partial<Executor>;
 

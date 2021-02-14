@@ -36,6 +36,16 @@ const Distributor = (
     from: ReturnType<typeof filteredByActionTypes>
   ) => [latest, ...from.map(([, { event }]) => event).reverse()];
 
+  const execute = (
+    it: ReturnType<typeof state.get>,
+    executionName: keyof PointerActionExecutor
+  ) => {
+    if (!it) return;
+    it.action.executor[executionName](
+      getEvents(it.event, filteredByActionTypes([it.action.type]))
+    );
+  };
+
   return {
     listeners: {
       onPointerOver: () => {},
@@ -56,26 +66,14 @@ const Distributor = (
       onPointerMove: (event: Event) => {
         state.set(event.pointerId, (prev) => {
           if (!prev) return;
-          prev.action.executor.move(
-            getEvents(event, filteredByActionTypes([prev.action.type]))
-          );
+          execute(prev, "move");
           return { ...prev, event };
         });
       },
-      onPointerUp: (event: Event) => {
-        state.delete(event.pointerId, (prev) =>
-          prev.action.executor.up(
-            getEvents(event, filteredByActionTypes([prev.action.type]))
-          )
-        );
-      },
-      onPointerCancel: (event: Event) => {
-        state.delete(event.pointerId, (prev) =>
-          prev.action.executor.cancel(
-            getEvents(event, filteredByActionTypes([prev.action.type]))
-          )
-        );
-      },
+      onPointerUp: (event: Event) =>
+        state.delete(event.pointerId, (prev) => execute(prev, "up")),
+      onPointerCancel: (event: Event) =>
+        state.delete(event.pointerId, (prev) => execute(prev, "cancel")),
       onPointerOut: () => {},
       onPointerLeave: () => {},
     },

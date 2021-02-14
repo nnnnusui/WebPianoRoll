@@ -1,5 +1,4 @@
 import useMapState from "../pianoroll/canvas/useMapState";
-import PointerActionExecutor from "./Executor";
 import { PointerActionConditions } from "./Settings";
 
 type PointerId = number;
@@ -11,7 +10,6 @@ type Info = {
   action: {
     type: ActionType;
     conditions: PointerActionConditions;
-    executor: PointerActionExecutor;
   };
 };
 const State = () => {

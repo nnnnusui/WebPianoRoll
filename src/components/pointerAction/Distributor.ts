@@ -59,9 +59,11 @@ const Distributor = (
     executionName: keyof PointerActionExecutor
   ) => {
     if (!it) return;
-    it.action.executor[executionName](
-      getEvents(it.event, filteredByActionTypes([it.action.type]))
-    );
+    executorMap
+      .get(it.action.type)
+      [executionName](
+        getEvents(it.event, filteredByActionTypes([it.action.type]))
+      );
     return it;
   };
 
@@ -82,8 +84,9 @@ const Distributor = (
       else state.delete(id);
     });
     if (!residual) return;
-    const executor = executorMap.get(residue);
-    executor.down(targets.map(([, { event }]) => event).reverse());
+    executorMap
+      .get(residue)
+      .down(targets.map(([, { event }]) => event).reverse());
   };
 
   return {
@@ -93,18 +96,22 @@ const Distributor = (
       onPointerDown: (event: Event) => {
         const finded = findAction();
         if (!finded) return;
-        const executor = executorMap.get(finded.type);
-        const action = { ...finded, executor };
+        const action = { ...finded };
         finded.overwriteTargets.forEach(([id, prev]) =>
           state.set(id, { ...prev, action })
         );
-        action.executor.down(getEvents(event, finded.overwriteTargets));
+        executorMap
+          .get(finded.type)
+          .down(getEvents(event, finded.overwriteTargets));
         state.set(event.pointerId, { event, action });
       },
       onPointerMove: (event: Event) => {
-        state.set(event.pointerId, (prev) => {
+        state.use((state) => {
+          const prev = state.get(event.pointerId);
           if (!prev) return;
-          return execute({ ...prev, event }, "move");
+          const next = { ...prev, event };
+          execute(next, "move");
+          state.set(event.pointerId, next);
         });
       },
       onPointerUp: (event: Event) =>

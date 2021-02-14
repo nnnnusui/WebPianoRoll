@@ -14,13 +14,14 @@ function useMapState<Key, Value = null>(init: [Key, Value][] = []) {
     state,
     use,
     get: (key: Key) => state.get(key),
-    set: (key: Key, action: SetStateAction<Value | void>) =>
-      use((prev) => {
-        const before = prev.get(key);
-        const value = action instanceof Function ? action(before) : action;
-        if (value == undefined) return;
-        prev.set(key, value);
-      }),
+    set: (key: Key, value: Value) => use((prev) => prev.set(key, value)),
+    // set: (key: Key, action: SetStateAction<Value | void>) =>
+    //   use((prev) => {
+    //     const before = prev.get(key);
+    //     const value = action instanceof Function ? action(before) : action;
+    //     if (!value) return;
+    //     prev.set(key, value);
+    //   }),
     delete: (key: Key, action?: (value: Value) => void) => {
       const value = state.get(key);
       if (action && value) action(value);

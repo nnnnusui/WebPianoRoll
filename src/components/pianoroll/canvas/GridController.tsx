@@ -11,6 +11,7 @@ import ScaleAction from "./pointerAction/ScaleAction";
 import NoteAction from "./pointerAction/NoteAction";
 import NoteState from "./state/NoteState";
 import NoteDrawer from "./drawer/NoteDrawer";
+import PointerActionConfig from "./PointerActionConfig";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -46,11 +47,21 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  const pointers = PointerActionConsumer([
-    MoveAction(move, scale),
-    ScaleAction(scale),
-    note.action.override,
-  ]);
+  const pointers = PointerActionConsumer(
+    PointerActionConfig([
+      { type: "move", parameter: {} },
+      { type: "note", parameter: { unique: false } },
+      {
+        type: "scale",
+        parameter: {
+          premise: 1,
+          overwrites: ["move", "note"],
+          residue: "move",
+        },
+      },
+    ]),
+    [MoveAction(move, scale), ScaleAction(scale), note.action.override]
+  );
 
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import PointerActionConfig, {
+  PointerActionConfigParameter,
+} from "./PointerActionConfig";
 import PointerId from "./type/PointerId";
 
 type Event = React.PointerEvent;
@@ -22,58 +25,13 @@ type PointerInfo = {
 };
 type State = Map<PointerId, PointerInfo>;
 
-/* start: ActionConfig */
-type PointerActionConfigParameter = {
-  unique: boolean;
-  overwrites: PointerActionType[];
-  premise: number;
-  residue: PointerActionType;
-};
-type PointerActionConfigValue = {
-  type: PointerActionType;
-  parameter: PointerActionConfigParameter;
-};
-type PointerActionConfig = Map<PointerActionType, PointerActionConfigParameter>;
-const dummyAction: PointerActionConfigValue = {
-  type: "dummy",
-  parameter: { unique: false, overwrites: [], premise: 0, residue: "" },
-};
-const parameterOverride = (to: PointerActionConfigParameter) => ({
-  ...to,
-  overwrites: ["dummy", ...to.overwrites],
-});
-
-const pointerActionConfigDefault: PointerActionConfigValue[] = [
-  {
-    type: "move",
-    parameter: { unique: true, overwrites: [], premise: 0, residue: "" },
-  },
-  {
-    type: "note",
-    parameter: { unique: false, overwrites: [], premise: 0, residue: "" },
-  },
-  {
-    type: "scale",
-    parameter: {
-      unique: true,
-      overwrites: ["move", "note"],
-      premise: 1,
-      residue: "move",
-    },
-  },
-].map((it) => ({ ...it, parameter: parameterOverride(it.parameter) }));
-
-const pointerActionConfig: PointerActionConfig = [
-  dummyAction,
-  ...pointerActionConfigDefault,
-].reduce((map, it) => map.set(it.type, it.parameter), new Map());
-
-const pointerActionConfigValues = Array.from(pointerActionConfig)
-  .reverse()
-  .sort(([, { premise }]) => -premise);
-/* end: ActionConfig */
-
-const PointerActionConsumer = (actionMapOverride: PointerActionOverride[]) => {
+const PointerActionConsumer = (
+  pointerActionConfig: PointerActionConfig,
+  actionMapOverride: PointerActionOverride[]
+) => {
+  const pointerActionConfigValues = Array.from(pointerActionConfig)
+    .reverse()
+    .sort(([, { premise }]) => -premise);
   const actionMap: PointerActionMap = new Map(
     actionMapOverride.map<[PointerActionType, PointerAction]>((it) => [
       it.type,

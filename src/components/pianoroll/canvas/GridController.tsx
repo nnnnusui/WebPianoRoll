@@ -12,6 +12,9 @@ import NoteAction from "./pointerAction/NoteAction";
 import NoteState from "./state/NoteState";
 import NoteDrawer from "./drawer/NoteDrawer";
 import PointerActionConfig from "./PointerActionConfig";
+import PointerActionDistributor from "../../pointerAction/Distributor";
+import PointerActionState from "../../pointerAction/State";
+import PointerActionSettings from "../../pointerAction/Settings";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -47,21 +50,30 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     };
   };
 
-  const pointers = PointerActionConsumer(
-    PointerActionConfig([
-      { type: "move", parameter: {} },
-      { type: "note", parameter: { unique: false } },
-      {
-        type: "scale",
-        parameter: {
-          premise: 1,
-          overwrites: ["move", "note"],
-          residue: "move",
-        },
-      },
-    ]),
-    [MoveAction(move, scale), ScaleAction(scale), note.action.override]
-  );
+  // const pointers = PointerActionConsumer(
+  //   PointerActionConfig([
+  //     { type: "move", parameter: {} },
+  //     { type: "note", parameter: { unique: false } },
+  //     {
+  //       type: "scale",
+  //       parameter: {
+  //         premise: 1,
+  //         overwrites: ["move", "note"],
+  //         residue: "move",
+  //       },
+  //     },
+  //   ]),
+  //   [MoveAction(move, scale), ScaleAction(scale), note.action.override]
+  // );
+  const pointer = (() => {
+    const state = PointerActionState();
+    const settings = PointerActionSettings([]);
+    const distributor = PointerActionDistributor(state, settings);
+    return {
+      ...distributor,
+      ...state,
+    };
+  })();
 
   const onWheel = (event: React.WheelEvent) => {
     const scaleIn = event.deltaY > 0;
@@ -81,7 +93,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     grid.draw(context, move.get, cellSize);
     note.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
-    pointers.state.forEach(([, { event }]) => {
+    pointer.state.forEach(({ event }) => {
       const viewLocal = getViewLocal(event);
       context.fillStyle = "#f5dd67";
       context.beginPath();
@@ -97,7 +109,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     <>
       <div
         className="absolute h-full w-full"
-        {...pointers}
+        {...pointer.listeners}
         {...{ onWheel }}
         onContextMenu={(e) => {
           e.preventDefault();
@@ -110,8 +122,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ></div>
       <h1 className="absolute text-white">
         {`debug: ${debug}`} _{" "}
-        {pointers.state
-          .map(([, { actionType }], index) => `${index}: ${actionType}`)
+        {Array.from(pointer.state)
+          .map(([, { action }], index) => `${index}: ${action.type}`)
           .join(", ")}
       </h1>
     </>

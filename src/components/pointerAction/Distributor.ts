@@ -9,20 +9,20 @@ const Distributor = (
   state: ReturnType<typeof PointerActionState>,
   settings: ReturnType<typeof PointerActionSettings>
 ) => {
-  const filterByActionTypes = (from: PointerActionState, by: ActionType[]) =>
-    Array.from(from).filter(([, { action: { type } }]) => by.includes(type));
+  const filteredByActionTypes = (by: ActionType[]) =>
+    Array.from(state.state).filter(([, { action: { type } }]) => by.includes(type));
 
-  const isUnique = (state: PointerActionState, it: ActionType) =>
-    Array.from(state.values())
+  const isUnique = (it: ActionType) =>
+    Array.from(state.state.values())
       .map(({ action: { type } }) => type)
       .includes(it);
-  const findAction = (state: PointerActionState) =>
+  const findAction = () =>
     Array.from(settings)
       .reverse()
       .map(([type, conditions]) => {
         const { unique, overwrites, premise } = conditions;
-        if (unique && isUnique(state, type)) return;
-        const mayBeOverwrites = filterByActionTypes(state, overwrites);
+        if (unique && isUnique(type)) return;
+        const mayBeOverwrites = filteredByActionTypes(overwrites);
         if (mayBeOverwrites.length < premise) return;
         const overwriteTargets = mayBeOverwrites.slice(-premise);
         return { type, conditions, overwriteTargets };
@@ -34,15 +34,15 @@ const Distributor = (
       onPointerOver: () => {},
       onPointerEnter: () => {},
       onPointerDown: (event: Event) => {
-        state.use((state) => {
-          const finded = findAction(state);
-          if (!finded) return;
-          const executor = PointerActionExecutor.toRequired(
-            DummyAction().executor
-          );
-          const action = { ...finded, executor };
-          state.set(event.pointerId, { event, action });
-        });
+        const finded = findAction();
+        if (!finded) return;
+        const executor = PointerActionExecutor.toRequired(
+          DummyAction().executor
+        );
+        const events = finded.overwriteTargets.map(([,{event}]) => event).reverse()
+        executor.down([event, ...events])
+        const action = { ...finded, executor };
+        state.set(event.pointerId, { event, action });
       },
       onPointerMove: (event: Event) => {
         state.set(event.pointerId, (prev) => {

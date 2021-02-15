@@ -91,9 +91,10 @@ const Distributor = (
           ...finded,
           executor: executorMap.use(finded.type, events),
         };
-        finded.overwriteTargets.forEach(([id, prev]) =>
-          state.set(id, { ...prev, action })
-        );
+        finded.overwriteTargets.forEach(([id, prev]) => {
+          prev.action.executor.cancel();
+          state.set(id, { ...prev, action });
+        });
         state.set(event.pointerId, { event, action });
       },
       onPointerMove: (event: Event) => {
@@ -127,6 +128,7 @@ const Distributor = (
           const prev = state.get(event.pointerId);
           if (!prev) return;
           const next = { ...prev, event };
+          next.action.executor.cancel();
           applyResidue(state, next);
           state.delete(event.pointerId);
         }),

@@ -6,7 +6,7 @@ type Execute = (events: Event[]) => void;
 type Execution = {
   execute: Execute;
   mayBeExecute: Execute;
-  cancel: Execute;
+  cancel: () => void;
 };
 type PartialExecutor = (events: Event[]) => Partial<Execution>;
 type Override = {

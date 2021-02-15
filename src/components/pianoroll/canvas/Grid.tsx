@@ -3,9 +3,12 @@ import ResizeListener from "./ResizeListener";
 import Context from "../context/Context";
 import GridController from "./GridController";
 import { Size } from "./type/Size";
+import Rest from "../rest/Rest";
 
-type Props = {};
-const Grid: React.FC<Props> = () => {
+type Props = {
+  rest: ReturnType<typeof Rest>;
+};
+const Grid: React.FC<Props> = ({ rest }) => {
   const [canvasSize, setCanvasSize] = useState<Size>();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -21,7 +24,7 @@ const Grid: React.FC<Props> = () => {
       width: roll?.width || 32,
       height: roll?.height || 12,
     };
-    return <GridController {...{ context, canvasSize, gridSize }} />;
+    return <GridController {...{ context, canvasSize, gridSize, rest }} />;
   };
 
   return (

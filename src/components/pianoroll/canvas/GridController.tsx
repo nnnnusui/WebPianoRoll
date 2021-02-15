@@ -15,13 +15,20 @@ import PointerActionState from "../../pointerAction/State";
 import PointerActionSettings from "../../pointerAction/Settings";
 import PointerActionExecutor from "../../pointerAction/Executor";
 import RollState from "./state/RollState";
+import Rest from "../rest/Rest";
 
 type Props = {
   context: CanvasRenderingContext2D;
   canvasSize: Size;
   gridSize: Size;
+  rest: ReturnType<typeof Rest>;
 };
-const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
+const GridController: React.FC<Props> = ({
+  context,
+  canvasSize,
+  gridSize,
+  rest,
+}) => {
   const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveState(maxPos);
@@ -36,7 +43,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 
   const roll = RollState();
   const note = (() => {
-    const state = NoteState(roll);
+    const state = NoteState(roll, rest);
     const executor = NoteAction(state, move, cellSize);
     const draw = NoteDrawer(state);
     return { state, executor, draw };

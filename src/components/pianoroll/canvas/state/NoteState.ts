@@ -4,6 +4,9 @@ import PointerId from "../type/PointerId";
 import useIdMapState from "../useIdMapState";
 import RollState from "./RollState";
 import Context from "../../context/Context";
+import Note from "../../rest/Note";
+import { useEffect } from "react";
+import Rest from "../../rest/Rest";
 
 type NoteId = number;
 type Note = {
@@ -11,13 +14,29 @@ type Note = {
   octave: number;
   pitch: number;
   length: number;
+  childRollId?: number;
 };
 type View = {
   pos: Pos;
   length: number;
 };
-const NoteState = (rollMap: ReturnType<typeof RollState>) => {
+const NoteState = (
+  rollMap: ReturnType<typeof RollState>,
+  restRoot: ReturnType<typeof Rest>
+) => {
+  const rollId = Context.roll.selectedId.State();
   const rollContext = Context.roll.selected();
+  const rest = restRoot.note(rollId);
+  useEffect(() => {
+    rest
+      .getAll()
+      .then((it) =>
+        state.use((state) => {
+          state.clear()
+          it.forEach((it) => state.set(it.id, it))
+        })
+      );
+  }, [rollId]);
   const getNoteFromView = (view: View): Note => {
     const { pos, length } = view;
     const roll = rollContext!.data; //rollMap.get(1)!;
@@ -68,9 +87,18 @@ const NoteState = (rollMap: ReturnType<typeof RollState>) => {
       if (!note) return;
       return getViewFromNote(note);
     },
-    add: (value: View) => state.add(getNoteFromView(value)),
-    set: (key: NoteId, value: View) => state.set(key, getNoteFromView(value)),
-    delete: (key: NoteId) => state.delete(key),
+    add: (value: View) => {
+      const note = getNoteFromView(value);
+      return rest.create(note).then((it) => state.set(it.id, it));
+    },
+    set: (key: NoteId, value: View) => {
+      const note = getNoteFromView(value);
+      return rest
+        .update({ id: key, ...note })
+        .then((it) => state.set(it.id, it));
+    },
+    delete: (key: NoteId) =>
+      rest.delete({ id: key }).then(() => state.delete(key)),
     forEach: (
       callbackfn: (value: View, key: number, map: Map<number, Note>) => void
     ) =>

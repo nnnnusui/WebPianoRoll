@@ -2,10 +2,7 @@ import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
-import {
-  PointerActionExecutorOverride,
-  PointerActionExecution,
-} from "../../../pointerAction/Executor";
+import { PointerActionExecutorOverride } from "../../../pointerAction/Executor";
 import Event from "../../../pointerAction/type/Event";
 
 const NoteAction = (
@@ -25,7 +22,10 @@ const NoteAction = (
   type Note = { pos: Pos; length: number };
   type Action = {
     result: (events: Event[]) => Note;
-  } & PointerActionExecution;
+    execute: (events: Event[]) => Promise<void>;
+    mayBeExecute: (events: Event[]) => void;
+    cancel: () => void;
+  };
 
   const AddAction = (from: Pos): Action => {
     const result = (events: Event[]) => {
@@ -39,7 +39,7 @@ const NoteAction = (
 
     return {
       result,
-      execute: (events) => state.add(result(events)),
+      execute: (events: Event[]) => state.add(result(events)),
       mayBeExecute: () => {},
       cancel: () => {},
     };
@@ -87,9 +87,7 @@ const NoteAction = (
     let action = removeAction;
     return {
       result: (events) => action.result(events),
-      execute: (events: Event[]) => {
-        action.execute(events);
-      },
+      execute: (events: Event[]) => action.execute(events),
       mayBeExecute: (events: Event[]) => {
         action.mayBeExecute(events);
         const [event] = events;
@@ -120,9 +118,10 @@ const NoteAction = (
 
       return {
         execute: (events) => {
-          action.execute(events);
-          state.maybe.delete(pointerId);
-          state.onAction.delete(pointerId);
+          action.execute(events).finally(() => {
+            state.maybe.delete(pointerId);
+            state.onAction.delete(pointerId);
+          });
         },
         mayBeExecute: (events) => {
           action.mayBeExecute(events);

@@ -19,7 +19,7 @@ const PianoRoll: React.FC = (): ReactElement => {
           <hr className="border-gray-400 mt-1.5 mb-1" />
           <RollController />
         </div>
-        <Grid />
+        <Grid rest={rest} />
       </Context.Provider>
     </div>
   );

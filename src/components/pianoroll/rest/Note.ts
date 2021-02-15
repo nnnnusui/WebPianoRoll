@@ -10,7 +10,7 @@ type Others = {
   octave: number;
   pitch: number;
   length: number;
-  childRollId: number | null;
+  childRollId?: number;
 };
 const Note = (url: string) => {
   return {

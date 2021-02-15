@@ -4,6 +4,11 @@ import { Pos } from "../type/Pos";
 import useMapState from "../useMapState";
 import PointerId from "../type/PointerId";
 
+type NoteId = number;
+type Note = {
+  pos: Pos;
+  length: number;
+};
 const NoteState = () => {
   const roll = Context.roll.selected()?.data;
   const notes = Context.notes.State();
@@ -24,12 +29,6 @@ const NoteState = () => {
       (roll!.maxOctave - data.octave) * roll!.maxPitch +
       (roll!.maxPitch - data.pitch - 1),
   });
-
-  type NoteId = number;
-  type Note = {
-    pos: Pos;
-    length: number;
-  };
 
   const getAll = () => {
     if (!roll) return [];
@@ -77,11 +76,12 @@ const NoteState = () => {
       notesAction({ type: "create", rollId: roll!.id, request });
     },
     set: (noteId: NoteId, note: Note) => {
+      const before = notes.get(roll!.id)?.get(noteId)
       const request = {
         id: noteId,
         ...getNoteRestDataFromPos(note.pos)!,
         length: note.length,
-        childRollId: null,
+        childRollId: before?.data.childRollId ||  null,
       };
       notesAction({ type: "update", rollId: roll!.id, request });
     },
@@ -99,3 +99,4 @@ const NoteState = () => {
   };
 };
 export default NoteState;
+export type {Note}

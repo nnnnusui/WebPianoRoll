@@ -14,6 +14,7 @@ import PointerActionDistributor from "../../pointerAction/Distributor";
 import PointerActionState from "../../pointerAction/State";
 import PointerActionSettings from "../../pointerAction/Settings";
 import PointerActionExecutor from "../../pointerAction/Executor";
+import RollState from "./state/RollState";
 
 type Props = {
   context: CanvasRenderingContext2D;
@@ -33,8 +34,9 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     height: (canvasSize.height / grid.size.height) * scale.get.height,
   };
 
+  const roll = RollState();
   const note = (() => {
-    const state = NoteState();
+    const state = NoteState(roll);
     const executor = NoteAction(state, move, cellSize);
     const draw = NoteDrawer(state);
     return { state, executor, draw };

@@ -26,6 +26,8 @@ function useMapState<Key, Value>(init: [Key, Value][] = []) {
         const value = action instanceof Function ? action(before) : action;
         state.set(key, value);
       }),
+    get: (key: Key) => state.get(key),
+    getAll: () => Array.from(state),
     values: () => state.values(),
     forEach: (callbackfn: Parameters<typeof state.forEach>[0]) =>
       state.forEach(callbackfn),

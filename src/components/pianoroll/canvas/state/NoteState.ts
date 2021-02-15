@@ -9,6 +9,8 @@ const NoteState = () => {
   const notes = Context.notes.State();
   const notesAction = Context.notes.Dispatch();
 
+  const maybe = useMapState<number, Note>();
+
   const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
     const offset = pos.x;
     const octave = roll!.maxOctave - Math.floor(pos.y / roll!.maxPitch);
@@ -91,6 +93,7 @@ const NoteState = () => {
     },
     getAll,
     getAlreadyExists,
+    maybe,
   };
 };
 export default NoteState;

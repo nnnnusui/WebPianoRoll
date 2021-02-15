@@ -15,11 +15,14 @@ const NoteDrawer = (
     const idPair = Array.from(action.onActionMap.state);
     const pointerIds = idPair.map(([pointerId]) => pointerId);
     const noteIds = idPair.map(([, noteId]) => noteId);
-    pointerIds.forEach((id) => {
-      const applied = action.getApplied(id);
-      if (!applied) return;
-      drawNote(context, move, cellSize, applied.pos, applied.length, 0.5);
+    state.maybe.state.forEach((note) => {
+      drawNote(context, move, cellSize, note.pos, note.length, 0.5);
     });
+    // pointerIds.forEach((id) => {
+    //   const applied = action.getApplied(id);
+    //   if (!applied) return;
+    //   drawNote(context, move, cellSize, applied.pos, applied.length, 0.5);
+    // });
     state.getAll().forEach((it) => {
       if (noteIds.includes(it.id)) return;
       drawNote(context, move, cellSize, it.pos, it.length);

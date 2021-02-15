@@ -1,3 +1,4 @@
+import NoteAction from "../pianoroll/canvas/pointerAction/NoteAction";
 import PointerActionExecutor, { PointerActionExecutorMap } from "./Executor";
 import PointerActionSettings, { PointerActionConditions } from "./Settings";
 import PointerActionState from "./State";
@@ -7,7 +8,8 @@ import Event from "./type/Event";
 const Distributor = (
   state: ReturnType<typeof PointerActionState>,
   settings: ReturnType<typeof PointerActionSettings>,
-  executorMap: PointerActionExecutorMap
+  executorMap: PointerActionExecutorMap,
+  noteAction: ReturnType<typeof NoteAction>
 ) => {
   const filteredByActionTypes = (by: ActionType[]) =>
     Array.from(state.state).filter(([, { action: { type } }]) =>
@@ -96,13 +98,18 @@ const Distributor = (
       onPointerDown: (event: Event) => {
         const finded = findAction();
         if (!finded) return;
-        const action = { ...finded };
+        const action = {
+          ...finded,
+          executor: noteAction.NoteAddAction(
+            getEvents(event, finded.overwriteTargets)
+          ),
+        };
         finded.overwriteTargets.forEach(([id, prev]) =>
           state.set(id, { ...prev, action })
         );
-        executorMap
-          .get(finded.type)
-          .down(getEvents(event, finded.overwriteTargets));
+        // executorMap
+        //   .get(finded.type)
+        //   .down(getEvents(event, finded.overwriteTargets));
         state.set(event.pointerId, { event, action });
       },
       onPointerMove: (event: Event) => {
@@ -110,21 +117,27 @@ const Distributor = (
           const prev = state.get(event.pointerId);
           if (!prev) return;
           const next = { ...prev, event };
-          execute(next, "move");
+          // execute(next, "move");
+          next.action.executor.mayBe(
+            getEvents(next.event, filteredByActionTypes([next.action.type]))
+          );
           state.set(event.pointerId, next);
         });
       },
       onPointerUp: (event: Event) =>
         state.delete(event.pointerId, (prev) => {
           const next = { ...prev, event };
-          execute(next, "up");
-          applyResidue(next);
+          // execute(next, "up");
+          // applyResidue(next);
+          next.action.executor.apply(
+            getEvents(next.event, filteredByActionTypes([next.action.type]))
+          );
         }),
       onPointerCancel: (event: Event) =>
         state.delete(event.pointerId, (prev) => {
           const next = { ...prev, event };
-          execute(next, "cancel");
-          applyResidue(next);
+          // execute(next, "cancel");
+          // applyResidue(next);
         }),
       onPointerOut: () => {},
       onPointerLeave: () => {},

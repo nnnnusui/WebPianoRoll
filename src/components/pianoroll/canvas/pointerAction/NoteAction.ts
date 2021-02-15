@@ -1,4 +1,5 @@
 import { PointerActionExecutorOverride } from "../../../pointerAction/Executor";
+import Event from "../../../pointerAction/type/Event";
 import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
 import PointerId from "../type/PointerId";
@@ -90,6 +91,31 @@ const NoteAction = (
     }
   };
 
+  const NoteAddAction = (events: Event[]) => {
+    const [event] = events;
+    const from = getCellPos(move.getGridLocal(event));
+    state.maybe.set(event.pointerId, { pos: from, length: 1 });
+    const result = (event: Event) => {
+      const to = getCellPos(move.getGridLocal(event));
+      const xDiff = to.x - from.x;
+      const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
+      const length = Math.abs(xDiff) + 1;
+      const result = { pos, length };
+      return result;
+    };
+    return {
+      apply: (events: Event[]) => {
+        const [event] = events;
+        state.add(result(event));
+        state.maybe.delete(event.pointerId);
+      },
+      mayBe: (events: Event[]) => {
+        const [event] = events;
+        state.maybe.set(event.pointerId, result(event));
+      },
+    };
+  };
+
   const override: PointerActionExecutorOverride = {
     type: "note",
     executor: {
@@ -139,6 +165,6 @@ const NoteAction = (
       },
     },
   };
-  return { ...override, getApplied, onActionMap };
+  return { ...override, getApplied, onActionMap, NoteAddAction };
 };
 export default NoteAction;

@@ -70,7 +70,12 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ScaleAction(scale),
       note.action,
     ]);
-    const distributor = PointerActionDistributor(state, settings, executorMap);
+    const distributor = PointerActionDistributor(
+      state,
+      settings,
+      executorMap,
+      note.action
+    );
     return {
       ...distributor,
       ...state,

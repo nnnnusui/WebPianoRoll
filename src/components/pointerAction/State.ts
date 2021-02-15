@@ -10,6 +10,10 @@ type Info = {
   action: {
     type: ActionType;
     conditions: PointerActionConditions;
+    executor: {
+      apply: (events: Event[]) => void;
+      mayBe: (events: Event[]) => void;
+    };
   };
 };
 const State = () => {

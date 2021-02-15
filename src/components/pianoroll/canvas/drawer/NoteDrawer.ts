@@ -12,8 +12,8 @@ const NoteDrawer = (state: ReturnType<typeof NoteState>) => {
     state.maybe.forEach((note) => {
       drawNote(context, move, cellSize, note.pos, note.length, 0.5);
     });
-    state.getAll().forEach((it) => {
-      if (noteIds.includes(it.id)) return;
+    state.forEach((it, id) => {
+      if (noteIds.includes(id)) return;
       drawNote(context, move, cellSize, it.pos, it.length);
     });
   };

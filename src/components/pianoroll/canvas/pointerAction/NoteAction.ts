@@ -106,7 +106,7 @@ const NoteAction = (
       const [event] = events;
       const pointerId = event.pointerId;
       const from = getCellPos(move.getGridLocal(event));
-      const alreadyExists = state.getAlreadyExists(from);
+      const alreadyExists = state.getExistsOn(from);
       const action = (() => {
         if (alreadyExists.length <= 0) {
           return AddAction(from);

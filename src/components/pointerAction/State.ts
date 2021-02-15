@@ -1,6 +1,6 @@
-import useMapState from "../pianoroll/canvas/useMapState";
 import { PointerActionConditions } from "./Settings";
 import { PointerActionExecution } from "./Executor";
+import useIdMapState from "../pianoroll/canvas/useIdMapState";
 
 type PointerId = number;
 type Event = React.PointerEvent;
@@ -15,7 +15,7 @@ type Info = {
   };
 };
 const State = () => {
-  return useMapState<PointerId, Info>();
+  return useIdMapState<Info>();
 };
 type PointerActionState = Map<PointerId, Info>;
 const PointerActionState = State;

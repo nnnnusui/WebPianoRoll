@@ -11,12 +11,14 @@ const Distributor = (
   executorMap: PointerActionExecutorMap
 ) => {
   const filteredByActionTypes = (by: ActionType[], pointerId: PointerId) =>
-    Array.from(state)
-      .filter(([id]) => pointerId != id)
-      .filter(([, { action: { type } }]) => by.includes(type));
+    state
+      .getAllWithId()
+      .filter(({ id }) => pointerId != id)
+      .filter(({ action: { type } }) => by.includes(type));
 
   const isUnique = (it: ActionType) =>
-    Array.from(state.values())
+    state
+      .getAllWithId()
       .map(({ action: { type } }) => type)
       .includes(it);
   const checkConditions = (
@@ -44,7 +46,7 @@ const Distributor = (
   ) => [
     latest,
     ...from
-      .map(([, { event }]) => {
+      .map(({ event }) => {
         console.log(event.pointerId);
         return event;
       })
@@ -67,9 +69,9 @@ const Distributor = (
       .reverse();
     const residual = !!checkConditions(residue, conditions, pointerId);
 
-    targets.forEach(([id, it]) => {
+    targets.forEach(({ id, ...it }) => {
       if (residual) {
-        const events = targets.map(([, { event }]) => event).reverse();
+        const events = targets.map(({ event }) => event).reverse();
         const executor = executorMap.use(residue, events);
         state.set(id, {
           ...it,
@@ -91,7 +93,7 @@ const Distributor = (
           ...finded,
           executor: executorMap.use(finded.type, events),
         };
-        finded.overwriteTargets.forEach(([id, prev]) => {
+        finded.overwriteTargets.forEach(({ id, ...prev }) => {
           prev.action.executor.cancel();
           state.set(id, { ...prev, action });
         });

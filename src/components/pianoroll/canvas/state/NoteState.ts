@@ -17,17 +17,17 @@ type View = {
   length: number;
 };
 const NoteState = (rollMap: ReturnType<typeof RollState>) => {
-  const rollContext = Context.roll.selected()
+  const rollContext = Context.roll.selected();
   const getNoteFromView = (view: View): Note => {
     const { pos, length } = view;
-    const roll = rollContext!.data//rollMap.get(1)!;
+    const roll = rollContext!.data; //rollMap.get(1)!;
     const offset = pos.x;
     const octave = roll.maxOctave - Math.floor(pos.y / roll.maxPitch);
     const pitch = roll.maxPitch - (pos.y % roll.maxPitch) - 1;
     return { offset, octave, pitch, length };
   };
   const getViewFromNote = (note: Note): View => {
-    const roll = rollContext!.data//rollMap.get(1)!;
+    const roll = rollContext!.data; //rollMap.get(1)!;
     return {
       pos: {
         x: note.offset,
@@ -38,7 +38,7 @@ const NoteState = (rollMap: ReturnType<typeof RollState>) => {
       length: note.length,
     };
   };
-  
+
   const state = useIdMapState<Note>();
   const maybe = useMapState<PointerId, View>();
   const onAction = useMapState<PointerId, NoteId>();
@@ -46,7 +46,7 @@ const NoteState = (rollMap: ReturnType<typeof RollState>) => {
   const getExistsOn = (pos: Pos) => {
     return state
       .getAllWithId()
-      .map(note => ({id: note.id, ...getViewFromNote(note)}))
+      .map((note) => ({ id: note.id, ...getViewFromNote(note) }))
       .reverse()
       .filter((note) => {
         const range = {
@@ -64,15 +64,19 @@ const NoteState = (rollMap: ReturnType<typeof RollState>) => {
   return {
     ...state,
     get: (key: NoteId) => {
-      const note = state.get(key)
+      const note = state.get(key);
       if (!note) return;
-      return getViewFromNote(note)
+      return getViewFromNote(note);
     },
     add: (value: View) => state.add(getNoteFromView(value)),
     set: (key: NoteId, value: View) => state.set(key, getNoteFromView(value)),
     delete: (key: NoteId) => state.delete(key),
-    forEach: (callbackfn: (value: View, key: number, map: Map<number, Note>) => void) =>
-      state.forEach((value, key, map) => callbackfn(getViewFromNote(value), key, map)),
+    forEach: (
+      callbackfn: (value: View, key: number, map: Map<number, Note>) => void
+    ) =>
+      state.forEach((value, key, map) =>
+        callbackfn(getViewFromNote(value), key, map)
+      ),
     getExistsOn,
     maybe,
     onAction,

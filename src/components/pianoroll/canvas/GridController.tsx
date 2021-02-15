@@ -124,8 +124,9 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ></div>
       <h1 className="absolute text-white">
         {`debug: ${debug}`} _
-        {Array.from(pointer)
-          .map(([, { action }], index) => `${index}: ${action.type}`)
+        {pointer
+          .getAllWithId()
+          .map(({ action }, index) => `${index}: ${action.type}`)
           .join(", ")}
       </h1>
     </>

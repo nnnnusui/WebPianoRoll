@@ -93,7 +93,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     grid.draw(context, move.get, cellSize);
     note.draw(context, move.get, cellSize);
     selection.draw(context, move.get);
-    pointer.state.forEach(({ event }) => {
+    pointer.forEach(({ event }) => {
       const viewLocal = getViewLocal(event);
       context.fillStyle = "#f5dd67";
       context.beginPath();
@@ -122,7 +122,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
       ></div>
       <h1 className="absolute text-white">
         {`debug: ${debug}`} _
-        {Array.from(pointer.state)
+        {Array.from(pointer)
           .map(([, { action }], index) => `${index}: ${action.type}`)
           .join(", ")}
       </h1>

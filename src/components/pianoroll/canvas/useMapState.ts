@@ -1,6 +1,6 @@
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 
-function useMapState<Key, Value = null>(init: [Key, Value][] = []) {
+function useMapState<Key, Value>(init: [Key, Value][] = []) {
   type State = Map<Key, Value>;
   const [state, setState] = useState<State>(new Map(init));
   const use = (action: (state: State) => void) => {
@@ -11,22 +11,24 @@ function useMapState<Key, Value = null>(init: [Key, Value][] = []) {
   };
 
   return {
-    state,
+    ...state,
     use,
-    get: (key: Key) => state.get(key),
-    set: (key: Key, value: Value) => use((prev) => prev.set(key, value)),
-    // set: (key: Key, action: SetStateAction<Value | void>) =>
-    //   use((prev) => {
-    //     const before = prev.get(key);
-    //     const value = action instanceof Function ? action(before) : action;
-    //     if (!value) return;
-    //     prev.set(key, value);
-    //   }),
-    delete: (key: Key, action?: (value: Value) => void) => {
-      const value = state.get(key);
-      if (action && value) action(value);
-      use((prev) => prev.delete(key));
-    },
+    clear: () => use((prev) => prev.clear()),
+    delete: (key: Key, action?: (value: Value) => void) =>
+      use((state) => {
+        const value = state.get(key);
+        if (action && value) action(value);
+        state.delete(key);
+      }),
+    set: (key: Key, action: Value | ((value: Value | undefined) => Value)) =>
+      use((state) => {
+        const before = state.get(key);
+        const value = action instanceof Function ? action(before) : action;
+        state.set(key, value);
+      }),
+    values: () => state.values(),
+    forEach: (callbackfn: Parameters<typeof state.forEach>[0]) =>
+      state.forEach(callbackfn),
   };
 }
 export default useMapState;

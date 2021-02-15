@@ -11,12 +11,12 @@ const Distributor = (
   executorMap: PointerActionExecutorMap
 ) => {
   const filteredByActionTypes = (by: ActionType[], pointerId: PointerId) =>
-    Array.from(state.state)
+    Array.from(state)
       .filter(([id]) => pointerId != id)
       .filter(([, { action: { type } }]) => by.includes(type));
 
   const isUnique = (it: ActionType) =>
-    Array.from(state.state.values())
+    Array.from(state.values())
       .map(({ action: { type } }) => type)
       .includes(it);
   const checkConditions = (

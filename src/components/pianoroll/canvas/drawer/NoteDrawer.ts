@@ -8,8 +8,8 @@ const NoteDrawer = (state: ReturnType<typeof NoteState>) => {
     move: Pos,
     cellSize: Size
   ) => {
-    const noteIds = Array.from(state.onAction.state.values());
-    state.maybe.state.forEach((note) => {
+    const noteIds = Array.from(state.onAction.values());
+    state.maybe.forEach((note) => {
       drawNote(context, move, cellSize, note.pos, note.length, 0.5);
     });
     state.getAll().forEach((it) => {

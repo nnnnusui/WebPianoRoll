@@ -2,42 +2,47 @@ import DummyAction from "./dummy/DummyAction";
 import ActionType from "./type/ActionType";
 import Event from "./type/Event";
 
-type Execution = (events: Event[]) => void;
-type Executor = {
-  down: Execution;
-  move: Execution;
-  up: Execution;
-  cancel: Execution;
+type Execute = (events: Event[]) => void;
+type Execution = {
+  execute: Execute;
+  mayBeExecute: Execute;
+  cancel: Execute;
 };
+type PartialExecutor = (events: Event[]) => Partial<Execution>;
 type Override = {
   type: ActionType;
-  executor: Partial<Executor>;
+  executor: PartialExecutor;
+};
+const empty: Execution = {
+  execute: () => {},
+  mayBeExecute: () => {},
+  cancel: () => {},
 };
 
-type PointerActionExecutor = Executor;
-
-const toRequired = (it: Partial<Executor>): Executor => ({
-  down: it.down || (() => {}),
-  move: it.move || (() => {}),
-  up: it.up || (() => {}),
-  cancel: it.cancel || (() => {}),
-});
-
+type PointerActionExecution = Execution;
 const PointerActionExecutor = {
   getMap: (overrides: Override[]) => {
-    const map = new Map(
+    const map = new Map<ActionType, PartialExecutor>(
       [DummyAction(), ...overrides].map(({ type, executor }) => [
         type,
-        toRequired(executor),
+        executor,
       ])
     );
+    const get = (key: ActionType) => map.get(key) || (() => empty);
     return {
       ...map,
-      get: (key: ActionType) => map.get(key) || toRequired({}),
+      use: (key: ActionType, events: Event[]) => ({
+        ...empty,
+        ...get(key)(events),
+      }),
     };
   },
 };
 type PointerActionExecutorOverride = Override;
 type PointerActionExecutorMap = ReturnType<typeof PointerActionExecutor.getMap>;
 export default PointerActionExecutor;
-export type { PointerActionExecutorOverride, PointerActionExecutorMap };
+export type {
+  PointerActionExecutorOverride,
+  PointerActionExecutorMap,
+  PointerActionExecution,
+};

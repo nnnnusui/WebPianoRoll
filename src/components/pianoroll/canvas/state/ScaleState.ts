@@ -13,31 +13,34 @@ const ScaleState = (
   const maxPos = move.maxPos;
   const [state, _setState] = useState(defaultValue);
   const setState = (viewLocalFocus: Pos, action: SetStateAction<Size>) => {
-    _setState((prev) => {
-      const mayBeNext = typeof action === "function" ? action(prev) : action;
+    _setState((prevScale) => {
+      const mayBeNext =
+        typeof action === "function" ? action(prevScale) : action;
       const next = fixLowerLimit(fixHigherLimit(mayBeNext));
 
-      // find `moveVector` calculation. and apply to MoveState.
-      const focus = {
-        x: move.get.x + viewLocalFocus.x,
-        y: move.get.y + viewLocalFocus.y,
-      };
-      const inGridRatio = {
-        width: focus.x / (maxPos.x * prev.width),
-        height: focus.y / (maxPos.y * prev.height),
-      };
-      const scalingVector = {
-        x: (next.width - prev.width) * maxPos.x,
-        y: (next.height - prev.height) * maxPos.y,
-      };
-      const moveVector = {
-        x: inGridRatio.width * scalingVector.x,
-        y: inGridRatio.height * scalingVector.y,
-      };
-      move.set(next, (prev) => ({
-        x: prev.x + moveVector.x,
-        y: prev.y + moveVector.y,
-      }));
+      move.set(next, (prevMove) => {
+        // find `moveVector` calculation. and apply to MoveState.
+        const focus = {
+          x: prevMove.x + viewLocalFocus.x,
+          y: prevMove.y + viewLocalFocus.y,
+        };
+        const inGridRatio = {
+          width: focus.x / (maxPos.x * prevScale.width),
+          height: focus.y / (maxPos.y * prevScale.height),
+        };
+        const scalingVector = {
+          x: (next.width - prevScale.width) * maxPos.x,
+          y: (next.height - prevScale.height) * maxPos.y,
+        };
+        const moveVector = {
+          x: inGridRatio.width * scalingVector.x,
+          y: inGridRatio.height * scalingVector.y,
+        };
+        return {
+          x: prevMove.x + moveVector.x,
+          y: prevMove.y + moveVector.y,
+        };
+      });
 
       return next;
     });

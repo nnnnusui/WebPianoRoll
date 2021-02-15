@@ -2,13 +2,17 @@ import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
-import { PointerActionExecutor } from "../../../pointerAction/State";
+import {
+  PointerActionExecutorOverride,
+  PointerActionExecution,
+} from "../../../pointerAction/Executor";
+import Event from "../../../pointerAction/type/Event";
 
 const NoteAction = (
   state: ReturnType<typeof NoteState>,
   move: ReturnType<typeof MoveState>,
   cellSize: Size
-) => {
+): PointerActionExecutorOverride => {
   type NoteId = number;
 
   const getCellPos = (gridLocal: Pos): Pos => {
@@ -18,12 +22,10 @@ const NoteAction = (
     };
   };
 
-  type Executor = PointerActionExecutor;
   type Note = { pos: Pos; length: number };
-  type Action = Executor & {
+  type Action = {
     result: (events: Event[]) => Note;
-  };
-  type Event = React.PointerEvent;
+  } & PointerActionExecution;
 
   const AddAction = (from: Pos): Action => {
     const result = (events: Event[]) => {
@@ -39,6 +41,7 @@ const NoteAction = (
       result,
       execute: (events) => state.add(result(events)),
       mayBeExecute: () => {},
+      cancel: () => {},
     };
   };
   const MoveAction = (from: Pos, noteId: NoteId): Action => {
@@ -62,6 +65,7 @@ const NoteAction = (
       result,
       execute: (events: Event[]) => state.set(noteId, result(events)),
       mayBeExecute: () => {},
+      cancel: () => {},
     };
   };
   const RemoveAction = (noteId: NoteId, note: Note): Action => {
@@ -69,6 +73,7 @@ const NoteAction = (
       result: () => note,
       execute: () => state.delete(noteId),
       mayBeExecute: () => {},
+      cancel: () => {},
     };
   };
 
@@ -91,11 +96,13 @@ const NoteAction = (
         const to = getCellPos(move.getGridLocal(event));
         if (from?.x != to?.x || from?.y != to?.y) action = moveAction;
       },
+      cancel: () => {},
     };
   };
 
   return {
-    executor: (events: Event[]): Executor => {
+    type: "note",
+    executor: (events) => {
       const [event] = events;
       const pointerId = event.pointerId;
       const from = getCellPos(move.getGridLocal(event));
@@ -109,6 +116,7 @@ const NoteAction = (
           return MoveOrRemoveAction(from, note.id, note);
         }
       })();
+      state.maybe.set(pointerId, action.result(events));
 
       return {
         execute: (events) => {
@@ -119,6 +127,10 @@ const NoteAction = (
         mayBeExecute: (events) => {
           action.mayBeExecute(events);
           state.maybe.set(pointerId, action.result(events));
+        },
+        cancel: () => {
+          state.maybe.delete(pointerId);
+          state.onAction.delete(pointerId);
         },
       };
     },

@@ -1,20 +1,17 @@
 import useMapState from "../pianoroll/canvas/useMapState";
 import { PointerActionConditions } from "./Settings";
+import { PointerActionExecution } from "./Executor";
 
 type PointerId = number;
 type Event = React.PointerEvent;
 
-type Executor = {
-  execute: (events: Event[]) => void;
-  mayBeExecute: (events: Event[]) => void;
-};
 type ActionType = string;
 type Info = {
   event: Event;
   action: {
     type: ActionType;
     conditions: PointerActionConditions;
-    executor: Executor;
+    executor: PointerActionExecution;
   };
 };
 const State = () => {
@@ -23,4 +20,3 @@ const State = () => {
 type PointerActionState = Map<PointerId, Info>;
 const PointerActionState = State;
 export default PointerActionState;
-export type { Executor as PointerActionExecutor };

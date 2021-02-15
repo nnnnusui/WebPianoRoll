@@ -24,7 +24,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const [debug, setDebug] = useState("");
   const maxPos = { x: canvasSize.width, y: canvasSize.height };
   const move = MoveState(maxPos);
-  const scale = ScaleState(move, { width: 2, height: 2 });
+  const scale = ScaleState(move);
   const selection = SelectionController();
 
   const grid = Grid(gridSize);
@@ -35,9 +35,9 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
 
   const note = (() => {
     const state = NoteState();
-    const action = NoteAction(state, move, cellSize);
+    const executor = NoteAction(state, move, cellSize);
     const draw = NoteDrawer(state);
-    return { state, action, draw };
+    return { state, executor, draw };
   })();
 
   const getViewLocal = (event: React.MouseEvent) => {
@@ -66,14 +66,9 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const executorMap = PointerActionExecutor.getMap([
       MoveAction(move, scale),
       ScaleAction(scale),
-      // note.action,
+      note.executor,
     ]);
-    const distributor = PointerActionDistributor(
-      state,
-      settings,
-      executorMap,
-      note.action.executor
-    );
+    const distributor = PointerActionDistributor(state, settings, executorMap);
     return {
       ...distributor,
       ...state,
@@ -125,8 +120,8 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
           return false;
         }}
       ></div>
-      <h1 className="absolute">
-        {`debug: ${scale.get.width}`} _
+      <h1 className="absolute text-white">
+        {`debug: ${debug}`} _
         {Array.from(pointer.state)
           .map(([, { action }], index) => `${index}: ${action.type}`)
           .join(", ")}

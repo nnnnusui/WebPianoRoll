@@ -35,8 +35,8 @@ const applyDummy = (overrides: Override[]) => [
 const Settings = (overrides: Override[]): Map<ActionType, Conditions> =>
   applyDummy(overrides).reduce(
     (map, { type, conditions }) =>
-      map.set(type, { ...(map.get(type) || defaultConditions), ...conditions }),
-    new Map()
+      map.set(type, { ...defaultConditions, ...map.get(type), ...conditions }),
+    new Map<ActionType, Conditions>()
   );
 const PointerActionSettings = Settings;
 type PointerActionConditions = Conditions;

@@ -9,7 +9,7 @@ const Distributor = (
   state: ReturnType<typeof PointerActionState>,
   settings: ReturnType<typeof PointerActionSettings>,
   executorMap: PointerActionExecutorMap,
-  noteAction: ReturnType<typeof NoteAction>
+  noteAction: ReturnType<typeof NoteAction>["executor"]
 ) => {
   const filteredByActionTypes = (by: ActionType[]) =>
     Array.from(state.state).filter(([, { action: { type } }]) =>
@@ -100,9 +100,7 @@ const Distributor = (
         if (!finded) return;
         const action = {
           ...finded,
-          executor: noteAction.NoteAddAction(
-            getEvents(event, finded.overwriteTargets)
-          ),
+          executor: noteAction(getEvents(event, finded.overwriteTargets)),
         };
         finded.overwriteTargets.forEach(([id, prev]) =>
           state.set(id, { ...prev, action })
@@ -118,7 +116,7 @@ const Distributor = (
           if (!prev) return;
           const next = { ...prev, event };
           // execute(next, "move");
-          next.action.executor.mayBe(
+          next.action.executor.mayBeExecute(
             getEvents(next.event, filteredByActionTypes([next.action.type]))
           );
           state.set(event.pointerId, next);
@@ -129,7 +127,7 @@ const Distributor = (
           const next = { ...prev, event };
           // execute(next, "up");
           // applyResidue(next);
-          next.action.executor.apply(
+          next.action.executor.execute(
             getEvents(next.event, filteredByActionTypes([next.action.type]))
           );
         }),

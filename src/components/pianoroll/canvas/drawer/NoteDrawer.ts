@@ -1,28 +1,17 @@
-import NoteAction from "../pointerAction/NoteAction";
 import NoteState from "../state/NoteState";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
 
-const NoteDrawer = (
-  state: ReturnType<typeof NoteState>,
-  action: ReturnType<typeof NoteAction>
-) => {
+const NoteDrawer = (state: ReturnType<typeof NoteState>) => {
   const draw = (
     context: CanvasRenderingContext2D,
     move: Pos,
     cellSize: Size
   ) => {
-    const idPair = Array.from(action.onActionMap.state);
-    const pointerIds = idPair.map(([pointerId]) => pointerId);
-    const noteIds = idPair.map(([, noteId]) => noteId);
+    const noteIds = Array.from(state.onAction.state.values());
     state.maybe.state.forEach((note) => {
       drawNote(context, move, cellSize, note.pos, note.length, 0.5);
     });
-    // pointerIds.forEach((id) => {
-    //   const applied = action.getApplied(id);
-    //   if (!applied) return;
-    //   drawNote(context, move, cellSize, applied.pos, applied.length, 0.5);
-    // });
     state.getAll().forEach((it) => {
       if (noteIds.includes(it.id)) return;
       drawNote(context, move, cellSize, it.pos, it.length);

@@ -4,14 +4,12 @@ import ScaleState from "./state/ScaleState";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
-import PointerActionConsumer from "./PointerActionConsumer";
 import MoveState from "./state/MoveState";
 import MoveAction from "./pointerAction/MoveAction";
 import ScaleAction from "./pointerAction/ScaleAction";
 import NoteAction from "./pointerAction/NoteAction";
 import NoteState from "./state/NoteState";
 import NoteDrawer from "./drawer/NoteDrawer";
-import PointerActionConfig from "./PointerActionConfig";
 import PointerActionDistributor from "../../pointerAction/Distributor";
 import PointerActionState from "../../pointerAction/State";
 import PointerActionSettings from "../../pointerAction/Settings";
@@ -38,7 +36,7 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
   const note = (() => {
     const state = NoteState();
     const action = NoteAction(state, move, cellSize);
-    const draw = NoteDrawer(state, action);
+    const draw = NoteDrawer(state);
     return { state, action, draw };
   })();
 
@@ -68,13 +66,13 @@ const GridController: React.FC<Props> = ({ context, canvasSize, gridSize }) => {
     const executorMap = PointerActionExecutor.getMap([
       MoveAction(move, scale),
       ScaleAction(scale),
-      note.action,
+      // note.action,
     ]);
     const distributor = PointerActionDistributor(
       state,
       settings,
       executorMap,
-      note.action
+      note.action.executor
     );
     return {
       ...distributor,

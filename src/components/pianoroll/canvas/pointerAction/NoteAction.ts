@@ -1,11 +1,8 @@
-import { PointerActionExecutorOverride } from "../../../pointerAction/Executor";
-import Event from "../../../pointerAction/type/Event";
 import MoveState from "../state/MoveState";
 import NoteState from "../state/NoteState";
-import PointerId from "../type/PointerId";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
-import useMapState from "../useMapState";
+import { PointerActionExecutor } from "../../../pointerAction/State";
 
 const NoteAction = (
   state: ReturnType<typeof NoteState>,
@@ -13,12 +10,6 @@ const NoteAction = (
   cellSize: Size
 ) => {
   type NoteId = number;
-  type Mode = "add" | "remove" | "move" | "moveOrRemove";
-  const modeMap = useMapState<PointerId, Mode>();
-  const fromMap = useMapState<PointerId, Pos>();
-  const toMap = useMapState<PointerId, Pos>();
-
-  const onActionMap = useMapState<PointerId, NoteId | null>([]);
 
   const getCellPos = (gridLocal: Pos): Pos => {
     return {
@@ -27,144 +18,110 @@ const NoteAction = (
     };
   };
 
-  const getApplied = (id: PointerId) => {
-    const mode = modeMap.get(id);
-    const from = fromMap.get(id);
-    const to = toMap.get(id);
-    if (!mode || !from || !to) return;
-
-    switch (mode) {
-      case "add": {
-        const xDiff = to.x - from.x;
-        const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
-        const length = Math.abs(xDiff) + 1;
-        return { pos, length };
-      }
-      case "move": {
-        const noteId = onActionMap.get(id)!;
-        const target = state.get(noteId)!;
-        const vector = {
-          x: to.x - from.x,
-          y: to.y - from.y,
-        };
-        const moved = {
-          ...target,
-          pos: {
-            x: target.pos.x + vector.x,
-            y: target.pos.y + vector.y,
-          },
-        };
-        return moved;
-      }
-      case "remove":
-      case "moveOrRemove": {
-        return state.get(onActionMap.get(id)!);
-      }
-      default:
-        break;
-    }
+  type Executor = PointerActionExecutor;
+  type Note = { pos: Pos; length: number };
+  type Action = Executor & {
+    result: (events: Event[]) => Note;
   };
-  const apply = (id: PointerId) => {
-    const mode = modeMap.get(id);
-    const applied = getApplied(id);
-    if (!mode || !applied) return;
+  type Event = React.PointerEvent;
 
-    switch (mode) {
-      case "add":
-        state.add(applied);
-        break;
-      case "move": {
-        const noteId = onActionMap.get(id);
-        if (!noteId) return;
-        state.set(noteId, applied);
-        break;
-      }
-      case "remove":
-      case "moveOrRemove": {
-        const noteId = onActionMap.get(id);
-        if (!noteId) return;
-        state.delete(noteId);
-        break;
-      }
-      default:
-        break;
-    }
-  };
-
-  const NoteAddAction = (events: Event[]) => {
-    const [event] = events;
-    const from = getCellPos(move.getGridLocal(event));
-    state.maybe.set(event.pointerId, { pos: from, length: 1 });
-    const result = (event: Event) => {
+  const AddAction = (from: Pos): Action => {
+    const result = (events: Event[]) => {
+      const [event] = events;
       const to = getCellPos(move.getGridLocal(event));
       const xDiff = to.x - from.x;
       const pos = { ...from, x: Math.min(from.x + xDiff, from.x) };
       const length = Math.abs(xDiff) + 1;
-      const result = { pos, length };
-      return result;
+      return { pos, length };
+    };
+
+    return {
+      result,
+      execute: (events) => state.add(result(events)),
+      mayBeExecute: () => {},
+    };
+  };
+  const MoveAction = (from: Pos, noteId: NoteId): Action => {
+    const target = state.get(noteId)!;
+    const result = (events: Event[]) => {
+      const [event] = events;
+      const to = getCellPos(move.getGridLocal(event));
+      const vector = {
+        x: to.x - from.x,
+        y: to.y - from.y,
+      };
+      return {
+        ...target,
+        pos: {
+          x: target.pos.x + vector.x,
+          y: target.pos.y + vector.y,
+        },
+      };
     };
     return {
-      apply: (events: Event[]) => {
-        const [event] = events;
-        state.add(result(event));
-        state.maybe.delete(event.pointerId);
+      result,
+      execute: (events: Event[]) => state.set(noteId, result(events)),
+      mayBeExecute: () => {},
+    };
+  };
+  const RemoveAction = (noteId: NoteId, note: Note): Action => {
+    return {
+      result: () => note,
+      execute: () => state.delete(noteId),
+      mayBeExecute: () => {},
+    };
+  };
+
+  const MoveOrRemoveAction = (
+    from: Pos,
+    noteId: NoteId,
+    note: Note
+  ): Action => {
+    const moveAction = MoveAction(from, noteId);
+    const removeAction = RemoveAction(noteId, note);
+    let action = removeAction;
+    return {
+      result: (events) => action.result(events),
+      execute: (events: Event[]) => {
+        action.execute(events);
       },
-      mayBe: (events: Event[]) => {
+      mayBeExecute: (events: Event[]) => {
+        action.mayBeExecute(events);
         const [event] = events;
-        state.maybe.set(event.pointerId, result(event));
+        const to = getCellPos(move.getGridLocal(event));
+        if (from?.x != to?.x || from?.y != to?.y) action = moveAction;
       },
     };
   };
 
-  const override: PointerActionExecutorOverride = {
-    type: "note",
-    executor: {
-      down: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        const cell = getCellPos(move.getGridLocal(event));
-        const alreadyExists = state.getAlreadyExists(cell);
-        const mode = alreadyExists.length <= 0 ? "add" : "moveOrRemove";
-        modeMap.set(id, mode);
-        fromMap.set(id, cell);
-        toMap.set(id, cell);
-
-        const noteId = alreadyExists.length <= 0 ? null : alreadyExists[0].id;
-        onActionMap.set(id, noteId);
-      },
-      move: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        const cell = getCellPos(move.getGridLocal(event));
-        toMap.set(id, cell);
-
-        if (modeMap.get(id) != "moveOrRemove") return;
-        const from = fromMap.get(id);
-        const to = cell;
-        if (from?.x != to?.x || from?.y != to?.y) {
-          console.log(id);
-          modeMap.set(id, "move");
+  return {
+    executor: (events: Event[]): Executor => {
+      const [event] = events;
+      const pointerId = event.pointerId;
+      const from = getCellPos(move.getGridLocal(event));
+      const alreadyExists = state.getAlreadyExists(from);
+      const action = (() => {
+        if (alreadyExists.length <= 0) {
+          return AddAction(from);
+        } else {
+          const [note] = alreadyExists;
+          state.onAction.set(pointerId, note.id);
+          return MoveOrRemoveAction(from, note.id, note);
         }
-      },
-      up: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        apply(id);
-        modeMap.delete(id);
-        fromMap.delete(id);
-        toMap.delete(id);
-        onActionMap.delete(id);
-      },
-      cancel: (events) => {
-        const [event] = events;
-        const id = event.pointerId;
-        modeMap.delete(id);
-        fromMap.delete(id);
-        toMap.delete(id);
-        onActionMap.delete(id);
-      },
+      })();
+
+      return {
+        execute: (events) => {
+          action.execute(events);
+          state.maybe.delete(pointerId);
+          state.onAction.delete(pointerId);
+        },
+        mayBeExecute: (events) => {
+          action.mayBeExecute(events);
+          state.maybe.set(pointerId, action.result(events));
+        },
+      };
     },
   };
-  return { ...override, getApplied, onActionMap, NoteAddAction };
 };
 export default NoteAction;

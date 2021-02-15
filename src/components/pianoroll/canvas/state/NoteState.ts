@@ -1,15 +1,16 @@
-import { useState } from "react";
 import Context from "../../context/Context";
 import { NoteRestData } from "../../rest/Note";
 import { Pos } from "../type/Pos";
 import useMapState from "../useMapState";
+import PointerId from "../type/PointerId";
 
 const NoteState = () => {
   const roll = Context.roll.selected()?.data;
   const notes = Context.notes.State();
   const notesAction = Context.notes.Dispatch();
 
-  const maybe = useMapState<number, Note>();
+  const maybe = useMapState<PointerId, Note>();
+  const onAction = useMapState<PointerId, NoteId>();
 
   const getNoteRestDataFromPos = (pos: { x: number; y: number }) => {
     const offset = pos.x;
@@ -94,6 +95,7 @@ const NoteState = () => {
     getAll,
     getAlreadyExists,
     maybe,
+    onAction,
   };
 };
 export default NoteState;

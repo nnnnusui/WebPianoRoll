@@ -88,11 +88,13 @@ const Distributor = (
       onPointerDown: (event: Event) => {
         const finded = findAction(event.pointerId);
         if (!finded) return;
+        // get Executor
         const events = getEvents(event, finded.overwriteTargets);
         const action = {
           ...finded,
           executor: executorMap.use(finded.type, events),
         };
+        // set State
         finded.overwriteTargets.forEach(({ id, ...prev }) => {
           prev.action.executor.cancel();
           state.set(id, { ...prev, action });
@@ -103,12 +105,14 @@ const Distributor = (
         state.use((state) => {
           const prev = state.get(event.pointerId);
           if (!prev) return;
+          // Executor.mayBeExecute()
           const next = { ...prev, event };
           const events = getEvents(
             event,
             filteredByActionTypes([next.action.type], event.pointerId)
           );
           next.action.executor.mayBeExecute(events);
+          // set State
           state.set(event.pointerId, next);
         });
       },
@@ -116,23 +120,27 @@ const Distributor = (
         state.use((state) => {
           const prev = state.get(event.pointerId);
           if (!prev) return;
+          // Executor.execute()
           const next = { ...prev, event };
           const events = getEvents(
             next.event,
             filteredByActionTypes([next.action.type], event.pointerId)
           );
           next.action.executor.execute(events);
-          applyResidue(state, next);
+          // set State
           state.delete(event.pointerId);
+          applyResidue(state, next);
         }),
       onPointerCancel: (event: Event) =>
         state.use((state) => {
           const prev = state.get(event.pointerId);
           if (!prev) return;
+          // Executor.cancel()
           const next = { ...prev, event };
           next.action.executor.cancel();
-          applyResidue(state, next);
+          // set State
           state.delete(event.pointerId);
+          applyResidue(state, next);
         }),
       onPointerOut: () => {},
       onPointerLeave: () => {},

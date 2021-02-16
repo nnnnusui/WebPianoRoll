@@ -28,14 +28,12 @@ const NoteState = (
   const rollContext = Context.roll.selected();
   const rest = restRoot.note(rollId);
   useEffect(() => {
-    rest
-      .getAll()
-      .then((it) =>
-        state.use((state) => {
-          state.clear()
-          it.forEach((it) => state.set(it.id, it))
-        })
-      );
+    rest.getAll().then((it) =>
+      state.use((state) => {
+        state.clear();
+        it.forEach((it) => state.set(it.id, it));
+      })
+    );
   }, [rollId]);
   const getNoteFromView = (view: View): Note => {
     const { pos, length } = view;

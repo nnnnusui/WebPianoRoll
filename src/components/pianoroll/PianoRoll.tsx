@@ -1,47 +1,25 @@
-import React, { ReactElement, useState, useEffect } from "react";
-import Rest from "./rest/Rest";
-import Context from "./context/Context";
-import RollController from "./controller/RollController";
-import AudioController from "./controller/AudioController";
-import Grid from "./canvas/Grid";
+import React, { ReactElement } from "react";
+import Canvas from "../Canvas";
+import RollState from "./state/RollState";
+import GridState from "./state/GridState";
 
 const PianoRoll: React.FC = (): ReactElement => {
-  const url = Init();
-  if (url == undefined) return <></>;
+  const roll = RollState();
+  const gridSize = roll.get(0)!;
+  const grid = GridState(gridSize);
 
-  const rest = Rest(url);
+  const useCanvas = (canvas: HTMLCanvasElement) => {
+    const cellSize = {
+      width: canvas.width / gridSize.width,
+      height: canvas.height / gridSize.height,
+    };
 
-  return (
-    <div className="h-full w-full flex">
-      <Context.Provider rest={rest}>
-        <div>
-          <AudioController rest={rest.sound} />
-          <hr className="border-gray-400 mt-1.5 mb-1" />
-          <RollController />
-        </div>
-        <Grid rest={rest} />
-      </Context.Provider>
-    </div>
-  );
+    const context = canvas.getContext("2d")!;
+    grid.draw(context, { x: 0, y: 0 }, cellSize);
+    context.fillRect(100, 100, 200, 200);
+    // window.requestAnimationFrame(() => useCanvas(canvas))
+  };
+
+  return <Canvas useCanvas={useCanvas} />;
 };
 export default PianoRoll;
-
-const Init = () => {
-  const [url, setUrl] = useState<string>();
-  useEffect(() => {
-    setUrl(getUrl());
-    suplessTouchMove();
-  }, []);
-  return url;
-};
-const getUrl = () => {
-  const protocol = window.location.protocol;
-  const hostName = window.location.hostname;
-  const port = "8080";
-  return `${protocol}//${hostName}:${port}`;
-};
-const suplessTouchMove = () => {
-  window.addEventListener("touchmove", (e: TouchEvent) => e.preventDefault(), {
-    passive: false,
-  });
-};

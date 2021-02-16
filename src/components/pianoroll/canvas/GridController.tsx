@@ -14,7 +14,7 @@ import PointerActionDistributor from "../../pointerAction/Distributor";
 import PointerActionState from "../../pointerAction/State";
 import PointerActionSettings from "../../pointerAction/Settings";
 import PointerActionExecutor from "../../pointerAction/Executor";
-import RollState from "./state/RollState";
+import RollState from "../state/RollState";
 import Rest from "../rest/Rest";
 
 type Props = {

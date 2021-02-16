@@ -15,12 +15,16 @@ type Props = {
 };
 const Canvas: React.FC<Props> = ({ useCanvas }) => {
   const [size, setSize] = useState<Size>();
-  const ref = useCanvasRef((canvas) => {
+  const resize = (canvas: HTMLCanvasElement) => {
     setSize({
       width: canvas.clientWidth,
       height: canvas.clientHeight,
     });
     window.requestAnimationFrame(() => useCanvas(canvas));
+  };
+  const ref = useCanvasRef((canvas) => {
+    resize(canvas);
+    window.addEventListener("resize", () => resize(canvas));
   });
 
   return (

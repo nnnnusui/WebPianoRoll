@@ -1,30 +1,48 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement, useEffect } from "react";
 import Canvas from "../Canvas";
 import useRollState from "./state/useRollState";
 import useGridState from "./state/useGridState";
 import useMoveState from "./state/useMoveState";
+import useScaleState from "./state/useScaleState";
 
 const PianoRoll: React.FC = (): ReactElement => {
   const roll = useRollState();
   const gridSize = roll.get(0)!;
-  const cellSize = {
-    width: gridSize.width,
-    height: gridSize.height,
-  };
   const grid = useGridState(gridSize);
   const move = useMoveState();
+  const scale = useScaleState(grid, move, gridSize);
 
   const useCanvas = (canvas: HTMLCanvasElement) => {
-    const context = canvas.getContext("2d")!;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    const cellSize = {
+      width: canvas.width / scale.get.width,
+      height: canvas.height / scale.get.height,
+    };
     context.beginPath();
     context.clearRect(0, 0, canvas.width, canvas.height);
     grid.draw(context, move.get, cellSize);
   };
 
   const onWheel = (event: React.WheelEvent) => {
-    const vector = event.deltaY / 100;
-    move.set((prev) => ({ ...prev, x: prev.x + vector }));
+    const vector = event.altKey
+      ? { x: 0, y: event.deltaY * -0.01 }
+      : { y: 0, x: event.deltaY * -0.01 };
+
+    if (event.ctrlKey)
+      scale.set((prev) => ({
+        width: prev.width + vector.x,
+        height: prev.height + vector.y,
+      }));
+    else move.set((prev) => ({ x: prev.x + vector.x, y: prev.y + vector.y }));
+    return true;
   };
+
+  useEffect(() => {
+    window.addEventListener("wheel", (event) => event.preventDefault(), {
+      passive: false,
+    });
+  }, []);
 
   return (
     <>

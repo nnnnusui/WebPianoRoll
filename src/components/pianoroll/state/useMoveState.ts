@@ -3,7 +3,7 @@ import { useState, SetStateAction } from "react";
 import { Size } from "../canvas/type/Size";
 import getViewLocal from "../canvas/getViewLocal";
 
-const min: Pos = { x: 0, y: 0 }
+const min: Pos = { x: 0, y: 0 };
 const useMoveState = () => {
   const [state, _setState] = useState({ x: 0, y: 0 });
   const setState = (action: SetStateAction<Pos>) => {

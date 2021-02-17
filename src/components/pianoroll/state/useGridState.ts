@@ -1,9 +1,8 @@
 import { range0to } from "../../range";
-import MoveState from "./MoveState";
 import { Pos } from "../canvas/type/Pos";
 import { Size } from "../canvas/type/Size";
 
-const GridState = (size: Size) => {
+const useGridState = (size: Size) => {
   const draw = (
     context: CanvasRenderingContext2D,
     move: Pos,
@@ -42,4 +41,4 @@ const GridState = (size: Size) => {
   };
   return { size, draw };
 };
-export default GridState;
+export default useGridState;

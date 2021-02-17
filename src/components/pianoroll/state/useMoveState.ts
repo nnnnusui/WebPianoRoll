@@ -3,8 +3,9 @@ import { useState, SetStateAction } from "react";
 import { Size } from "../canvas/type/Size";
 import getViewLocal from "../canvas/getViewLocal";
 
-const MoveState = (min: Pos = { x: 0, y: 0 }) => {
-  const [state, _setState] = useState({ x: 5, y: 5 });
+const min: Pos = { x: 0, y: 0 }
+const useMoveState = () => {
+  const [state, _setState] = useState({ x: 0, y: 0 });
   const setState = (action: SetStateAction<Pos>) => {
     _setState((prev) => {
       const next = typeof action === "function" ? action(prev) : action;
@@ -34,4 +35,4 @@ const MoveState = (min: Pos = { x: 0, y: 0 }) => {
     getGridLocal,
   };
 };
-export default MoveState;
+export default useMoveState;

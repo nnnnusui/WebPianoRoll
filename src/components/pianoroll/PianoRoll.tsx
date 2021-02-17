@@ -1,8 +1,8 @@
 import React, { ReactElement } from "react";
 import Canvas from "../Canvas";
 import useRollState from "./state/useRollState";
-import GridState from "./state/GridState";
-import MoveState from "./state/MoveState";
+import useGridState from "./state/useGridState";
+import useMoveState from "./state/useMoveState";
 
 const PianoRoll: React.FC = (): ReactElement => {
   const roll = useRollState();
@@ -11,8 +11,8 @@ const PianoRoll: React.FC = (): ReactElement => {
     width: gridSize.width,
     height: gridSize.height,
   };
-  const grid = GridState(gridSize);
-  const move = MoveState();
+  const grid = useGridState(gridSize);
+  const move = useMoveState();
 
   const useCanvas = (canvas: HTMLCanvasElement) => {
     const context = canvas.getContext("2d")!;

@@ -1,0 +1,9 @@
+{
+    "name": "Reprectone - WebPianoRoll",
+    "short_name": "reprectone",
+    "theme_color": "#2196f3",
+    "background_color": "#95a2ac",
+    "display": "fullscreen",
+    "scope": "/",
+    "start_url": "/"
+  }

@@ -2,7 +2,7 @@ import { Pos } from "../type/Pos";
 import useMapState from "../useMapState";
 import PointerId from "../type/PointerId";
 import useIdMapState from "../useIdMapState";
-import RollState from "../../state/RollState";
+import RollState from "../../state/useRollState";
 import Context from "../../context/Context";
 import Note from "../../rest/Note";
 import { useEffect } from "react";

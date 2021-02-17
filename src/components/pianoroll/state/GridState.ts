@@ -1,5 +1,5 @@
 import { range0to } from "../../range";
-import MoveState from "../canvas/state/MoveState";
+import MoveState from "./MoveState";
 import { Pos } from "../canvas/type/Pos";
 import { Size } from "../canvas/type/Size";
 
@@ -20,7 +20,7 @@ const GridState = (size: Size) => {
     range0to(size.width + 1).forEach((index) => {
       if (index % lineInterval != 0) return;
       const gridLocal = index * cellSize.width;
-      const viewLocal = gridLocal - move.x;
+      const viewLocal = gridLocal - move.x * cellSize.width;
       context.moveTo(viewLocal, 0);
       context.lineTo(viewLocal, max.height);
       if (index % barInterval != 0) return;
@@ -31,7 +31,7 @@ const GridState = (size: Size) => {
     context.fillStyle = "#331111";
     range0to(size.height + 1).forEach((index) => {
       const gridLocal = index * cellSize.height;
-      const viewLocal = gridLocal - move.y;
+      const viewLocal = gridLocal - move.y * cellSize.height;
       const it = viewLocal;
       context.moveTo(0, it);
       context.lineTo(max.width, it);

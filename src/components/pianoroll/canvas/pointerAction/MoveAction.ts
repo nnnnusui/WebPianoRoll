@@ -1,4 +1,4 @@
-import MoveState from "../state/MoveState";
+import MoveState from "../../state/MoveState";
 import getViewLocal from "../getViewLocal";
 import ScaleState from "../state/ScaleState";
 import { PointerActionExecutorOverride } from "../../../pointerAction/Executor";

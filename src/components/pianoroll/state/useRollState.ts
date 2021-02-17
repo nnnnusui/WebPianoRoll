@@ -9,7 +9,7 @@ type Roll = {
   maxPitch: number;
 };
 type View = Size;
-const RollState = () => {
+const useRollState = () => {
   const state = useIdMapState<Roll>([
     [
       0,
@@ -38,4 +38,4 @@ const RollState = () => {
     },
   };
 };
-export default RollState;
+export default useRollState;

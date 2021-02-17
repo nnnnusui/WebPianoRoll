@@ -1,6 +1,6 @@
 import { Pos } from "../type/Pos";
 import { SetStateAction, useState } from "react";
-import MoveState from "./MoveState";
+import MoveState from "../../state/MoveState";
 import { Size } from "../type/Size";
 
 const min = 1;

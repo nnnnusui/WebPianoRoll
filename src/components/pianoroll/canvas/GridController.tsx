@@ -4,7 +4,7 @@ import ScaleState from "./state/ScaleState";
 import SelectionController from "./controller/SelectionController";
 import { Pos } from "./type/Pos";
 import { Size } from "./type/Size";
-import MoveState from "./state/MoveState";
+import MoveState from "../state/MoveState";
 import MoveAction from "./pointerAction/MoveAction";
 import ScaleAction from "./pointerAction/ScaleAction";
 import NoteAction from "./pointerAction/NoteAction";
@@ -14,7 +14,7 @@ import PointerActionDistributor from "../../pointerAction/Distributor";
 import PointerActionState from "../../pointerAction/State";
 import PointerActionSettings from "../../pointerAction/Settings";
 import PointerActionExecutor from "../../pointerAction/Executor";
-import RollState from "../state/RollState";
+import RollState from "../state/useRollState";
 import Rest from "../rest/Rest";
 
 type Props = {

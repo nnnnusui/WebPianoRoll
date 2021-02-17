@@ -1,24 +1,24 @@
-import { Pos } from "../type/Pos";
+import { Pos } from "../canvas/type/Pos";
 import { useState, SetStateAction } from "react";
-import { Size } from "../type/Size";
-import getViewLocal from "../getViewLocal";
+import { Size } from "../canvas/type/Size";
+import getViewLocal from "../canvas/getViewLocal";
 
-const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
-  const [state, _setState] = useState({ x: 0, y: 0 });
-  const setState = (scale: Size, action: SetStateAction<Pos>) => {
+const MoveState = (min: Pos = { x: 0, y: 0 }) => {
+  const [state, _setState] = useState({ x: 5, y: 5 });
+  const setState = (action: SetStateAction<Pos>) => {
     _setState((prev) => {
       const next = typeof action === "function" ? action(prev) : action;
-      return fixLowerLimit(fixHigherLimit(next, scale));
+      return next;
     });
   };
   const fixLowerLimit = (pos: Pos) => ({
     x: Math.max(min.x, pos.x),
     y: Math.max(min.y, pos.y),
   });
-  const fixHigherLimit = (pos: Pos, scale: Size) => ({
-    x: Math.min(max.x * scale.width, pos.x + max.x) - max.x,
-    y: Math.min(max.y * scale.height, pos.y + max.y) - max.y,
-  });
+  // const fixHigherLimit = (pos: Pos, scale: Size) => ({
+  //   x: Math.min(max.x * scale.width, pos.x + max.x) - max.x,
+  //   y: Math.min(max.y * scale.height, pos.y + max.y) - max.y,
+  // });
 
   const getGridLocal = (event: React.MouseEvent) => {
     const viewLocal = getViewLocal(event);
@@ -29,7 +29,6 @@ const MoveState = (max: Pos, min: Pos = { x: 0, y: 0 }) => {
   };
 
   return {
-    maxPos: max,
     get: state,
     set: setState,
     getGridLocal,

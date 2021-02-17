@@ -1,31 +1,39 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, DependencyList, useLayoutEffect } from "react";
 import { Size } from "./pianoroll/canvas/type/Size";
 
-const useCanvasRef = (callback: (canvas: HTMLCanvasElement) => void) => {
-  const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const canvas = ref.current!;
-    callback(canvas);
+function useRefSizeState<T extends HTMLElement>(
+  use: (element: T) => void,
+  deps: DependencyList = []
+) {
+  const ref = useRef<T>(null);
+  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
+  const updateSize = () =>
+    setSize({
+      width: ref.current!.clientWidth,
+      height: ref.current!.clientHeight,
+    });
+
+  // Reflects the current size of the element in the size state
+  useLayoutEffect(() => {
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, []);
-  return ref;
-};
+
+  // Monitor `deps` and use changes
+  useLayoutEffect(() => {
+    use(ref.current!);
+  }, [size, ...deps]);
+
+  return { ref, size };
+}
 
 type Props = {
   useCanvas: (canvas: HTMLCanvasElement) => void;
+  deps?: DependencyList;
 };
-const Canvas: React.FC<Props> = ({ useCanvas }) => {
-  const [size, setSize] = useState<Size>();
-  const resize = (canvas: HTMLCanvasElement) => {
-    setSize({
-      width: canvas.clientWidth,
-      height: canvas.clientHeight,
-    });
-    window.requestAnimationFrame(() => useCanvas(canvas));
-  };
-  const ref = useCanvasRef((canvas) => {
-    resize(canvas);
-    window.addEventListener("resize", () => resize(canvas));
-  });
+const Canvas: React.FC<Props> = ({ useCanvas, deps = [] }) => {
+  const { ref, size } = useRefSizeState(useCanvas, deps);
 
   return (
     <canvas

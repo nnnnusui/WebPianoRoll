@@ -1,25 +1,36 @@
 import React, { ReactElement } from "react";
 import Canvas from "../Canvas";
-import RollState from "./state/RollState";
+import useRollState from "./state/useRollState";
 import GridState from "./state/GridState";
+import MoveState from "./state/MoveState";
 
 const PianoRoll: React.FC = (): ReactElement => {
-  const roll = RollState();
+  const roll = useRollState();
   const gridSize = roll.get(0)!;
+  const cellSize = {
+    width: gridSize.width,
+    height: gridSize.height,
+  };
   const grid = GridState(gridSize);
+  const move = MoveState();
 
   const useCanvas = (canvas: HTMLCanvasElement) => {
-    const cellSize = {
-      width: canvas.width / gridSize.width,
-      height: canvas.height / gridSize.height,
-    };
-
     const context = canvas.getContext("2d")!;
-    grid.draw(context, { x: 0, y: 0 }, cellSize);
-    context.fillRect(100, 100, 200, 200);
-    // window.requestAnimationFrame(() => useCanvas(canvas))
+    context.beginPath();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    grid.draw(context, move.get, cellSize);
   };
 
-  return <Canvas useCanvas={useCanvas} />;
+  const onWheel = (event: React.WheelEvent) => {
+    const vector = event.deltaY / 100;
+    move.set((prev) => ({ ...prev, x: prev.x + vector }));
+  };
+
+  return (
+    <>
+      <Canvas useCanvas={useCanvas} deps={[move]} />
+      <div className="absolute h-full w-full" onWheel={onWheel} />
+    </>
+  );
 };
 export default PianoRoll;

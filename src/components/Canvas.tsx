@@ -1,4 +1,9 @@
-import { useRef, useState, DependencyList, useLayoutEffect } from "react";
+import React, {
+  useRef,
+  useState,
+  DependencyList,
+  useLayoutEffect,
+} from "react";
 import { Size } from "./pianoroll/canvas/type/Size";
 
 function useRefSizeState<T extends HTMLElement>(

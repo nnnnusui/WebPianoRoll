@@ -39,9 +39,11 @@ const PianoRoll: React.FC = (): ReactElement => {
   };
 
   useEffect(() => {
-    window.addEventListener("wheel", (event) => event.preventDefault(), {
-      passive: false,
-    });
+    const prevent = (event: Event) => event.preventDefault();
+    const setPrevent = (eventName: keyof WindowEventMap) =>
+      window.addEventListener(eventName, prevent, { passive: false });
+    setPrevent("wheel");
+    setPrevent("touchmove");
   }, []);
 
   return (

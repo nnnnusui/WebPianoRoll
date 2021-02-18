@@ -1,18 +1,14 @@
 import { SetStateAction, useState } from "react";
 import { Size } from "../canvas/type/Size";
-import useMoveState from "./useMoveState";
 import useGridState from "./useGridState";
-import { Pos } from "../canvas/type/Pos";
 
 const min = { width: 1, height: 1 };
 const useScaleState = (
   grid: ReturnType<typeof useGridState>,
-  move: ReturnType<typeof useMoveState>,
-  defaultValue: Size
+  init = grid.size
 ) => {
   const max = grid.size;
-  // const maxPos = move.maxPos;
-  const [state, _setState] = useState(defaultValue);
+  const [state, _setState] = useState(init);
   const setState = (action: SetStateAction<Size>) => {
     _setState((prevScale) => {
       const mayBeNext =

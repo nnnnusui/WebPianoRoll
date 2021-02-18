@@ -9,8 +9,8 @@ const PianoRoll: React.FC = (): ReactElement => {
   const roll = useRollState();
   const gridSize = roll.get(0)!;
   const grid = useGridState(gridSize);
-  const move = useMoveState();
-  const scale = useScaleState(grid, move, gridSize);
+  const scale = useScaleState(grid, gridSize);
+  const move = useMoveState(grid, scale);
 
   const useCanvas = (canvas: HTMLCanvasElement) => {
     const context = canvas.getContext("2d");
@@ -26,13 +26,13 @@ const PianoRoll: React.FC = (): ReactElement => {
 
   const onWheel = (event: React.WheelEvent) => {
     const vector = event.altKey
-      ? { x: 0, y: event.deltaY * -0.01 }
-      : { y: 0, x: event.deltaY * -0.01 };
+      ? { x: 0, y: event.deltaY * 0.01 }
+      : { y: 0, x: event.deltaY * 0.01 };
 
     if (event.ctrlKey)
       scale.set((prev) => ({
-        width: prev.width + vector.x,
-        height: prev.height + vector.y,
+        width: prev.width + vector.x * -1,
+        height: prev.height + vector.y * -1,
       }));
     else move.set((prev) => ({ x: prev.x + vector.x, y: prev.y + vector.y }));
     return true;

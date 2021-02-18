@@ -18,7 +18,7 @@ const useGridState = (size: Size) => {
     const barInterval = beatDenominator * beatNumerator;
     range0to(size.width + 1).forEach((index) => {
       if (index % lineInterval != 0) return;
-      const viewLocal = (index + move.x) * cellSize.width;
+      const viewLocal = (index - move.x) * cellSize.width;
       context.moveTo(viewLocal, 0);
       context.lineTo(viewLocal, max.height);
       if (index % barInterval != 0) return;
@@ -28,7 +28,7 @@ const useGridState = (size: Size) => {
     });
     context.fillStyle = "#331111";
     range0to(size.height + 1).forEach((index) => {
-      const viewLocal = (index + move.y) * cellSize.height;
+      const viewLocal = (index - move.y) * cellSize.height;
       const it = viewLocal;
       context.moveTo(0, it);
       context.lineTo(max.width, it);

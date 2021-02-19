@@ -1,6 +1,6 @@
 import { Pos } from "../type/Pos";
 import { useState, SetStateAction } from "react";
-import getViewLocal from "../canvas/getViewLocal";
+import getViewLocal from "../../getViewLocal";
 import useScaleState from "./useScaleState";
 import useGridState from "./useGridState";
 

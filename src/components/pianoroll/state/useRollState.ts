@@ -1,5 +1,5 @@
 import { Size } from "../type/Size";
-import useIdMapState from "../canvas/useIdMapState";
+import useIdMapState from "../../useIdMapState";
 
 type RollId = number;
 type Roll = {

@@ -4,30 +4,31 @@ import useRollState from "./state/useRollState";
 import useGridState from "./state/useGridState";
 import useMoveState from "./state/useMoveState";
 import useScaleState from "./state/useScaleState";
+import GridDrawer from "./drawer/GridDrawer";
 
 const PianoRoll: React.FC = (): ReactElement => {
   const roll = useRollState();
   const gridSize = roll.get(0)!;
   const grid = useGridState(gridSize);
-  const scale = useScaleState(grid, gridSize);
+  const scale = useScaleState(grid);
   const move = useMoveState(grid, scale);
+
+  const drawer = {
+    grid: GridDrawer(grid, move, scale).draw,
+  };
 
   const useCanvas = (canvas: HTMLCanvasElement) => {
     const context = canvas.getContext("2d");
     if (!context) return;
-    const cellSize = {
-      width: canvas.width / scale.get.width,
-      height: canvas.height / scale.get.height,
-    };
     context.beginPath();
     context.clearRect(0, 0, canvas.width, canvas.height);
-    grid.draw(context, move.get, cellSize);
+    drawer.grid(context, canvas);
   };
 
   const onWheel = (event: React.WheelEvent) => {
     const vector = event.altKey
-      ? { x: 0, y: event.deltaY * 0.01 * 4 }
-      : { y: 0, x: event.deltaY * 0.01 };
+      ? { x: 0, y: event.deltaY * 0.01 }
+      : { y: 0, x: event.deltaY * 0.01 * 4 };
 
     if (event.ctrlKey)
       scale.set((prev) => ({

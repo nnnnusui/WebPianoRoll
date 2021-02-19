@@ -14,8 +14,8 @@ const useRollState = () => {
     [
       0,
       {
-        maxOffset: 64,
-        minOctave: -1,
+        maxOffset: 128,
+        minOctave: -2,
         maxOctave: 1,
         maxPitch: 12,
       },

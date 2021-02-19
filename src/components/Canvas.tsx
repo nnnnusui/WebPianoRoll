@@ -4,7 +4,7 @@ import React, {
   DependencyList,
   useLayoutEffect,
 } from "react";
-import { Size } from "./pianoroll/canvas/type/Size";
+import { Size } from "./pianoroll/type/Size";
 
 function useRefSizeState<T extends HTMLElement>(
   use: (element: T) => void,

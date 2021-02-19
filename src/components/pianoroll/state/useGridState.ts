@@ -1,6 +1,6 @@
 import { range0to } from "../../range";
-import { Pos } from "../canvas/type/Pos";
-import { Size } from "../canvas/type/Size";
+import { Pos } from "../type/Pos";
+import { Size } from "../type/Size";
 
 const useGridState = (size: Size) => {
   const draw = (

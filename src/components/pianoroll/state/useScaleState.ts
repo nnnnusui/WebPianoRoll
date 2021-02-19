@@ -1,5 +1,5 @@
 import { SetStateAction, useState } from "react";
-import { Size } from "../canvas/type/Size";
+import { Size } from "../type/Size";
 import useGridState from "./useGridState";
 
 const min = { width: 1, height: 1 };

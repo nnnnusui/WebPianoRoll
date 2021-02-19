@@ -26,7 +26,7 @@ const PianoRoll: React.FC = (): ReactElement => {
 
   const onWheel = (event: React.WheelEvent) => {
     const vector = event.altKey
-      ? { x: 0, y: event.deltaY * 0.01 }
+      ? { x: 0, y: event.deltaY * 0.01 * 4 }
       : { y: 0, x: event.deltaY * 0.01 };
 
     if (event.ctrlKey)

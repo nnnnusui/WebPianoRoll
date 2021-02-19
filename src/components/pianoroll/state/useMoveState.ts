@@ -1,4 +1,4 @@
-import { Pos } from "../canvas/type/Pos";
+import { Pos } from "../type/Pos";
 import { useState, SetStateAction } from "react";
 import getViewLocal from "../canvas/getViewLocal";
 import useScaleState from "./useScaleState";

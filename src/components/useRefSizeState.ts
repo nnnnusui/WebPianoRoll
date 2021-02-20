@@ -26,7 +26,7 @@ function useRefSizeState<T extends HTMLElement>(
   useLayoutEffect(() => {
     const element = ref.current;
     if (!element) return;
-    use(element);
+    window.requestAnimationFrame(() => use(element));
   }, [use, size]);
 
   return { ref, size };

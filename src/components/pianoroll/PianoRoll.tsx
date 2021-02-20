@@ -36,7 +36,6 @@ const PianoRoll: React.FC = (): ReactElement => {
         height: prev.height + vector.y * -1,
       }));
     else move.set((prev) => ({ x: prev.x + vector.x, y: prev.y + vector.y }));
-    return true;
   };
 
   const canvasProps = {
@@ -46,7 +45,6 @@ const PianoRoll: React.FC = (): ReactElement => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawer.grid(context, canvas);
     },
-    deps: [move],
     attrs: { onWheel },
   };
   return (

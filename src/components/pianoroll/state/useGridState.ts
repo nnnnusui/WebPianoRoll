@@ -1,4 +1,3 @@
-import range, { range0to } from "../../range";
 import { Pos } from "../type/Pos";
 import { Size } from "../type/Size";
 import { useState } from "react";

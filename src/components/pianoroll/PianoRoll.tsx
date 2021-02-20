@@ -17,13 +17,13 @@ const PianoRoll: React.FC = (): ReactElement => {
     grid: GridDrawer(grid, move, scale).draw,
   };
 
-  const useCanvas = (canvas: HTMLCanvasElement) => {
-    const context = canvas.getContext("2d");
-    if (!context) return;
-    context.beginPath();
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    drawer.grid(context, canvas);
-  };
+  useEffect(() => {
+    const prevent = (event: Event) => event.preventDefault();
+    const setPrevent = (eventName: keyof WindowEventMap) =>
+      window.addEventListener(eventName, prevent, { passive: false });
+    setPrevent("wheel");
+    setPrevent("touchmove");
+  }, []);
 
   const onWheel = (event: React.WheelEvent) => {
     const vector = event.altKey
@@ -39,18 +39,20 @@ const PianoRoll: React.FC = (): ReactElement => {
     return true;
   };
 
-  useEffect(() => {
-    const prevent = (event: Event) => event.preventDefault();
-    const setPrevent = (eventName: keyof WindowEventMap) =>
-      window.addEventListener(eventName, prevent, { passive: false });
-    setPrevent("wheel");
-    setPrevent("touchmove");
-  }, []);
-
+  const canvasProps = {
+    useCanvas: (canvas: HTMLCanvasElement) => {
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.beginPath();
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      drawer.grid(context, canvas);
+    },
+    deps: [move],
+    attrs: { onWheel },
+  };
   return (
     <>
-      <Canvas useCanvas={useCanvas} deps={[move]} />
-      <div className="absolute h-full w-full" onWheel={onWheel} />
+      <Canvas {...canvasProps} />
     </>
   );
 };

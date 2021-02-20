@@ -36,15 +36,17 @@ function useRefSizeState<T extends HTMLElement>(
 type Props = {
   useCanvas: (canvas: HTMLCanvasElement) => void;
   deps?: DependencyList;
+  attrs?: object;
 };
-const Canvas: React.FC<Props> = ({ useCanvas, deps = [] }) => {
+const Canvas: React.FC<Props> = ({ useCanvas, deps = [], attrs = {} }) => {
   const { ref, size } = useRefSizeState(useCanvas, deps);
 
   return (
     <canvas
-      className="pointer-events-none absolute h-full w-full"
+      className="absolute h-full w-full"
       ref={ref}
       {...size}
+      {...attrs}
     ></canvas>
   );
 };

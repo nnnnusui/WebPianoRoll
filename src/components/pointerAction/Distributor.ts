@@ -42,9 +42,20 @@ const Degree = (upper: number): Condition => (from: Event) => (to: Event) => {
   const degree = 360 - (radian * (180 / Math.PI) + 180);
   return upper >= degree;
 };
-const Tree = TreeBuilder(Distance(100))(
-  TreeBuilder(Distance(200))(Log("distance_200"), Log("distance_100"))
-);
+const RadialMenu = (
+  degreeAndFactory: [ReturnType<typeof Degree>, ExecutorFactory][]
+) => (from: Event) => (to: Event) => {
+  const sorted = degreeAndFactory; // TODO: sort by degree
+  const head = sorted[0];
+  const target = sorted.find((it) => it[0](from)(to)) || head;
+  return target[1](from)(to);
+};
+const Tree = RadialMenu([
+  [Degree(45), Log("up")],
+  [Degree(135), Log("right")],
+  [Degree(225), Log("down")],
+  [Degree(315), Log("left")],
+]);
 
 const State = () => {
   return useIdMapState<{ tree: (to: Event) => Executor }>();

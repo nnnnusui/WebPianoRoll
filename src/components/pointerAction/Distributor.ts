@@ -1,3 +1,4 @@
+import { range0to } from "../range";
 import useIdMapState from "../useIdMapState";
 
 type Event = React.PointerEvent;
@@ -42,19 +43,24 @@ const Degree = (upper: number): Condition => (from: Event) => (to: Event) => {
   const degree = 360 - (radian * (180 / Math.PI) + 180);
   return upper >= degree;
 };
-const RadialMenu = (
-  degreeAndFactory: [ReturnType<typeof Degree>, ExecutorFactory][]
-) => (from: Event) => (to: Event) => {
-  const sorted = degreeAndFactory; // TODO: sort by degree
-  const head = sorted[0];
-  const target = sorted.find((it) => it[0](from)(to)) || head;
-  return target[1](from)(to);
+const RadialMenu = (factories: ExecutorFactory[]) => (from: Event) => (to: Event) => {
+  const division = factories.length
+  const unit = 360 / division
+  const shift = unit / 2
+  const conditions = factories
+    .map((factory, index) => ({
+      degree: Degree(unit * index + shift),
+      factory
+    }))
+  const head = conditions[0] || {degree: Degree(360), factory: DummyExecutor}
+  const target = conditions.find(({degree}) => degree(from)(to)) || head
+  return target.factory(from)(to);
 };
 const Tree = RadialMenu([
-  [Degree(45), Log("up")],
-  [Degree(135), Log("right")],
-  [Degree(225), Log("down")],
-  [Degree(315), Log("left")],
+  Log("up"),
+  Log("right"),
+  Log("down"),
+  Log("left"),
 ]);
 
 const State = () => {

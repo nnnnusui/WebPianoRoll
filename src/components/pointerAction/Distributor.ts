@@ -1,80 +1,74 @@
 import useIdMapState from "../useIdMapState";
 
 type Event = React.PointerEvent;
-type Info = {
-  executor: Executor;
-  factory: ExecutorFactory
-};
-const State = () => {
-  return useIdMapState<Info>();
-};
-type State = ReturnType<typeof State>;
-type ConditionTree = (event: Event) => ExecutorFactory
-type ExecutorFactory = (event: Event) => Executor;
+
+type From = Event;
+type To = Event;
 type Executor = {
-  tryExecute: (event: Event) => void;
-  execute: (event: Event) => void;
-  cancel: (event: Event) => void;
+  tryExecute: () => void;
+  execute: () => void;
+  cancel: () => void;
 };
-const DummyExecutor: ExecutorFactory = () => ({
+type ExecutorFactory = (from: From) => (to: To) => Executor;
+type Condition = (from: From) => (to: To) => boolean;
+type Node = ExecutorFactory;
+const DummyExecutor: ExecutorFactory = () => () => ({
   tryExecute: () => {},
   execute: () => {},
   cancel: () => {},
 });
-const Log: ExecutorFactory = () => ({
-  tryExecute: () => {
-    console.log("tryExecute");
-  },
-  execute: () => {
-    console.log("executed");
-  },
-  cancel: () => {
-    console.log("canceled");
-  },
+const TreeBuilder = (condition: Condition) => (
+  onTrue: Node = DummyExecutor,
+  onFalse: Node = DummyExecutor
+) => (from: Event) => (to: Event) =>
+  condition(from)(to) ? onTrue(from)(to) : onFalse(from)(to);
+
+const Log = (name: string): ExecutorFactory => () => () => ({
+  tryExecute: () => console.log(`tryExecute: ${name}`),
+  execute: () => console.log(`executed: ${name}`),
+  cancel: () => console.log(`canceled: ${name}`),
 });
-
-const Distance = (length: number) => {
-  return (onTrue = DummyExecutor, onFalse = DummyExecutor) => (from: Event) => {
-    const check = (to: Event) => {
-      const distance = Math.abs(to.clientX - from.clientX);
-      console.log(distance);
-      return length <= distance;
-    };
-    return (event: Event) => (check(event) ? onTrue(from) : onFalse(from));
-  };
+const Distance = (length: number): Condition => (from: Event) => (
+  to: Event
+) => {
+  const distance = Math.abs(to.clientX - from.clientX);
+  return length <= distance;
 };
-const Degree = (upper: number) => {
-  return (onTrue = DummyExecutor, onFalse = DummyExecutor) => (from: Event) => {
-    const check = (to: Event) => {
-      const radian = Math.atan2(to.clientX - from.clientX, to.clientY - from.clientY);
-      const degree = 360 - (radian * (180 / Math.PI) + 180)
-      console.log(degree);
-      return upper >= degree;
-    };
-    return (event: Event) => (check(event) ? onTrue(from) : onFalse(from));
-  };
-}
-const Tree: ConditionTree = Degree(100)(Log);
+const Degree = (upper: number): Condition => (from: Event) => (to: Event) => {
+  const radian = Math.atan2(
+    to.clientX - from.clientX,
+    to.clientY - from.clientY
+  );
+  const degree = 360 - (radian * (180 / Math.PI) + 180);
+  return upper >= degree;
+};
+const Tree = TreeBuilder(Distance(100))(
+  TreeBuilder(Distance(200))(Log("distance_200"), Log("distance_100"))
+);
 
+const State = () => {
+  return useIdMapState<{ tree: (to: Event) => Executor }>();
+};
+type State = ReturnType<typeof State>;
 const Distributor = (pointers: State) => {
   return {
     onPointerDown: (event: Event) => {
-      const factory = Tree(event);
-      const executor = factory(event);
-      executor.tryExecute(event);
-      pointers.set(event.pointerId, {executor, factory});
+      const tree = Tree(event);
+      const executor = tree(event);
+      executor.tryExecute();
+      pointers.set(event.pointerId, { tree });
     },
     onPointerMove: (event: Event) => {
       pointers.set(event.pointerId, (prev) => {
-        const executor = prev.factory(event)
-        executor.tryExecute(event);
+        const executor = prev.tree(event);
+        executor.tryExecute();
         return prev;
       });
     },
     onPointerUp: (event: Event) => {
       pointers.delete(event.pointerId, (prev) => {
-        const executor = prev.factory(event)
-        executor.execute(event);
+        const executor = prev.tree(event);
+        executor.execute();
         return prev;
       });
     },

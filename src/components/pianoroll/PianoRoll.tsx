@@ -5,6 +5,7 @@ import useGridState from "./state/useGridState";
 import useMoveState from "./state/useMoveState";
 import useScaleState from "./state/useScaleState";
 import GridDrawer from "./drawer/GridDrawer";
+import Distributor, { usePointerState } from "../pointerAction/Distributor";
 
 const PianoRoll: React.FC = (): ReactElement => {
   const roll = useRollState();
@@ -25,6 +26,8 @@ const PianoRoll: React.FC = (): ReactElement => {
     setPrevent("touchmove");
   }, []);
 
+  const pointers = usePointerState();
+  const pointerAction = Distributor(pointers);
   const onWheel = (event: React.WheelEvent) => {
     const vector = event.altKey
       ? { x: 0, y: event.deltaY * 0.01 }
@@ -45,7 +48,7 @@ const PianoRoll: React.FC = (): ReactElement => {
       context.clearRect(0, 0, canvas.width, canvas.height);
       drawer.grid(context, canvas);
     },
-    attrs: { onWheel },
+    attrs: { onWheel, ...pointerAction },
   };
   return (
     <>

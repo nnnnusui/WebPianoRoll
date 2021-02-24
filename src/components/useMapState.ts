@@ -20,10 +20,17 @@ function useMapState<Key, Value>(init: [Key, Value][] = []) {
         if (action && value) action(value);
         state.delete(key);
       }),
-    set: (key: Key, action: Value | ((value: Value | undefined) => Value)) =>
+    set: (key: Key, action: Value | ((value: Value) => Value)) =>
       use((state) => {
         const before = state.get(key);
-        const value = action instanceof Function ? action(before) : action;
+        const value = (() => {
+          if (action instanceof Function) {
+            if (before) return action(before);
+          } else {
+            return action;
+          }
+        })();
+        if (!value) return;
         state.set(key, value);
       }),
     get: (key: Key) => state.get(key),
